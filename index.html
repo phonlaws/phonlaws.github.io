@@ -1,75 +1,390 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>RM Alkali Smart Adjuster (Batch Entry)</title>
-<style>:root{--bg:#0b1220;--card:#121b2f;--muted:#9fb0d0;--text:#eaf0ff;--line:#263556;--ok:#24d18f;--warn:#ffcc00;--bad:#ff5d5d;--btn:#2f66ff;--btn2:#1f2b48;}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(180deg,var(--bg),#070b14);color:var(--text)}.wrap{max-width:1180px;margin:24px auto;padding:0 16px}.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;flex-wrap:wrap}h1{margin:0;font-size:22px}.sub{margin-top:6px;color:var(--muted);font-size:13px;line-height:1.45}.pill{display:inline-flex;gap:8px;align-items:center;padding:8px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(12,19,38,.35);font-size:12px;color:var(--muted)}.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;margin-top:14px}@media (max-width:980px){.grid{grid-template-columns:1fr}}.card{background:rgba(18,27,47,.92);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}label{display:block;color:var(--muted);font-size:13px;margin:10px 0 6px}input,textarea{width:100%;box-sizing:border-box;padding:12px;border-radius:12px;border:1px solid var(--line);background:#0c1326;color:var(--text);outline:none;font-size:14px}textarea{min-height:64px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}button{padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--btn);color:#fff;font-weight:800;cursor:pointer}button.secondary{background:var(--btn2)}button.ghost{background:transparent}button.danger{background:#3a0c14}.status{margin-top:10px;border:1px dashed var(--line);border-radius:12px;padding:12px;background:rgba(10,16,32,.55)}.big{font-size:18px;font-weight:900;margin:0 0 4px}.muted{color:var(--muted)}.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}.mono{font-variant-numeric:tabular-nums;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}@media (max-width:980px){.kpi{grid-template-columns:repeat(2,1fr)}}.box{border:1px solid var(--line);border-radius:12px;padding:10px;background:rgba(12,19,38,.6)}.lbl{color:var(--muted);font-size:12px}.val{margin-top:3px;font-size:16px;font-weight:900}.split{height:1px;background:var(--line);margin:14px 0}table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}th,td{padding:10px;font-size:12px;border-bottom:1px solid var(--line);vertical-align:top}th{background:rgba(12,19,38,.85);color:#cfe0ff;text-align:left}tr:last-child td{border-bottom:none}.right{text-align:right}.tiny{font-size:12px;color:var(--muted);line-height:1.55}.badge{display:inline-block;padding:2px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:12px}
-</style></head><body><div class="wrap"><div class="top"><div><h1>RM Alkali Smart Adjuster — Batch Entry</h1><div class="sub">กรอกชุดเดียว: วันที่/เวลา (t) + Alkali และ PV (t ถึง t-4) แล้วกดปุ่มเดียว ระบบจะบันทึกย้อนหลังตามเวลาอัตโนมัติและรัน Smart Recommend ที่เวลา t (โมเดล v3: ΔPV + constrained signs)</div></div><div><span class="pill">Target: <b class="mono">1.60%</b></span><span class="pill">Limit: <b class="mono">±0.05 t/h</b></span><span class="pill">Pending: <b class="mono">3h</b></span></div></div>
-<div class="grid"><div class="card"><h2>กรอกชุดเดียว (t..t-4)</h2>
-<div class="row"><div><label>วันที่/เวลา (เวลา t, ต้นชั่วโมง)</label><input id="base_ts" type="datetime-local"/><div class="tiny">ระบบจะสร้างเวลา <span class="mono">t-1..t-4</span> อัตโนมัติจากเวลานี้ และบันทึกลง PV History ให้ครบ</div></div><div><label>โหมดความเร็ว</label><div class="btns"><button id="btn_copy_t_down" class="secondary">คัดลอก PV(t) ลง t-1..t-4</button><button id="btn_clear_batch" class="ghost danger">ล้างชุด</button></div><div class="tiny">ใช้ปุ่มคัดลอกเมื่อ PV คงที่ → กรอกครั้งเดียวจบ</div></div></div>
-<div class="split"></div><h2 style="margin:0">Alkali</h2>
-<div class="row3"><div><label>Alkali (t)</label><input id="alk_t" type="number" step="0.001"/></div><div><label>Alkali (t-1)</label><input id="alk_t1" type="number" step="0.001"/></div><div><label>Alkali (t-2)</label><input id="alk_t2" type="number" step="0.001"/></div></div>
-<div class="row3"><div><label>Alkali (t-3)</label><input id="alk_t3" type="number" step="0.001"/></div><div><label>Alkali (t-4)</label><input id="alk_t4" type="number" step="0.001"/></div><div><label>Fineness / %R (ไม่มีใส่ 0)</label><input id="fineness" type="number" step="0.01" value="0"/></div></div>
-<div class="split"></div><h2 style="margin:0">PV Feed (t..t-4)</h2><div class="tiny">กรอก PV เป็น t/h (Dry basis) — Total จะคำนวณอัตโนมัติ = Feld + Pyro + W.Sand</div>
-<div class="split"></div><div class="badge">เวลา t</div>
-<div class="row"><div><label>PV Feldspar (t)</label><input id="pvF_t" type="number" step="0.001"/></div><div><label>PV Pyro (t)</label><input id="pvP_t" type="number" step="0.001"/></div></div>
-<div class="row"><div><label>PV White Sand (t)</label><input id="pvW_t" type="number" step="0.001"/></div><div><label>Total (t) (auto)</label><input id="pvT_t" type="number" step="0.001" placeholder="auto"/></div></div>
-<div class="badge">เวลา t-1</div>
-<div class="row"><div><label>PV Feldspar (t-1)</label><input id="pvF_t1" type="number" step="0.001"/></div><div><label>PV Pyro (t-1)</label><input id="pvP_t1" type="number" step="0.001"/></div></div>
-<div class="row"><div><label>PV White Sand (t-1)</label><input id="pvW_t1" type="number" step="0.001"/></div><div><label>Total (t-1) (auto)</label><input id="pvT_t1" type="number" step="0.001" placeholder="auto"/></div></div>
-<div class="badge">เวลา t-2</div>
-<div class="row"><div><label>PV Feldspar (t-2)</label><input id="pvF_t2" type="number" step="0.001"/></div><div><label>PV Pyro (t-2)</label><input id="pvP_t2" type="number" step="0.001"/></div></div>
-<div class="row"><div><label>PV White Sand (t-2)</label><input id="pvW_t2" type="number" step="0.001"/></div><div><label>Total (t-2) (auto)</label><input id="pvT_t2" type="number" step="0.001" placeholder="auto"/></div></div>
-<div class="badge">เวลา t-3</div>
-<div class="row"><div><label>PV Feldspar (t-3)</label><input id="pvF_t3" type="number" step="0.001"/></div><div><label>PV Pyro (t-3)</label><input id="pvP_t3" type="number" step="0.001"/></div></div>
-<div class="row"><div><label>PV White Sand (t-3)</label><input id="pvW_t3" type="number" step="0.001"/></div><div><label>Total (t-3) (auto)</label><input id="pvT_t3" type="number" step="0.001" placeholder="auto"/></div></div>
-<div class="badge">เวลา t-4</div>
-<div class="row"><div><label>PV Feldspar (t-4)</label><input id="pvF_t4" type="number" step="0.001"/></div><div><label>PV Pyro (t-4)</label><input id="pvP_t4" type="number" step="0.001"/></div></div>
-<div class="row"><div><label>PV White Sand (t-4)</label><input id="pvW_t4" type="number" step="0.001"/></div><div><label>Total (t-4) (auto)</label><input id="pvT_t4" type="number" step="0.001" placeholder="auto"/></div></div>
-<label>หมายเหตุ</label><textarea id="note"></textarea>
-<div class="btns"><button id="btn_save_run">บันทึกชุดเดียว + รัน Smart Recommend</button><button id="btn_predict" class="secondary">Predict เท่านั้น</button></div>
-<div id="modelStatus" class="status"><p class="big">กำลังโหลดโมเดล…</p><div class="muted">URL: <span class="mono" id="modelUrl"></span></div><div class="muted" id="modelErr"></div></div>
-<div class="split"></div><h2 style="margin:0">PV History (Hourly)</h2>
-<div class="btns"><button id="btn_refresh_hist" class="secondary">รีเฟรช</button><button id="btn_export_hist" class="ghost">Export PV (JSON)</button><button id="btn_import_hist" class="ghost">Import PV (JSON)</button><button id="btn_clear_hist" class="ghost danger">ล้าง PV</button><input id="file_hist" type="file" accept="application/json" style="display:none"/></div>
-<div style="margin-top:10px;overflow:auto"><table><thead><tr><th>เวลา</th><th class="right">Feld</th><th class="right">Pyro</th><th class="right">W.Sand</th><th class="right">Total</th></tr></thead><tbody id="pvHistBody"><tr><td colspan="5" class="muted">ยังไม่มีข้อมูล</td></tr></tbody></table></div>
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RM Alkali Smart Adjuster (Grid Entry)</title>
+  <style>
+    :root{--bg:#0b1220;--card:#121b2f;--muted:#9fb0d0;--text:#eaf0ff;--line:#263556;--ok:#24d18f;--warn:#ffcc00;--bad:#ff5d5d;--btn:#2f66ff;--btn2:#1f2b48;}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(180deg,var(--bg),#070b14);color:var(--text)}
+    .wrap{max-width:1180px;margin:24px auto;padding:0 16px}
+    .top{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;flex-wrap:wrap}
+    h1{margin:0;font-size:22px}
+    .sub{margin-top:6px;color:var(--muted);font-size:13px;line-height:1.45}
+    .pill{display:inline-flex;gap:8px;align-items:center;padding:8px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(12,19,38,.35);font-size:12px;color:var(--muted)}
+    .grid2{display:grid;grid-template-columns:1.25fr .75fr;gap:16px;margin-top:14px}
+    @media (max-width:980px){.grid2{grid-template-columns:1fr}}
+    .card{background:rgba(18,27,47,.92);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    label{display:block;color:var(--muted);font-size:13px;margin:10px 0 6px}
+    input,textarea{width:100%;box-sizing:border-box;padding:12px;border-radius:12px;border:1px solid var(--line);background:#0c1326;color:var(--text);outline:none;font-size:14px}
+    textarea{min-height:64px;resize:vertical}
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    button{padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--btn);color:#fff;font-weight:800;cursor:pointer}
+    button.secondary{background:var(--btn2)}
+    button.ghost{background:transparent}
+    button.danger{background:#3a0c14}
+    .status{margin-top:10px;border:1px dashed var(--line);border-radius:12px;padding:12px;background:rgba(10,16,32,.55)}
+    .big{font-size:18px;font-weight:900;margin:0 0 4px}
+    .muted{color:var(--muted)}
+    .ok{color:var(--ok)}
+    .warn{color:var(--warn)}
+    .bad{color:var(--bad)}
+    .mono{font-variant-numeric:tabular-nums;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .split{height:1px;background:var(--line);margin:14px 0}
+    .tiny{font-size:12px;color:var(--muted);line-height:1.55}
+
+    .entry-grid{display:grid;grid-template-columns:120px repeat(4, minmax(150px, 1fr));gap:10px;align-items:center;margin-top:10px}
+    @media (max-width:980px){
+      .entry-grid{grid-template-columns:110px repeat(2, minmax(150px, 1fr));}
+    }
+    .hcell{color:#cfe0ff;font-weight:800;font-size:12px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:rgba(12,19,38,.7)}
+    .rowlbl{color:#cfe0ff;font-weight:800;font-size:13px;padding:10px;border:1px solid var(--line);border-radius:12px;background:rgba(12,19,38,.45)}
+    .cell input{padding:10px 12px}
+
+    table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+    th,td{padding:10px;font-size:12px;border-bottom:1px solid var(--line);vertical-align:top}
+    th{background:rgba(12,19,38,.85);color:#cfe0ff;text-align:left}
+    tr:last-child td{border-bottom:none}
+    .right{text-align:right}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>RM Alkali Smart Adjuster — Grid Entry</h1>
+      <div class="sub">รูปแบบตามสเก็ตช์ (2A): แถวเป็น t, t-1, t-2, t-3, t-4 • เว้นช่องได้ (1B) แต่ก่อนรันต้องมี PV ครบที่ t-lag และ t-(lag+1) • โมเดลเลือก lag = <b class="mono">3h</b></div>
+    </div>
+    <div>
+      <span class="pill">Target: <b class="mono">1.60%</b></span>
+      <span class="pill">Limit: <b class="mono">±0.05 t/h</b></span>
+      <span class="pill">Lag: <b class="mono">3h</b></span>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h2 style="margin:0">ข้อมูลเข้า</h2>
+      <label>วันที่/เวลา (t) — ต้นชั่วโมง</label>
+      <input id="base_ts" type="datetime-local" />
+      <div class="btns">
+        <button class="secondary" id="btn_now">ใช้เวลา “ชั่วโมงนี้”</button>
+        <button class="ghost" id="btn_copy_t_down">คัดลอก PV แถว t → ลง t-1..t-4</button>
+        <button class="ghost danger" id="btn_clear">ล้างตาราง</button>
+      </div>
+
+      <div class="split"></div>
+      <div class="hcell">ตารางกรอกค่า (t ถึง t-4)</div>
+      <div class="entry-grid" id="grid">
+        <div class="hcell">เวลา</div>
+        <div class="hcell">Alkali (%)</div>
+        <div class="hcell">PV Feldspar (t/h)</div>
+        <div class="hcell">PV Pyro (t/h)</div>
+        <div class="hcell">PV White Sand (t/h)</div>
+      </div>
+      <div class="tiny" id="min_rules" style="margin-top:10px"></div>
+
+      <label>Fineness / %R (ไม่มีใส่ 0)</label>
+      <input id="fineness" type="number" step="0.01" value="0" />
+
+      <label>หมายเหตุ</label>
+      <textarea id="note" placeholder="เช่น Stop/Start/คุมโหลด/อื้อ/ปรับ setpoint"></textarea>
+
+      <div class="btns">
+        <button id="btn_save_run">บันทึกชุดเดียว + รัน Smart Recommend</button>
+        <button id="btn_predict" class="secondary">Predict เท่านั้น</button>
+      </div>
+
+      <div id="modelStatus" class="status">
+        <p class="big">กำลังโหลดโมเดล…</p>
+        <div class="muted">URL: <span class="mono" id="modelUrl"></span></div>
+        <div class="muted" id="modelErr"></div>
+      </div>
+
+      <div class="split"></div>
+      <h2 style="margin:0">PV History (Hourly)</h2>
+      <div class="btns">
+        <button id="btn_refresh_hist" class="secondary">รีเฟรช</button>
+        <button id="btn_export_hist" class="ghost">Export PV (JSON)</button>
+        <button id="btn_import_hist" class="ghost">Import PV (JSON)</button>
+        <button id="btn_clear_hist" class="ghost danger">ล้าง PV</button>
+        <input id="file_hist" type="file" accept="application/json" style="display:none" />
+      </div>
+      <div style="margin-top:10px;overflow:auto">
+        <table>
+          <thead><tr><th>เวลา</th><th class="right">Feld</th><th class="right">Pyro</th><th class="right">W.Sand</th><th class="right">Total</th></tr></thead>
+          <tbody id="pvHistBody"><tr><td colspan="5" class="muted">ยังไม่มีข้อมูล</td></tr></tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <div class="card">
+      <h2 style="margin:0">ผลลัพธ์</h2>
+      <div id="outStatus" class="status"><p class="big">พร้อมคำนวณ</p><div class="muted">กด “บันทึก + รัน” เพื่อบันทึกย้อนหลังและคำนวณที่เวลา t</div></div>
+
+      <div class="split"></div>
+      <div class="kpi" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+        <div class="box"><div class="lbl">Pred Alkali</div><div class="val mono" id="kpi_pred">-</div></div>
+        <div class="box"><div class="lbl">Error</div><div class="val mono" id="kpi_err">-</div></div>
+        <div class="box"><div class="lbl">Δ Feldspar</div><div class="val mono" id="kpi_df">-</div></div>
+        <div class="box"><div class="lbl">Δ Pyro</div><div class="val mono" id="kpi_dp">-</div></div>
+      </div>
+
+      <div class="split"></div>
+      <h2 style="margin:0">Log</h2>
+      <div class="btns">
+        <button id="btn_export_log" class="secondary">Export Log (CSV)</button>
+        <button id="btn_clear_log" class="ghost danger">ล้าง Log</button>
+      </div>
+      <div style="margin-top:10px;overflow:auto;max-height:520px">
+        <table>
+          <thead><tr><th>เวลา</th><th>Pred</th><th>ΔF</th><th>ΔP</th><th>PV src</th><th>หมายเหตุ</th></tr></thead>
+          <tbody id="logBody"><tr><td colspan="6" class="muted">ยังไม่มีรายการ</td></tr></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
 </div>
-<div class="card"><h2>ผลลัพธ์</h2><div id="outStatus" class="status"><p class="big">พร้อมคำนวณ</p><div class="muted">กด “บันทึกชุดเดียว + รัน” เพื่อให้ระบบบันทึกย้อนหลังและคำนวณทันที</div></div>
-<div class="kpi"><div class="box"><div class="lbl">Lag</div><div class="val mono" id="kpi_lag">-</div></div><div class="box"><div class="lbl">PV src</div><div class="val" id="kpi_pvsrc">-</div></div><div class="box"><div class="lbl">Pred Alkali</div><div class="val mono" id="kpi_pred">-</div></div><div class="box"><div class="lbl">Error</div><div class="val mono" id="kpi_err">-</div></div></div>
-<div class="split"></div><div class="kpi"><div class="box"><div class="lbl">Δ Feldspar (t/h)</div><div class="val mono" id="kpi_df">-</div></div><div class="box"><div class="lbl">Δ Pyro (t/h)</div><div class="val mono" id="kpi_dp">-</div></div><div class="box"><div class="lbl">Pending</div><div class="val" id="kpi_pending">-</div></div><div class="box"><div class="lbl">Confidence</div><div class="val" id="kpi_conf">-</div></div></div>
-<div class="split"></div><h2 style="margin:0">Log</h2><div class="btns"><button id="btn_export_log" class="secondary">Export Log (CSV)</button><button id="btn_clear_log" class="ghost danger">ล้าง Log</button></div>
-<div style="margin-top:10px;overflow:auto;max-height:520px"><table><thead><tr><th>เวลา</th><th>Pred</th><th>ΔF</th><th>ΔP</th><th>PV src</th><th>หมายเหตุ</th></tr></thead><tbody id="logBody"><tr><td colspan="6" class="muted">ยังไม่มีรายการ</td></tr></tbody></table></div>
-</div></div></div>
+
 <script>
-let MODEL=null;const KEY_PV='rm_pv_history_batch_v1';const KEY_LOG='rm_calc_log_batch_v1';const KEY_LAST='rm_last_adjust_ts_batch_v1';
-const $=id=>document.getElementById(id);const clamp=(x,lo,hi)=>Math.max(lo,Math.min(hi,x));
+let MODEL=null;
+const KEY_PV='rm_pv_history_grid_v1';
+const KEY_LOG='rm_calc_log_grid_v1';
+
+const $=id=>document.getElementById(id);
+const clamp=(x,lo,hi)=>Math.max(lo,Math.min(hi,x));
 const fmt=(n,d=3)=> (n==null||Number.isNaN(n))?'-':Number(n).toFixed(d);
 const sign=(n,d=3)=>{ if(n==null||Number.isNaN(n)) return '-'; const v=Number(n); return v>0?('+'+v.toFixed(d)):(v<0?v.toFixed(d):('0.'+'0'.repeat(d))); };
-function pad2(x){return String(x).padStart(2,'0');}function nowRoundedHour(){const d=new Date(); d.setMinutes(0,0,0); return d;}
+
+function pad2(x){return String(x).padStart(2,'0');}
+function nowRoundedHour(){const d=new Date(); d.setMinutes(0,0,0); return d;}
 function toInput(d){return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:00`;}
 function parseDT(val){ if(!val) return null; const [da,ti]=val.split('T'); const [y,m,d]=da.split('-').map(Number); const [hh,mm]=ti.split(':').map(Number); return new Date(y,m-1,d,hh,mm||0,0,0);} 
 function toHourKey(d){ const x=new Date(d); x.setMinutes(0,0,0); return `${x.getFullYear()}-${pad2(x.getMonth()+1)}-${pad2(x.getDate())}T${pad2(x.getHours())}:00`; }
 function addHours(d,h){ return new Date(d.getTime()+h*3600*1000); }
+
 function loadPV(){ try{return JSON.parse(localStorage.getItem(KEY_PV)||'{}');}catch(e){return {};} }
 function savePVObj(o){ localStorage.setItem(KEY_PV, JSON.stringify(o)); }
 function loadLog(){ try{return JSON.parse(localStorage.getItem(KEY_LOG)||'[]');}catch(e){return [];} }
 function saveLog(a){ localStorage.setItem(KEY_LOG, JSON.stringify(a)); }
 function pushLog(x){ const a=loadLog(); a.unshift(x); saveLog(a); }
-function refreshPVTable(){ const hist=loadPV(); const keys=Object.keys(hist).sort().slice(-72).reverse(); if(keys.length===0){ $('pvHistBody').innerHTML=`<tr><td colspan='5' class='muted'>ยังไม่มีข้อมูล</td></tr>`; return; } $('pvHistBody').innerHTML = keys.map(k=>{ const r=hist[k]; return `<tr><td class='mono'>${k}</td><td class='right mono'>${fmt(r.pv_feldspar)}</td><td class='right mono'>${fmt(r.pv_pyro)}</td><td class='right mono'>${fmt(r.pv_white_sand)}</td><td class='right mono'>${fmt(r.pv_total)}</td></tr>`; }).join(''); }
-function refreshLogTable(){ const logs=loadLog().slice(0,120); if(logs.length===0){ $('logBody').innerHTML=`<tr><td colspan='6' class='muted'>ยังไม่มีรายการ</td></tr>`; return; } $('logBody').innerHTML = logs.map(x=>`<tr><td class='mono'>${x.tsKey}</td><td class='mono'>${fmt(x.pred)}</td><td class='mono'>${sign(x.dF)}</td><td class='mono'>${sign(x.dP)}</td><td>${x.pvSrc||'-'}</td><td>${String(x.note||'').replace(/</g,'&lt;')}</td></tr>`).join(''); }
-function download(filename, text, mime){ const blob=new Blob([text],{type:mime||'text/plain'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
-function refreshPending(){ if(!MODEL){ $('kpi_pending').textContent='-'; return; } const last=Number(localStorage.getItem(KEY_LAST)||0); if(!last){ $('kpi_pending').innerHTML='<span class="muted">ไม่มี</span>'; return; } const remain = MODEL.limits.lock_after_adjust_hours - (Date.now()-last)/36e5; $('kpi_pending').innerHTML = remain<=0 ? `<span class='ok'>พร้อมปรับ</span>` : `<span class='warn'>Pending ${remain.toFixed(1)}h</span>`; }
-async function loadModel(){ const url = new URL('model_v3.json', window.location.href).toString(); $('modelUrl').textContent = url; if(location.protocol==='file:'){ $('modelStatus').innerHTML=`<p class='big bad'>เปิดผ่าน file://</p><div class='muted'>กรุณาเปิดผ่าน GitHub Pages หรือ web server</div>`; return; } try{ const res=await fetch(url,{cache:'no-store'}); if(!res.ok) throw new Error('HTTP '+res.status); MODEL = await res.json(); $('kpi_lag').textContent = String(MODEL.selected_lag_hours); $('modelStatus').innerHTML=`<p class='big ok'>โหลดโมเดลสำเร็จ ✅</p><div class='muted'>Lag: <span class='mono'>${MODEL.selected_lag_hours}h</span> | Samples: <span class='mono'>${MODEL.training_samples}</span></div>`; } catch(e){ $('modelErr').innerHTML = `<span class='bad'>${e.message||e}</span>`; $('modelStatus').innerHTML=`<p class='big bad'>โหลดโมเดลไม่สำเร็จ</p><div class='muted'>เช็คว่า model_v3.json อยู่โฟลเดอร์เดียวกับไฟล์ html และเปิดผ่าน Pages</div>`; } }
-function autoTotal(f,p,w,t){ if(Number.isFinite(t)) return t; return (Number.isFinite(f)?f:0)+(Number.isFinite(p)?p:0)+(Number.isFinite(w)?w:0); }
-function setBatchTimes(base){ $('base_ts').value = toInput(base); }
-function copyPVtDown(){ const f=$('pvF_t').value, p=$('pvP_t').value, w=$('pvW_t').value, t=$('pvT_t').value; for(let k=1;k<=4;k++){ $('pvF_t'+k).value=f; $('pvP_t'+k).value=p; $('pvW_t'+k).value=w; $('pvT_t'+k).value=t; } }
-function clearBatch(){ ['alk_t','alk_t1','alk_t2','alk_t3','alk_t4','pvF_t','pvP_t','pvW_t','pvT_t','pvF_t1','pvP_t1','pvW_t1','pvT_t1','pvF_t2','pvP_t2','pvW_t2','pvT_t2','pvF_t3','pvP_t3','pvW_t3','pvT_t3','pvF_t4','pvP_t4','pvW_t4','pvT_t4','note'].forEach(id=>{ if($(id)) $(id).value=''; }); $('fineness').value='0'; }
-function saveSeries(){ const base = parseDT($('base_ts').value) || nowRoundedHour(); base.setMinutes(0,0,0); const keys=[]; for(let k=0;k<=4;k++) keys.push(toHourKey(addHours(base,-k))); const pvList=[]; for(let k=0;k<=4;k++){ const suf = k===0 ? '' : String(k); const F=parseFloat($('pvF_t'+suf).value); const P=parseFloat($('pvP_t'+suf).value); const W=parseFloat($('pvW_t'+suf).value); const T=parseFloat($('pvT_t'+suf).value); pvList.push({F,P,W,T: autoTotal(F,P,W,T)}); } const hist = loadPV(); for(let i=0;i<5;i++){ const pv=pvList[i]; hist[keys[i]]={ pv_feldspar:Number.isFinite(pv.F)?pv.F:0, pv_pyro:Number.isFinite(pv.P)?pv.P:0, pv_white_sand:Number.isFinite(pv.W)?pv.W:0, pv_total:Number.isFinite(pv.T)?pv.T:0, savedAt:new Date().toISOString(), source:'batch' }; } savePVObj(hist); refreshPVTable(); return {base, keys}; }
-function featuresForTs(ts){ const L=MODEL.selected_lag_hours; const key_lag = toHourKey(addHours(ts, -L)); const key_lag_prev = toHourKey(addHours(ts, -(L+1))); const h=loadPV(); const a=h[key_lag]; const b=h[key_lag_prev]; if(!a || !b){ return {error:`ต้องมี PV ที่ ${key_lag} และ ${key_lag_prev} เพื่อคำนวณ ΔPV`}; } const d_feld = (a.pv_feldspar||0) - (b.pv_feldspar||0); const d_pyro = (a.pv_pyro||0) - (b.pv_pyro||0); const d_ws   = (a.pv_white_sand||0) - (b.pv_white_sand||0); const d_total= (a.pv_total||0) - (b.pv_total||0); const alk_lag1 = parseFloat($('alk_t1').value); const alk_lag2 = parseFloat($('alk_t2').value); const fineness = parseFloat($('fineness').value); const feat={ [`d_pv_feldspar_tph_lag${L}`]: d_feld, [`d_pv_pyro_tph_lag${L}`]: d_pyro, [`d_pv_white_sand_tph_lag${L}`]: d_ws, [`d_pv_total_feed_tph_lag${L}`]: d_total, Fineness: Number.isFinite(fineness)?fineness:0, Alkali_lag1: Number.isFinite(alk_lag1)?alk_lag1:0, Alkali_lag2: Number.isFinite(alk_lag2)?alk_lag2:0 }; return {feat, key_lag, key_lag_prev}; }
-function predictForTs(ts){ const f=featuresForTs(ts); if(f.error) return {error:f.error}; let y=MODEL.coefficients.intercept; for(const name of MODEL.features){ y += (MODEL.coefficients.weights[name]||0) * (f.feat[name]||0); } const err = MODEL.target_alkali - y; return {pred:y, err, pvSrc:'history (ΔPV)', key_lag:f.key_lag, key_lag_prev:f.key_lag_prev, feat:f.feat}; }
-function recommendForTs(ts){ const pr=predictForTs(ts); if(pr.error) return pr; const L=MODEL.selected_lag_hours; const wF=MODEL.coefficients.weights[`d_pv_feldspar_tph_lag${L}`]||0; const wP=MODEL.coefficients.weights[`d_pv_pyro_tph_lag${L}`]||0; let dP = (Math.abs(wP)<1e-9)?0:(pr.err/wP); dP = clamp(dP, -MODEL.limits.max_step_per_feeder_tph, MODEL.limits.max_step_per_feeder_tph); let remain = pr.err - wP*dP; let dF = (Math.abs(wF)<1e-9)?0:(remain/wF); dF = clamp(dF, -MODEL.limits.max_step_per_feeder_tph, MODEL.limits.max_step_per_feeder_tph); return {...pr, dF, dP}; }
-function showResult(tsKey, r, mode){ if(r.error){ $('outStatus').innerHTML=`<p class='big bad'>${mode} ไม่สำเร็จ</p><div class='muted'>${r.error}</div>`; return; } $('kpi_pvsrc').textContent = r.pvSrc; $('kpi_pred').textContent = fmt(r.pred); $('kpi_err').textContent = sign(r.err); $('kpi_df').textContent = (r.dF==null?'-':sign(r.dF)); $('kpi_dp').textContent = (r.dP==null?'-':sign(r.dP)); $('kpi_conf').textContent = '-'; const extra = `<div class='muted'>ΔPV ใช้จาก <span class='mono'>${r.key_lag}</span> เทียบ <span class='mono'>${r.key_lag_prev}</span></div>`; const reco = (r.dF==null? '' : `<div class='muted'>แนะนำ: ΔPyro <span class='mono'>${sign(r.dP)} t/h</span>, ΔFeldspar <span class='mono'>${sign(r.dF)} t/h</span></div>`); $('outStatus').innerHTML=`<p class='big ok'>${mode} สำเร็จ</p><div class='muted'>เวลา: <span class='mono'>${tsKey}</span> | Pred: <span class='mono'>${fmt(r.pred)}%</span> | Error: <span class='mono'>${sign(r.err)}%</span></div>${reco}${extra}`; pushLog({tsKey, pred:+r.pred.toFixed(5), err:+r.err.toFixed(5), dF:r.dF==null?0:+r.dF.toFixed(3), dP:r.dP==null?0:+r.dP.toFixed(3), pvSrc:r.pvSrc, note:($('note').value||'')}); refreshLogTable(); refreshPending(); }
-function saveAndRun(doRecommend){ if(!MODEL){ alert('โมเดลยังไม่พร้อม'); return; } const {base, keys} = saveSeries(); const tsKey = toHourKey(base); const r = doRecommend ? recommendForTs(base) : predictForTs(base); showResult(tsKey, r, doRecommend? 'Smart Recommend' : 'Predict'); }
-function exportPVJSON(){ download('pv_history_batch.json', JSON.stringify(loadPV(), null, 2), 'application/json'); }
-function importPVJSON(file){ const fr=new FileReader(); fr.onload=()=>{ try{ const obj=JSON.parse(fr.result); const merged={...loadPV(), ...obj}; savePVObj(merged); refreshPVTable(); alert('Import PV สำเร็จ'); }catch(e){ alert('Import ไม่สำเร็จ: '+e.message);} }; fr.readAsText(file); }
+
+function download(filename, text, mime){
+  const blob=new Blob([text],{type:mime||'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+
+function refreshPVTable(){
+  const hist=loadPV();
+  const keys=Object.keys(hist).sort().slice(-72).reverse();
+  if(keys.length===0){ document.getElementById('pvHistBody').innerHTML=`<tr><td colspan='5' class='muted'>ยังไม่มีข้อมูล</td></tr>`; return; }
+  document.getElementById('pvHistBody').innerHTML = keys.map(k=>{
+    const r=hist[k];
+    return `<tr><td class='mono'>${k}</td><td class='right mono'>${fmt(r.pv_feldspar)}</td><td class='right mono'>${fmt(r.pv_pyro)}</td><td class='right mono'>${fmt(r.pv_white_sand)}</td><td class='right mono'>${fmt(r.pv_total)}</td></tr>`;
+  }).join('');
+}
+
+function refreshLogTable(){
+  const logs=loadLog().slice(0,120);
+  if(logs.length===0){ document.getElementById('logBody').innerHTML=`<tr><td colspan='6' class='muted'>ยังไม่มีรายการ</td></tr>`; return; }
+  document.getElementById('logBody').innerHTML = logs.map(x=>`<tr><td class='mono'>${x.tsKey}</td><td class='mono'>${fmt(x.pred)}</td><td class='mono'>${sign(x.dF)}</td><td class='mono'>${sign(x.dP)}</td><td>${x.pvSrc||'-'}</td><td>${String(x.note||'').replace(/</g,'&lt;')}</td></tr>`).join('');
+}
+
+async function loadModel(){
+  const url = new URL('model_v3.json', window.location.href).toString();
+  document.getElementById('modelUrl').textContent = url;
+  if(location.protocol==='file:'){
+    document.getElementById('modelStatus').innerHTML=`<p class='big bad'>เปิดผ่าน file://</p><div class='muted'>กรุณาเปิดผ่าน GitHub Pages หรือ web server</div>`;
+    return;
+  }
+  try{
+    const res=await fetch(url,{cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    MODEL=await res.json();
+    document.getElementById('min_rules').innerHTML = `กฎขั้นต่ำ (แบบ 1B): เว้นช่องได้ แต่ก่อนรันต้องมี PV ครบที่ <span class='mono'>t-${MODEL.selected_lag_hours}</span> และ <span class='mono'>t-${MODEL.selected_lag_hours+1}</span> • Alkali(t-1), Alkali(t-2) ถ้าว่างจะใช้ 0 และเตือน`;
+    document.getElementById('modelStatus').innerHTML=`<p class='big ok'>โหลดโมเดลสำเร็จ ✅</p><div class='muted'>Lag: <span class='mono'>${MODEL.selected_lag_hours}h</span> | Samples: <span class='mono'>${MODEL.training_samples}</span></div>`;
+  }catch(e){
+    document.getElementById('modelErr').innerHTML = `<span class='bad'>${e.message||e}</span>`;
+    document.getElementById('modelStatus').innerHTML=`<p class='big bad'>โหลดโมเดลไม่สำเร็จ</p><div class='muted'>เช็คว่า model_v3.json อยู่โฟลเดอร์เดียวกับไฟล์ html และเปิดผ่าน Pages</div>`;
+  }
+}
+
+function buildGrid(){
+  const grid=document.getElementById('grid');
+  while(grid.children.length>5) grid.removeChild(grid.lastChild);
+  const labels=['t','t-1','t-2','t-3','t-4'];
+  for(let k=0;k<5;k++){
+    const lbl=document.createElement('div'); lbl.className='rowlbl'; lbl.textContent=labels[k]; grid.appendChild(lbl);
+    const c1=document.createElement('div'); c1.className='cell'; c1.innerHTML=`<input id='alk_${k}' type='number' step='0.001' placeholder='Alkali ${labels[k]}'/>`; grid.appendChild(c1);
+    const c2=document.createElement('div'); c2.className='cell'; c2.innerHTML=`<input id='F_${k}' type='number' step='0.001' placeholder='Feldspar ${labels[k]}'/>`; grid.appendChild(c2);
+    const c3=document.createElement('div'); c3.className='cell'; c3.innerHTML=`<input id='P_${k}' type='number' step='0.001' placeholder='Pyro ${labels[k]}'/>`; grid.appendChild(c3);
+    const c4=document.createElement('div'); c4.className='cell'; c4.innerHTML=`<input id='W_${k}' type='number' step='0.001' placeholder='White Sand ${labels[k]}'/>`; grid.appendChild(c4);
+  }
+}
+
+function autoTotal(F,P,W){ return (Number.isFinite(F)?F:0)+(Number.isFinite(P)?P:0)+(Number.isFinite(W)?W:0); }
+
+function copyPVtDown(){
+  const f=document.getElementById('F_0').value, p=document.getElementById('P_0').value, w=document.getElementById('W_0').value;
+  for(let k=1;k<=4;k++){ document.getElementById('F_'+k).value=f; document.getElementById('P_'+k).value=p; document.getElementById('W_'+k).value=w; }
+}
+
+function clearGrid(){
+  for(let k=0;k<5;k++){
+    ['alk_','F_','P_','W_'].forEach(pref=>{ const el=document.getElementById(pref+k); if(el) el.value=''; });
+  }
+  document.getElementById('note').value='';
+}
+
+function getBaseTs(){
+  const base=parseDT(document.getElementById('base_ts').value)||nowRoundedHour();
+  base.setMinutes(0,0,0);
+  return base;
+}
+
+function saveSeriesToPVHistory(){
+  const base=getBaseTs();
+  const hist=loadPV();
+  const note=document.getElementById('note').value||'';
+  for(let k=0;k<5;k++){
+    const key=toHourKey(addHours(base,-k));
+    const F=parseFloat(document.getElementById('F_'+k).value);
+    const P=parseFloat(document.getElementById('P_'+k).value);
+    const W=parseFloat(document.getElementById('W_'+k).value);
+    const hasAny = Number.isFinite(F)||Number.isFinite(P)||Number.isFinite(W);
+    if(!hasAny) continue;
+    hist[key]={pv_feldspar:Number.isFinite(F)?F:0, pv_pyro:Number.isFinite(P)?P:0, pv_white_sand:Number.isFinite(W)?W:0, pv_total:autoTotal(F,P,W), savedAt:new Date().toISOString(), source:'grid', note};
+  }
+  savePVObj(hist);
+  refreshPVTable();
+  return base;
+}
+
+function validateMinimum(base){
+  const L=MODEL.selected_lag_hours;
+  const need1=toHourKey(addHours(base,-L));
+  const need2=toHourKey(addHours(base,-(L+1)));
+  const hist=loadPV();
+  if(!hist[need1] || !hist[need2]) return {ok:false, msg:`ต้องมี PV ครบที่ ${need1} และ ${need2} เพื่อคำนวณ ΔPV`};
+  return {ok:true, need1, need2};
+}
+
+function computeFeature(base){
+  const L=MODEL.selected_lag_hours;
+  const need1=toHourKey(addHours(base,-L));
+  const need2=toHourKey(addHours(base,-(L+1)));
+  const hist=loadPV();
+  const a=hist[need1], b=hist[need2];
+  const dF=(a.pv_feldspar||0)-(b.pv_feldspar||0);
+  const dP=(a.pv_pyro||0)-(b.pv_pyro||0);
+  const dW=(a.pv_white_sand||0)-(b.pv_white_sand||0);
+  const dT=(a.pv_total||0)-(b.pv_total||0);
+
+  const alk1=parseFloat(document.getElementById('alk_1').value);
+  const alk2=parseFloat(document.getElementById('alk_2').value);
+  const A1=Number.isFinite(alk1)?alk1:0;
+  const A2=Number.isFinite(alk2)?alk2:0;
+  const warn=[];
+  if(!Number.isFinite(alk1)) warn.push('Alkali(t-1) ว่าง → ใช้ 0');
+  if(!Number.isFinite(alk2)) warn.push('Alkali(t-2) ว่าง → ใช้ 0');
+
+  const feat={};
+  feat[`d_pv_feldspar_tph_lag${L}`]=dF;
+  feat[`d_pv_pyro_tph_lag${L}`]=dP;
+  feat[`d_pv_white_sand_tph_lag${L}`]=dW;
+  feat[`d_pv_total_feed_tph_lag${L}`]=dT;
+  feat['Fineness']=0;
+  feat['Alkali_lag1']=A1;
+  feat['Alkali_lag2']=A2;
+
+  return {feat, warn, need1, need2};
+}
+
+function doPredict(base){
+  const c=computeFeature(base);
+  let y=MODEL.coefficients.intercept;
+  for(const name of MODEL.features){ y += (MODEL.coefficients.weights[name]||0)*(c.feat[name]||0); }
+  return {pred:y, err: MODEL.target_alkali - y, ...c};
+}
+
+function doRecommend(base){
+  const pr=doPredict(base);
+  const L=MODEL.selected_lag_hours;
+  const wF=MODEL.coefficients.weights[`d_pv_feldspar_tph_lag${L}`]||0;
+  const wP=MODEL.coefficients.weights[`d_pv_pyro_tph_lag${L}`]||0;
+  let dP = (Math.abs(wP)<1e-9)?0:(pr.err/wP);
+  dP = clamp(dP, -MODEL.limits.max_step_per_feeder_tph, MODEL.limits.max_step_per_feeder_tph);
+  let remain = pr.err - wP*dP;
+  let dF = (Math.abs(wF)<1e-9)?0:(remain/wF);
+  dF = clamp(dF, -MODEL.limits.max_step_per_feeder_tph, MODEL.limits.max_step_per_feeder_tph);
+  return {...pr, dF, dP};
+}
+
+function show(r, mode){
+  const tsKey=toHourKey(getBaseTs());
+  document.getElementById('kpi_pred').textContent = fmt(r.pred);
+  document.getElementById('kpi_err').textContent = sign(r.err);
+  document.getElementById('kpi_df').textContent = (r.dF==null?'-':sign(r.dF));
+  document.getElementById('kpi_dp').textContent = (r.dP==null?'-':sign(r.dP));
+
+  const warn = (r.warn && r.warn.length) ? `<div class='warn'>⚠️ ${r.warn.join(' | ')}</div>` : '';
+  const reco = (r.dF==null)? '' : `<div class='muted'>แนะนำ: ΔPyro <span class='mono'>${sign(r.dP)} t/h</span>, ΔFeldspar <span class='mono'>${sign(r.dF)} t/h</span></div>`;
+  const pvinfo = `<div class='muted'>ΔPV ใช้จาก <span class='mono'>${r.need1}</span> เทียบ <span class='mono'>${r.need2}</span></div>`;
+
+  document.getElementById('outStatus').innerHTML = `<p class='big ok'>${mode} สำเร็จ</p><div class='muted'>เวลา: <span class='mono'>${tsKey}</span> | Pred: <span class='mono'>${fmt(r.pred)}%</span> | Error: <span class='mono'>${sign(r.err)}%</span></div>${warn}${reco}${pvinfo}`;
+
+  pushLog({tsKey, pred:+r.pred.toFixed(5), err:+r.err.toFixed(5), dF:r.dF==null?0:+r.dF.toFixed(3), dP:r.dP==null?0:+r.dP.toFixed(3), pvSrc:'history (ΔPV)', note:(document.getElementById('note').value||'')});
+  refreshLogTable();
+}
+
+function saveAndRun(reco){
+  if(!MODEL) return alert('โมเดลยังไม่พร้อม');
+  const base=saveSeriesToPVHistory();
+  const v=validateMinimum(base);
+  if(!v.ok){ document.getElementById('outStatus').innerHTML=`<p class='big bad'>ข้อมูลไม่พอสำหรับรัน</p><div class='muted'>${v.msg}</div>`; return; }
+  const r = reco ? doRecommend(base) : doPredict(base);
+  show(r, reco?'Smart Recommend':'Predict');
+}
+
+function exportPVJSON(){ download('pv_history_grid.json', JSON.stringify(loadPV(), null, 2), 'application/json'); }
+function importPVJSON(file){ const fr=new FileReader(); fr.onload=()=>{ try{ const obj=JSON.parse(fr.result); const merged={...loadPV(),...obj}; savePVObj(merged); refreshPVTable(); alert('Import PV สำเร็จ'); }catch(e){ alert('Import ไม่สำเร็จ: '+e.message); } }; fr.readAsText(file); }
 function clearPV(){ if(confirm('ล้าง PV history ทั้งหมด?')){ localStorage.removeItem(KEY_PV); refreshPVTable(); } }
-function exportLogCSV(){ const logs=loadLog(); const header=['tsKey','pred','err','dF','dP','pvSrc','note']; const rows=[header.join(',')].concat(logs.map(x=>header.map(h=>`"${String(x[h]??'').replace(/"/g,'""')}"`).join(','))); download('rm_alkali_log_batch.csv', rows.join('
-'), 'text/csv;charset=utf-8'); }
+
+function exportLogCSV(){
+  const logs=loadLog();
+  const header=['tsKey','pred','err','dF','dP','pvSrc','note'];
+  const rows=[header.join(',')].concat(logs.map(x=>header.map(h=>`"${String(x[h]??'').replace(/"/g,'""')}"`).join(',')));
+  download('rm_alkali_log_grid.csv', rows.join('\n'), 'text/csv;charset=utf-8');
+}
 function clearLog(){ if(confirm('ล้าง log ทั้งหมด?')){ localStorage.removeItem(KEY_LOG); refreshLogTable(); } }
-window.addEventListener('DOMContentLoaded',()=>{ const base=nowRoundedHour(); setBatchTimes(base); refreshPVTable(); refreshLogTable(); refreshPending(); $('btn_copy_t_down').onclick = copyPVtDown; $('btn_clear_batch').onclick = clearBatch; $('btn_save_run').onclick = ()=>saveAndRun(true); $('btn_predict').onclick = ()=>saveAndRun(false); $('btn_refresh_hist').onclick = refreshPVTable; $('btn_export_hist').onclick = exportPVJSON; $('btn_import_hist').onclick = ()=>$('file_hist').click(); $('file_hist').onchange = (e)=>{ const f=e.target.files?.[0]; if(f) importPVJSON(f); e.target.value=''; }; $('btn_clear_hist').onclick = clearPV; $('btn_export_log').onclick = exportLogCSV; $('btn_clear_log').onclick = clearLog; loadModel(); setInterval(refreshPending, 60000); });
-</script></body></html>
+
+window.addEventListener('DOMContentLoaded',()=>{
+  buildGrid();
+  document.getElementById('base_ts').value = toInput(nowRoundedHour());
+  refreshPVTable();
+  refreshLogTable();
+
+  document.getElementById('btn_now').onclick = ()=>{ document.getElementById('base_ts').value = toInput(nowRoundedHour()); };
+  document.getElementById('btn_copy_t_down').onclick = copyPVtDown;
+  document.getElementById('btn_clear').onclick = clearGrid;
+
+  document.getElementById('btn_save_run').onclick = ()=>saveAndRun(true);
+  document.getElementById('btn_predict').onclick = ()=>saveAndRun(false);
+
+  document.getElementById('btn_refresh_hist').onclick = refreshPVTable;
+  document.getElementById('btn_export_hist').onclick = exportPVJSON;
+  document.getElementById('btn_import_hist').onclick = ()=>document.getElementById('file_hist').click();
+  document.getElementById('file_hist').onchange = (e)=>{ const f=e.target.files?.[0]; if(f) importPVJSON(f); e.target.value=''; };
+  document.getElementById('btn_clear_hist').onclick = clearPV;
+
+  document.getElementById('btn_export_log').onclick = exportLogCSV;
+  document.getElementById('btn_clear_log').onclick = clearLog;
+
+  loadModel();
+});
+</script>
+</body>
+</html>

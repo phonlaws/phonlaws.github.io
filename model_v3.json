@@ -1,7 +1,7 @@
 {
   "schema_version": "3.0",
   "model_type": "constrained_ridge_arx_delta",
-  "trained_at": "2026-02-11T16:14:09Z",
+  "trained_at": "2026-02-11T17:13:21Z",
   "source_file": "training.xlsx",
   "target_alkali": 1.6,
   "selected_lag_hours": 3,
