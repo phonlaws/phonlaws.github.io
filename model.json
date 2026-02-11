@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0",
+  "model_type": "ridge_arx_unscaled",
+  "trained_at": "2026-02-11T12:19:47Z",
+  "target_alkali": 1.6,
+  "selected_lag_hours": 3,
+  "training_samples": 253,
+  "holdout_metrics": {
+    "candidates": [
+      {
+        "lag": 3,
+        "n": 253,
+        "r2": 0.7659615767043879,
+        "mae": 0.04138903300774042
+      },
+      {
+        "lag": 4,
+        "n": 225,
+        "r2": 0.7308929355558257,
+        "mae": 0.04395294884168605
+      },
+      {
+        "lag": 5,
+        "n": 197,
+        "r2": 0.6894039271300516,
+        "mae": 0.04736874690372934
+      }
+    ],
+    "selected": {
+      "lag": 3,
+      "n": 253,
+      "r2": 0.7659615767043879,
+      "mae": 0.04138903300774042
+    }
+  },
+  "features": [
+    "pv_feldspar_tph_lag3",
+    "pv_pyro_tph_lag3",
+    "pv_white_sand_tph_lag3",
+    "pv_total_feed_tph_lag3",
+    "pv_feldspar_pct_lag3",
+    "pv_pyro_pct_lag3",
+    "pv_white_sand_pct_lag3",
+    "Fineness",
+    "Alkali_lag1",
+    "Alkali_lag2"
+  ],
+  "coefficients": {
+    "intercept": -0.058682478834271246,
+    "weights": {
+      "pv_feldspar_tph_lag3": -0.3327287018172081,
+      "pv_pyro_tph_lag3": 0.028847368774592944,
+      "pv_white_sand_tph_lag3": 0.04210788819459151,
+      "pv_total_feed_tph_lag3": 0.019323522033292323,
+      "pv_feldspar_pct_lag3": 0.03886181035332241,
+      "pv_pyro_pct_lag3": -0.0009336525917262808,
+      "pv_white_sand_pct_lag3": -0.0031520732035859337,
+      "Fineness": 0.0014111768771712337,
+      "Alkali_lag1": 0.8022884043116978,
+      "Alkali_lag2": -0.029527205441248414
+    }
+  },
+  "limits": {
+    "min_pv_total_feed_tph": 0.5,
+    "max_step_per_feeder_tph": 0.05,
+    "lock_after_adjust_hours": 3
+  },
+  "notes": [
+    "ใช้ PV ย้อนหลังตาม selected_lag_hours เพื่อสะท้อน delay ของกระบวนการ",
+    "ต้องมี Alkali ล่าสุด 2 ค่า (Alkali_lag1, Alkali_lag2) เพื่อให้โมเดลมี memory",
+    "Fineness ใช้ค่าชั่วโมงปัจจุบัน (ถ้าไม่มีให้กรอก 0 หรือค่าเฉลี่ยหน้างาน)",
+    "event1/event2 ไม่ถูกใช้เป็น feature ในเวอร์ชันนี้ แต่ควรใช้เป็น guardrail (confidence ต่ำ) ใน web app"
+  ]
+}
