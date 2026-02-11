@@ -1,67 +1,11 @@
 {
   "schema_version": "3.0",
   "model_type": "constrained_ridge_arx_delta",
-  "trained_at": "2026-02-11T17:13:21Z",
+  "trained_at": "2026-02-11T19:50:53Z",
   "source_file": "training.xlsx",
   "target_alkali": 1.6,
   "selected_lag_hours": 3,
-  "training_samples": 905,
-  "holdout_metrics": {
-    "candidates": [
-      {
-        "lag": 3,
-        "n": 905,
-        "r2": 0.40812946484806556,
-        "mae": 0.05913603158341457,
-        "opt": {
-          "success": true,
-          "message": "CONVERGENCE: REL_REDUCTION_OF_F_<=_FACTR*EPSMCH",
-          "nit": 16,
-          "fun": 1.6675205239115216,
-          "status": 0
-        }
-      },
-      {
-        "lag": 4,
-        "n": 781,
-        "r2": 0.39266110153309286,
-        "mae": 0.06317094523460026,
-        "opt": {
-          "success": true,
-          "message": "CONVERGENCE: REL_REDUCTION_OF_F_<=_FACTR*EPSMCH",
-          "nit": 16,
-          "fun": 1.3976357071770895,
-          "status": 0
-        }
-      },
-      {
-        "lag": 5,
-        "n": 670,
-        "r2": 0.3802160234673373,
-        "mae": 0.0638384286286747,
-        "opt": {
-          "success": true,
-          "message": "CONVERGENCE: REL_REDUCTION_OF_F_<=_FACTR*EPSMCH",
-          "nit": 15,
-          "fun": 1.213545021470659,
-          "status": 0
-        }
-      }
-    ],
-    "selected": {
-      "lag": 3,
-      "n": 905,
-      "r2": 0.40812946484806556,
-      "mae": 0.05913603158341457,
-      "opt": {
-        "success": true,
-        "message": "CONVERGENCE: REL_REDUCTION_OF_F_<=_FACTR*EPSMCH",
-        "nit": 16,
-        "fun": 1.6675205239115216,
-        "status": 0
-      }
-    }
-  },
+  "training_samples": 3219,
   "features": [
     "d_pv_feldspar_tph_lag3",
     "d_pv_pyro_tph_lag3",
@@ -72,58 +16,18 @@
     "Alkali_lag2"
   ],
   "coefficients": {
-    "intercept": 0.28502470667181434,
+    "intercept": 0.33088373112954383,
     "weights": {
-      "d_pv_feldspar_tph_lag3": 0.0546783320356114,
-      "d_pv_pyro_tph_lag3": -0.003820856756697704,
-      "d_pv_white_sand_tph_lag3": -0.05047523188434434,
-      "d_pv_total_feed_tph_lag3": -0.00755116480448865,
-      "Fineness": 0.003554657443699957,
-      "Alkali_lag1": 0.6476094186985564,
-      "Alkali_lag2": 0.14984520447334482
+      "d_pv_feldspar_tph_lag3": 0.04817817881003867,
+      "d_pv_pyro_tph_lag3": -0.015671707828291852,
+      "d_pv_white_sand_tph_lag3": 0.029712634994700247,
+      "d_pv_total_feed_tph_lag3": 0.003431689029198423,
+      "Fineness": 0.0033238023779142483,
+      "Alkali_lag1": 0.6339659793077845,
+      "Alkali_lag2": 0.13974081276061234
     }
   },
-  "constraints": {
-    "feldspar": "coef(dF) >= 0 (เพิ่ม Feld → Alkali เพิ่ม)",
-    "pyro": "coef(dP) <= 0 (เพิ่ม Pyro → Alkali ลด)"
-  },
   "limits": {
-    "min_pv_total_feed_tph": 0.5,
-    "max_step_per_feeder_tph": 0.05,
-    "lock_after_adjust_hours": 3
-  },
-  "pv_basis": "dry (already moisture-corrected)",
-  "filters": {
-    "transient_window_hours": 2,
-    "keywords": [
-      "stop",
-      "start",
-      "overstock",
-      "over stock",
-      "amp",
-      "alarm",
-      "trip",
-      "pm",
-      "intergrind",
-      "calib",
-      "calibrate",
-      "reset",
-      "หยุด",
-      "เริ่ม",
-      "คุม",
-      "อื้อ",
-      "เต็ม",
-      "หมด",
-      "เพิ่ม",
-      "ลด",
-      "แจ้ง",
-      "ซ่อม",
-      "เสีย",
-      "สั่น",
-      "ร้อน",
-      "เบรค",
-      "เบรก"
-    ],
-    "applied_transient_filter": true
+    "max_step_per_feeder_tph": 0.05
   }
 }
