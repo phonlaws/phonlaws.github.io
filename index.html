@@ -110,6 +110,11 @@
       <div class="btns">
         <button class="secondary" id="btn_now">ใช้เวลา “ชั่วโมงนี้”</button>
         <button class="ghost" id="btn_copy_t_down">คัดลอก PV+Fineness แถว t → ลง t-1..t-4</button>
+  <button class="ghost" id="btn_shift_down">เพิ่มชุดล่าสุด (เลื่อน t → t-1)</button>
+  <label class="tiny" style="display:flex;gap:8px;align-items:center;">
+    <input id="auto_shift_after_save" type="checkbox" checked style="width:auto" />
+    เลื่อนอัตโนมัติหลังบันทึก
+  </label>
         <button class="ghost danger" id="btn_clear">ล้างตาราง</button>
       </div>
 
@@ -253,6 +258,23 @@ function copyPVtDown(){
     document.getElementById('P_'+k).value=p;
     document.getElementById('W_'+k).value=w;
   }
+}
+
+function shiftGridDown(){
+  // เลื่อนข้อมูลลง: t → t-1 → t-2 → t-3 → t-4 และเคลียร์แถว t
+  const prefixes=['alk_','Fin_','F_','P_','W_'];
+  for(let k=4;k>=1;k--){
+    prefixes.forEach(pref=>{
+      const cur=document.getElementById(pref+k);
+      const prev=document.getElementById(pref+(k-1));
+      if(cur && prev) cur.value = prev.value;
+    });
+  }
+  // เคลียร์แถว t (k=0) เพื่อรอกรอกข้อมูลล่าสุด
+  prefixes.forEach(pref=>{
+    const el=document.getElementById(pref+0);
+    if(el) el.value='';
+  });
 }
 
 function clearGrid(){
@@ -459,10 +481,11 @@ function show(r, mode){
 }
 
 function saveAndRun(reco){
-  if(!MODEL) return alert('โมเดลยังไม่พร้อม');
+  if(!MODEL) { alert('โมเดลยังไม่พร้อม'); return {error:'model_not_ready'}; }
   const base=saveSeriesToPVHistory();
   const r = reco ? doRecommend(base) : doPredict(base);
   show(r, reco?'Smart Recommend':'Predict');
+  return r;
 }
 
 function exportPVJSON(){ download('pv_history_grid_fineness_v3soft.json', JSON.stringify(loadPV(), null, 2), 'application/json'); }
@@ -508,9 +531,10 @@ window.addEventListener('DOMContentLoaded',()=>{
 
   document.getElementById('btn_now').onclick = ()=>{ document.getElementById('base_ts').value = toInput(nowRoundedHour()); };
   document.getElementById('btn_copy_t_down').onclick = copyPVtDown;
+ document.getElementById('btn_shift_down').onclick = shiftGridDown;
   document.getElementById('btn_clear').onclick = clearGrid;
 
-  document.getElementById('btn_save_run').onclick = ()=>saveAndRun(true);
+  document.getElementById('btn_save_run').onclick = ()=>{ const r=saveAndRun(true); const auto=document.getElementById('auto_shift_after_save'); if(auto && auto.checked && r && !r.error) shiftGridDown(); };
   document.getElementById('btn_predict').onclick = ()=>saveAndRun(false);
 
   document.getElementById('btn_refresh_hist').onclick = refreshPVTable;
