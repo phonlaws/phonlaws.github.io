@@ -3,270 +3,452 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Quality Setpoint Adjuster</title>
+  <title>RM Alkali Smart Adjuster</title>
   <style>
-    :root{
-      --bg:#0b1220; --card:#121b2f; --muted:#9fb0d0; --text:#eaf0ff;
-      --ok:#24d18f; --warn:#ffcc00; --bad:#ff5d5d; --line:#263556;
-      --btn:#2f66ff; --btn2:#1f2b48;
-    }
-    body{ margin:0; font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:linear-gradient(180deg,var(--bg),#070b14); color:var(--text); }
-    .wrap{ max-width:920px; margin:28px auto; padding:0 16px; }
-    .title{ display:flex; align-items:flex-end; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-    h1{ font-size:22px; margin:0; }
-    .sub{ color:var(--muted); font-size:13px; margin-top:6px; }
-    .grid{ display:grid; grid-template-columns:1.2fr 0.8fr; gap:16px; margin-top:16px; }
-    @media (max-width:860px){ .grid{ grid-template-columns:1fr; } }
-    .card{ background:rgba(18,27,47,.92); border:1px solid var(--line); border-radius:14px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.25); }
-    label{ display:block; font-size:13px; color:var(--muted); margin:10px 0 6px; }
-    input{
-      width:100%; box-sizing:border-box; padding:12px 12px; border-radius:12px;
-      border:1px solid var(--line); background:#0c1326; color:var(--text);
-      outline:none; font-size:15px;
-    }
-    input:focus{ border-color:#3a6cff; box-shadow:0 0 0 3px rgba(47,102,255,.18); }
-    .btns{ display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;}
-    button{
-      padding:11px 14px; border-radius:12px; border:1px solid var(--line);
-      background:var(--btn); color:white; font-weight:600; cursor:pointer;
-    }
-    button.secondary{ background:var(--btn2); }
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 10px; border-radius:999px; border:1px solid var(--line);
-      color:var(--muted); font-size:12px; margin:6px 6px 0 0;
-    }
-    .status{
-      padding:12px; border-radius:12px; border:1px dashed var(--line);
-      margin-top:12px; background:rgba(10,16,32,.55);
-    }
-    .big{ font-size:18px; font-weight:800; margin:0 0 4px; }
-    .muted{ color:var(--muted); }
-    .ok{ color:var(--ok); }
-    .warn{ color:var(--warn); }
-    .bad{ color:var(--bad); }
-    .mono{ font-variant-numeric:tabular-nums; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
-    .hr{ height:1px; background:var(--line); margin:14px 0; }
-    .foot{ color:var(--muted); font-size:12px; margin-top:10px; line-height:1.5; }
-    .kpi{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:10px; }
-    .kpi .box{ border:1px solid var(--line); border-radius:12px; padding:10px; background:rgba(12,19,38,.72); }
-    .kpi .lbl{ color:var(--muted); font-size:12px; }
-    .kpi .val{ font-size:16px; font-weight:800; margin-top:3px; }
-    .rules{ margin-top:10px; border:1px solid var(--line); border-radius:12px; padding:10px; background:rgba(12,19,38,.5); }
-    .rules b{ color:#cfe0ff; }
-    ul{ margin:8px 0 0 18px; padding:0; }
-    li{ margin:4px 0; }
+    :root{--bg:#0b1220;--card:#121b2f;--muted:#9fb0d0;--text:#eaf0ff;--line:#263556;--ok:#24d18f;--warn:#ffcc00;--bad:#ff5d5d;--btn:#2f66ff;--btn2:#1f2b48;}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(180deg,var(--bg),#070b14);color:var(--text)}
+    .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
+    .top{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;flex-wrap:wrap}
+    h1{margin:0;font-size:22px}
+    .sub{margin-top:6px;color:var(--muted);font-size:13px;line-height:1.4}
+    .pill{display:inline-flex;gap:8px;align-items:center;padding:8px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(12,19,38,.35);font-size:12px;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;margin-top:14px}
+    @media (max-width:980px){.grid{grid-template-columns:1fr}}
+    .card{background:rgba(18,27,47,.92);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    .card h2{margin:0 0 10px;font-size:16px}
+    label{display:block;color:var(--muted);font-size:13px;margin:10px 0 6px}
+    input,textarea{width:100%;box-sizing:border-box;padding:12px;border-radius:12px;border:1px solid var(--line);background:#0c1326;color:var(--text);outline:none;font-size:14px}
+    textarea{min-height:64px;resize:vertical}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    button{padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--btn);color:#fff;font-weight:700;cursor:pointer}
+    button.secondary{background:var(--btn2)}
+    button.ghost{background:transparent}
+    .status{margin-top:10px;border:1px dashed var(--line);border-radius:12px;padding:12px;background:rgba(10,16,32,.55)}
+    .big{font-size:18px;font-weight:900;margin:0 0 4px}
+    .muted{color:var(--muted)}
+    .ok{color:var(--ok)}
+    .warn{color:var(--warn)}
+    .bad{color:var(--bad)}
+    .mono{font-variant-numeric:tabular-nums;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+    @media (max-width:980px){.kpi{grid-template-columns:repeat(2,1fr)}}
+    .box{border:1px solid var(--line);border-radius:12px;padding:10px;background:rgba(12,19,38,.6)}
+    .lbl{color:var(--muted);font-size:12px}
+    .val{margin-top:3px;font-size:16px;font-weight:900}
+    .split{height:1px;background:var(--line);margin:14px 0}
+    table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+    th,td{padding:10px;font-size:12px;border-bottom:1px solid var(--line);vertical-align:top}
+    th{background:rgba(12,19,38,.85);color:#cfe0ff;text-align:left}
+    tr:last-child td{border-bottom:none}
+    .right{text-align:right}
+    .tiny{font-size:12px;color:var(--muted);line-height:1.5}
+    .danger{background:#3a0c14}
+    .check{display:flex;gap:8px;align-items:center;margin-top:8px}
+    .check input{width:auto}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="title">
-      <div>
-        <h1>Quality Setpoint Adjuster</h1>
-        <div class="sub">กรอกค่า Quality (%). ระบบจะแนะนำว่าควรปรับ Set point ไหม และคำนวณ Set point ใหม่ (ถ้ากรอกค่าปัจจุบัน)</div>
-      </div>
-      <div>
-        <span class="pill">Target: <b class="mono">1.60%</b></span>
-        <span class="pill">Min: <b class="mono">1.55%</b></span>
-        <span class="pill">Max: <b class="mono">1.65%</b></span>
-      </div>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>RM Alkali Smart Adjuster</h1>
+      <div class="sub">โหลด <span class="mono">model.json</span> แล้วคาดการณ์ Alkali (+lag) และแนะนำ ΔFeldspar/ΔPyro พร้อมบันทึกประวัติ PV รายชั่วโมง (เก็บในเบราว์เซอร์)</div>
     </div>
-
-    <div class="grid">
-      <!-- Input -->
-      <div class="card">
-        <h2 style="margin:0 0 8px; font-size:16px;">ข้อมูลเข้า</h2>
-
-        <label>ค่าคุณภาพที่วัดได้ (Quality, %)</label>
-        <input id="quality" type="number" inputmode="decimal" step="0.001" placeholder="เช่น 1.68" />
-
-        <label>Set point ปัจจุบัน (t/hr) <span class="muted">(ไม่กรอกก็ได้)</span></label>
-        <input id="setpoint" type="number" inputmode="decimal" step="0.01" placeholder="เช่น 2.50" />
-
-        <div class="btns">
-          <button id="calc">คำนวณ</button>
-          <button class="secondary" id="reset">ล้างค่า</button>
-        </div>
-
-        <div class="rules">
-          <b>กฎการปรับ (ตามที่กำหนด):</b>
-          <ul>
-            <li><span class="mono">1.55 ≤ Q ≤ 1.65</span> → ไม่ต้องปรับ</li>
-            <li><span class="mono">1.65 &lt; Q ≤ 1.70</span> → ปรับ <span class="mono">0.03</span> t/hr (ลด)</li>
-            <li><span class="mono">Q &gt; 1.70</span> → ปรับ <span class="mono">0.05</span> t/hr (ลด)</li>
-            <li><span class="mono">1.50 ≤ Q &lt; 1.55</span> → ปรับ <span class="mono">0.03</span> t/hr (เพิ่ม)</li>
-            <li><span class="mono">Q &lt; 1.50</span> → ปรับ <span class="mono">0.05</span> t/hr (เพิ่ม)</li>
-          </ul>
-        </div>
-
-        <div class="foot">
-          หมายเหตุ: ระบบคิดตามค่าที่กรอกจริง (ทศนิยมได้) เช่น <span class="mono">1.651</span> จะเข้าช่วง <span class="mono">1.65&lt;Q≤1.70</span>
-        </div>
-      </div>
-
-      <!-- Output -->
-      <div class="card">
-        <h2 style="margin:0 0 8px; font-size:16px;">ผลลัพธ์</h2>
-
-        <div id="status" class="status">
-          <p class="big">พร้อมคำนวณ</p>
-          <div class="muted">กรอกค่า Quality แล้วกด “คำนวณ”</div>
-        </div>
-
-        <div class="hr"></div>
-
-        <div class="kpi">
-          <div class="box">
-            <div class="lbl">Deviation จากสเปค</div>
-            <div class="val mono" id="dev">-</div>
-          </div>
-          <div class="box">
-            <div class="lbl">คำสั่งปรับ (Δ t/hr)</div>
-            <div class="val mono" id="delta">-</div>
-          </div>
-          <div class="box">
-            <div class="lbl">Set point ใหม่ (t/hr)</div>
-            <div class="val mono" id="newsp">-</div>
-          </div>
-        </div>
-
-        <div class="foot">
-          การแสดง Deviation: <span class="mono">+</span> = เกิน Max, <span class="mono">-</span> = ต่ำกว่า Min
-        </div>
-      </div>
+    <div>
+      <span class="pill">Target: <b class="mono">1.60%</b></span>
+      <span class="pill">Limit: <b class="mono">±0.05 t/h</b></span>
+      <span class="pill">Pending: <b class="mono">3h</b></span>
     </div>
   </div>
 
+  <div class="grid">
+    <div class="card">
+      <h2>ข้อมูลเข้า</h2>
+
+      <label>เวลา (ต้นชั่วโมง)</label>
+      <input id="ts" type="datetime-local" />
+      <div class="tiny">แนะนำตั้งต้นชั่วโมงเพื่อให้ PV history ตรงกับ lag</div>
+
+      <div class="row">
+        <div>
+          <label>Alkali (t) %</label>
+          <input id="alk_now" type="number" step="0.001" placeholder="เช่น 1.68" />
+        </div>
+        <div>
+          <label>Alkali (t-1) %</label>
+          <input id="alk_prev1" type="number" step="0.001" placeholder="เช่น 1.64" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Alkali (t-2) %</label>
+          <input id="alk_prev2" type="number" step="0.001" placeholder="เช่น 1.62" />
+        </div>
+        <div>
+          <label>Fineness / %R (ถ้าไม่มีใส่ 0)</label>
+          <input id="fineness" type="number" step="0.01" placeholder="0" />
+        </div>
+      </div>
+
+      <div class="split"></div>
+
+      <h2 style="margin:0">PV Feed (t/h) ชั่วโมงนี้</h2>
+      <div class="row">
+        <div>
+          <label>PV Feldspar</label>
+          <input id="pv_feld" type="number" step="0.001" placeholder="0.95" />
+        </div>
+        <div>
+          <label>PV Pyro</label>
+          <input id="pv_pyro" type="number" step="0.001" placeholder="6.80" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>PV White Sand</label>
+          <input id="pv_ws" type="number" step="0.001" placeholder="0.60" />
+        </div>
+        <div>
+          <label>PV Total (ว่าง=รวมอัตโนมัติ)</label>
+          <input id="pv_total" type="number" step="0.001" placeholder="8.00" />
+        </div>
+      </div>
+
+      <div class="check"><input id="transient" type="checkbox" /><span class="tiny">มีเหตุการณ์/ไม่ steady → Confidence ต่ำ</span></div>
+
+      <label>หมายเหตุ</label>
+      <textarea id="note" placeholder="เช่น Stop/Start/คุมโหลด/อื้อ/ปรับ setpoint"></textarea>
+
+      <div class="btns">
+        <button id="btn_save_pv">บันทึก PV ชั่วโมงนี้</button>
+        <button id="btn_predict" class="secondary">Predict (+lag)</button>
+        <button id="btn_reco">Smart Recommend</button>
+        <button id="btn_confirm" class="secondary">ยืนยันว่าปรับแล้ว</button>
+      </div>
+
+      <div id="modelStatus" class="status"><p class="big">กำลังโหลดโมเดล…</p><div class="muted">ตรวจว่า <span class="mono">model.json</span> อยู่โฟลเดอร์เดียวกับไฟล์นี้</div></div>
+
+      <div class="split"></div>
+
+      <h2 style="margin:0">PV History (Hourly)</h2>
+      <div class="tiny">ระบบจะดึง PV ของ <b>t - lag</b> จาก history มาคำนวณ ถ้าไม่พบจะใช้ PV ปัจจุบันแทนและแจ้งเตือน</div>
+
+      <div class="btns">
+        <button id="btn_refresh_hist" class="secondary">รีเฟรช</button>
+        <button id="btn_export_hist" class="ghost">Export PV (JSON)</button>
+        <button id="btn_import_hist" class="ghost">Import PV (JSON)</button>
+        <button id="btn_clear_hist" class="ghost danger">ล้าง PV</button>
+        <input id="file_hist" type="file" accept="application/json" style="display:none" />
+      </div>
+
+      <div style="margin-top:10px;overflow:auto">
+        <table>
+          <thead><tr><th>เวลา</th><th class="right">Feld</th><th class="right">Pyro</th><th class="right">W.Sand</th><th class="right">Total</th><th>จัดการ</th></tr></thead>
+          <tbody id="pvHistBody"><tr><td colspan="6" class="muted">ยังไม่มีข้อมูล</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>ผลลัพธ์</h2>
+      <div id="outStatus" class="status"><p class="big">พร้อมคำนวณ</p><div class="muted">กรอกข้อมูล → บันทึก PV → Predict/Recommend</div></div>
+
+      <div class="kpi">
+        <div class="box"><div class="lbl">Lag</div><div class="val mono" id="kpi_lag">-</div></div>
+        <div class="box"><div class="lbl">PV src</div><div class="val" id="kpi_pvsrc">-</div></div>
+        <div class="box"><div class="lbl">Pred Alkali</div><div class="val mono" id="kpi_pred">-</div></div>
+        <div class="box"><div class="lbl">Error</div><div class="val mono" id="kpi_err">-</div></div>
+      </div>
+
+      <div class="split"></div>
+
+      <h2 style="margin:0">คำแนะนำ</h2>
+      <div class="kpi">
+        <div class="box"><div class="lbl">Δ Feldspar (t/h)</div><div class="val mono" id="kpi_df">-</div><div class="tiny">(+) เพิ่ม, (-) ลด</div></div>
+        <div class="box"><div class="lbl">Δ Pyro (t/h)</div><div class="val mono" id="kpi_dp">-</div><div class="tiny">(+) เพิ่ม, (-) ลด</div></div>
+        <div class="box"><div class="lbl">Pending</div><div class="val" id="kpi_pending">-</div><div class="tiny">ล็อกหลังปรับ 3 ชม.</div></div>
+        <div class="box"><div class="lbl">Confidence</div><div class="val" id="kpi_conf">-</div></div>
+      </div>
+
+      <div class="split"></div>
+
+      <h2 style="margin:0">Log</h2>
+      <div class="btns">
+        <button id="btn_export_log" class="secondary">Export Log (CSV)</button>
+        <button id="btn_clear_log" class="ghost danger">ล้าง Log</button>
+      </div>
+      <div style="margin-top:10px;overflow:auto;max-height:420px">
+        <table>
+          <thead><tr><th>เวลา</th><th>Pred</th><th>ΔF</th><th>ΔP</th><th>PV src</th><th>หมายเหตุ</th></tr></thead>
+          <tbody id="logBody"><tr><td colspan="6" class="muted">ยังไม่มีรายการ</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-(function(){
-  const cfg = {
-    min: 1.55,
-    max: 1.65,
+let MODEL=null;
+const KEY_PV='rm_pv_history_v1';
+const KEY_LOG='rm_calc_log_v1';
+const KEY_LAST='rm_last_adjust_ts';
 
-    // High side thresholds
-    high03_top: 1.70, // (1.65, 1.70] => 0.03
-    // > 1.70 => 0.05
+const $=id=>document.getElementById(id);
+const clamp=(x,lo,hi)=>Math.max(lo,Math.min(hi,x));
+const fmt=(n,d=3)=> (n===null||n===undefined||Number.isNaN(n))?'-':Number(n).toFixed(d);
+const sign=(n,d=3)=>{ if(n===null||n===undefined||Number.isNaN(n)) return '-'; const v=Number(n); return v>0?('+'+v.toFixed(d)):(v<0?v.toFixed(d):('0.'+'0'.repeat(d))); };
 
-    // Low side thresholds
-    low03_bottom: 1.50, // [1.50, 1.55) => 0.03
-    // < 1.50 => 0.05
+function nowRoundedHour(){ const d=new Date(); d.setMinutes(0,0,0); return d; }
+function pad2(x){ return String(x).padStart(2,'0'); }
+function tsToInput(d){ return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:00`; }
+function parseDT(val){ if(!val) return null; const [da,ti]=val.split('T'); const [y,m,d]=da.split('-').map(Number); const [hh,mm]=ti.split(':').map(Number); return new Date(y,m-1,d,hh,mm||0,0,0); }
+function toHourKey(d){ const x=new Date(d); x.setMinutes(0,0,0); return `${x.getFullYear()}-${pad2(x.getMonth()+1)}-${pad2(x.getDate())}T${pad2(x.getHours())}:00`; }
 
-    adj03: 0.03,
-    adj05: 0.05
+function loadPV(){ try{return JSON.parse(localStorage.getItem(KEY_PV)||'{}');}catch(e){return {};} }
+function savePVObj(o){ localStorage.setItem(KEY_PV, JSON.stringify(o)); }
+function loadLog(){ try{return JSON.parse(localStorage.getItem(KEY_LOG)||'[]');}catch(e){return [];} }
+function saveLog(a){ localStorage.setItem(KEY_LOG, JSON.stringify(a)); }
+function pushLog(x){ const a=loadLog(); a.unshift(x); saveLog(a); }
+
+function refreshPVTable(){
+  const hist=loadPV();
+  const keys=Object.keys(hist).sort().slice(-48).reverse();
+  if(keys.length===0){ $('pvHistBody').innerHTML=`<tr><td colspan='6' class='muted'>ยังไม่มีข้อมูล</td></tr>`; return; }
+  $('pvHistBody').innerHTML = keys.map(k=>{
+    const r=hist[k];
+    return `<tr><td class='mono'>${k}</td><td class='right mono'>${fmt(r.pv_feldspar)}</td><td class='right mono'>${fmt(r.pv_pyro)}</td><td class='right mono'>${fmt(r.pv_white_sand)}</td><td class='right mono'>${fmt(r.pv_total)}</td><td><button class='ghost' onclick="delPV('${k}')">ลบ</button></td></tr>`;
+  }).join('');
+}
+window.delPV=(k)=>{ const h=loadPV(); delete h[k]; savePVObj(h); refreshPVTable(); };
+
+function refreshLogTable(){
+  const logs=loadLog().slice(0,100);
+  if(logs.length===0){ $('logBody').innerHTML=`<tr><td colspan='6' class='muted'>ยังไม่มีรายการ</td></tr>`; return; }
+  $('logBody').innerHTML = logs.map(x=>`<tr><td class='mono'>${x.tsKey}</td><td class='mono'>${fmt(x.pred)}</td><td class='mono'>${sign(x.dF)}</td><td class='mono'>${sign(x.dP)}</td><td>${x.pvSrc||'-'}</td><td>${String(x.note||'').replace(/</g,'&lt;')}</td></tr>`).join('');
+}
+
+function download(filename, text, mime){
+  const blob=new Blob([text],{type:mime||'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+
+async function loadModel(){
+  const res=await fetch('./model.json', {cache:'no-store'});
+  if(!res.ok) throw new Error('โหลด model.json ไม่สำเร็จ');
+  MODEL=await res.json();
+  $('kpi_lag').textContent=String(MODEL.selected_lag_hours);
+  $('modelStatus').innerHTML = `<p class='big ok'>โหลดโมเดลสำเร็จ ✅</p><div class='muted'>Lag: <span class='mono'>${MODEL.selected_lag_hours}h</span> | Samples: <span class='mono'>${MODEL.training_samples}</span></div>`;
+}
+
+function getInputs(){
+  const ts=parseDT($('ts').value) || nowRoundedHour();
+  const pv_feld=parseFloat($('pv_feld').value);
+  const pv_pyro=parseFloat($('pv_pyro').value);
+  const pv_ws=parseFloat($('pv_ws').value);
+  let pv_total=parseFloat($('pv_total').value);
+  if(!Number.isFinite(pv_total)) pv_total=(Number.isFinite(pv_feld)?pv_feld:0)+(Number.isFinite(pv_pyro)?pv_pyro:0)+(Number.isFinite(pv_ws)?pv_ws:0);
+  return {
+    ts,
+    alk_now: parseFloat($('alk_now').value),
+    alk_prev1: parseFloat($('alk_prev1').value),
+    alk_prev2: parseFloat($('alk_prev2').value),
+    fineness: parseFloat($('fineness').value),
+    pv_feld, pv_pyro, pv_ws, pv_total,
+    transient: $('transient').checked,
+    note: $('note').value||''
+  };
+}
+
+function savePVHour(){
+  const i=getInputs();
+  const key=toHourKey(i.ts);
+  const hist=loadPV();
+  hist[key]={pv_feldspar:Number.isFinite(i.pv_feld)?i.pv_feld:0, pv_pyro:Number.isFinite(i.pv_pyro)?i.pv_pyro:0, pv_white_sand:Number.isFinite(i.pv_ws)?i.pv_ws:0, pv_total:Number.isFinite(i.pv_total)?i.pv_total:0, savedAt:new Date().toISOString()};
+  savePVObj(hist);
+  refreshPVTable();
+  $('outStatus').innerHTML=`<p class='big ok'>บันทึก PV แล้ว ✅</p><div class='muted'>key: <span class='mono'>${key}</span></div>`;
+}
+
+function pvLagFromHistory(ts){
+  const lag=MODEL.selected_lag_hours;
+  const lagDate=new Date(ts.getTime()-lag*3600*1000);
+  const lagKey=toHourKey(lagDate);
+  const hist=loadPV();
+  const rec=hist[lagKey];
+  return {rec, lagKey};
+}
+
+function predictOnly(){
+  if(!MODEL){ alert('โมเดลยังไม่พร้อม'); return; }
+  const i=getInputs();
+  const {rec, lagKey}=pvLagFromHistory(i.ts);
+  const pvSrc=rec?'history':'current (fallback)';
+  const pv=rec?rec:{pv_feldspar:i.pv_feld, pv_pyro:i.pv_pyro, pv_white_sand:i.pv_ws, pv_total:i.pv_total};
+
+  const total = (pv.pv_total>0?pv.pv_total:1e-9);
+  const f_pct = pv.pv_feldspar/total*100;
+  const p_pct = pv.pv_pyro/total*100;
+  const w_pct = pv.pv_white_sand/total*100;
+
+  const lag=MODEL.selected_lag_hours;
+  const feat={
+    [`pv_feldspar_tph_lag${lag}`]: pv.pv_feldspar,
+    [`pv_pyro_tph_lag${lag}`]: pv.pv_pyro,
+    [`pv_white_sand_tph_lag${lag}`]: pv.pv_white_sand,
+    [`pv_total_feed_tph_lag${lag}`]: pv.pv_total,
+    [`pv_feldspar_pct_lag${lag}`]: f_pct,
+    [`pv_pyro_pct_lag${lag}`]: p_pct,
+    [`pv_white_sand_pct_lag${lag}`]: w_pct,
+    Fineness: Number.isFinite(i.fineness)?i.fineness:0,
+    Alkali_lag1: i.alk_now,
+    Alkali_lag2: i.alk_prev2
   };
 
-  const qEl = document.getElementById('quality');
-  const spEl = document.getElementById('setpoint');
+  let y=MODEL.coefficients.intercept;
+  for(const name of MODEL.features){ y += (MODEL.coefficients.weights[name]||0) * (feat[name]||0); }
+  const err=MODEL.target_alkali - y;
 
-  const statusEl = document.getElementById('status');
-  const devEl = document.getElementById('dev');
-  const deltaEl = document.getElementById('delta');
-  const newspEl = document.getElementById('newsp');
+  $('kpi_pvsrc').textContent=pvSrc;
+  $('kpi_pred').textContent=fmt(y);
+  $('kpi_err').textContent=sign(err);
+  $('kpi_df').textContent='-';
+  $('kpi_dp').textContent='-';
+  $('kpi_conf').textContent=i.transient?'ต่ำ':'กลาง';
 
-  function fmt(n, d=3){
-    if (n === null || n === undefined || Number.isNaN(n)) return '-';
-    return Number(n).toFixed(d);
-  }
-  function fmt2(n){
-    if (n === null || n === undefined || Number.isNaN(n)) return '-';
-    return Number(n).toFixed(2);
-  }
-  function signText(x){
-    if (x > 0) return "+" + fmt2(x);
-    if (x < 0) return fmt2(x);
-    return "0.00";
-  }
+  const warn = rec?'':`<div class='muted warn'>⚠ ไม่พบ PV ในประวัติที่ ${lagKey} → ใช้ PV ปัจจุบันแทน</div>`;
+  $('outStatus').innerHTML=`<p class='big ok'>Predict สำเร็จ</p><div class='muted'>Pred (+${lag}h): <span class='mono'>${fmt(y)}%</span> | Error: <span class='mono'>${sign(err)}%</span></div>${warn}`;
 
-  // คืนค่า: signedDelta (มีเครื่องหมายแล้ว), msg, cls, devSigned
-  function compute(q){
-    // In-spec
-    if (q >= cfg.min && q <= cfg.max){
-      return { signedDelta: 0, msg: "อยู่ในสเปค ✅ ไม่ต้องปรับ", cls: "ok", devSigned: 0 };
-    }
+  pushLog({tsKey:toHourKey(i.ts), lagKey, pvSrc, pred:+y.toFixed(5), err:+err.toFixed(5), dF:0, dP:0, note:i.note});
+  refreshLogTable();
+  refreshPending();
+}
 
-    // High side: ลด
-    if (q > cfg.max){
-      const dev = q - cfg.max; // + deviation from max
-      if (q <= cfg.high03_top){
-        return {
-          signedDelta: -cfg.adj03,
-          msg: `สูงเกิน Max (${fmt(q,3)}%) → สั่งปรับลด ${cfg.adj03.toFixed(2)} t/hr`,
-          cls: "warn",
-          devSigned: +dev
-        };
-      }
-      return {
-        signedDelta: -cfg.adj05,
-        msg: `สูงเกิน Max มาก (${fmt(q,3)}%) → สั่งปรับลด ${cfg.adj05.toFixed(2)} t/hr`,
-        cls: "bad",
-        devSigned: +dev
-      };
-    }
+function recommend(){
+  if(!MODEL){ alert('โมเดลยังไม่พร้อม'); return; }
+  const i=getInputs();
+  if(!Number.isFinite(i.alk_now)||!Number.isFinite(i.alk_prev1)||!Number.isFinite(i.alk_prev2)) return alert('กรอก Alkali ให้ครบ t, t-1, t-2');
+  if(!Number.isFinite(i.pv_feld)||!Number.isFinite(i.pv_pyro)||!Number.isFinite(i.pv_ws)) return alert('กรอก PV Feld/Pyro/W.Sand');
+  if(!(i.pv_total > MODEL.limits.min_pv_total_feed_tph)) return alert('PV Total ต่ำ/ไม่ steady');
 
-    // Low side: เพิ่ม
-    if (q < cfg.min){
-      const dev = cfg.min - q; // magnitude
-      if (q >= cfg.low03_bottom){
-        return {
-          signedDelta: +cfg.adj03,
-          msg: `ต่ำกว่า Min (${fmt(q,3)}%) → สั่งปรับเพิ่ม ${cfg.adj03.toFixed(2)} t/hr`,
-          cls: "warn",
-          devSigned: -dev
-        };
-      }
-      return {
-        signedDelta: +cfg.adj05,
-        msg: `ต่ำกว่า Min มาก (${fmt(q,3)}%) → สั่งปรับเพิ่ม ${cfg.adj05.toFixed(2)} t/hr`,
-        cls: "bad",
-        devSigned: -dev
-      };
-    }
+  const last=Number(localStorage.getItem(KEY_LAST)||0);
+  if((Date.now()-last)/36e5 < MODEL.limits.lock_after_adjust_hours){
+    $('outStatus').innerHTML=`<p class='big bad'>Pending</p><div class='muted'>อยู่ในช่วงรอผลหลังปรับ ~${MODEL.limits.lock_after_adjust_hours} ชม.</div>`;
+    refreshPending();
+    return;
   }
 
-  function render(){
-    const q = parseFloat(qEl.value);
-    const sp = spEl.value.trim() === "" ? null : parseFloat(spEl.value);
+  // reuse prediction
+  const {rec, lagKey}=pvLagFromHistory(i.ts);
+  const pvSrc=rec?'history':'current (fallback)';
+  const pv=rec?rec:{pv_feldspar:i.pv_feld, pv_pyro:i.pv_pyro, pv_white_sand:i.pv_ws, pv_total:i.pv_total};
 
-    if (Number.isNaN(q)){
-      statusEl.innerHTML = `<p class="big">กรอกค่า Quality ก่อนครับ</p><div class="muted">ตัวอย่าง: 1.68</div>`;
-      devEl.textContent = "-";
-      deltaEl.textContent = "-";
-      newspEl.textContent = "-";
-      return;
-    }
+  const predPack = (()=>{ $('pv_feld').value = $('pv_feld').value; return null; })();
 
-    const r = compute(q);
+  // build same as predict
+  const total=(pv.pv_total>0?pv.pv_total:1e-9);
+  const f_pct=pv.pv_feldspar/total*100, p_pct=pv.pv_pyro/total*100, w_pct=pv.pv_white_sand/total*100;
+  const lag=MODEL.selected_lag_hours;
+  const feat={
+    [`pv_feldspar_tph_lag${lag}`]: pv.pv_feldspar,
+    [`pv_pyro_tph_lag${lag}`]: pv.pv_pyro,
+    [`pv_white_sand_tph_lag${lag}`]: pv.pv_white_sand,
+    [`pv_total_feed_tph_lag${lag}`]: pv.pv_total,
+    [`pv_feldspar_pct_lag${lag}`]: f_pct,
+    [`pv_pyro_pct_lag${lag}`]: p_pct,
+    [`pv_white_sand_pct_lag${lag}`]: w_pct,
+    Fineness: Number.isFinite(i.fineness)?i.fineness:0,
+    Alkali_lag1: i.alk_now,
+    Alkali_lag2: i.alk_prev2
+  };
+  let y=MODEL.coefficients.intercept;
+  for(const name of MODEL.features){ y += (MODEL.coefficients.weights[name]||0) * (feat[name]||0); }
+  const err=MODEL.target_alkali - y;
 
-    let newSp = null;
-    if (sp !== null && !Number.isNaN(sp)){
-      newSp = sp + r.signedDelta;
-    }
+  const bF=MODEL.coefficients.weights[`pv_feldspar_tph_lag${lag}`]||0;
+  const bP=MODEL.coefficients.weights[`pv_pyro_tph_lag${lag}`]||0;
 
-    statusEl.innerHTML = `
-      <p class="big ${r.cls}">${r.msg}</p>
-      <div class="muted">Quality: <span class="mono">${fmt(q,3)}%</span> | สเปค: <span class="mono">${cfg.min.toFixed(2)}–${cfg.max.toFixed(2)}%</span></div>
-    `;
-
-    devEl.textContent = (r.devSigned === 0) ? "0.000" : fmt(r.devSigned, 3);
-    deltaEl.textContent = signText(r.signedDelta) + " t/hr";
-    newspEl.textContent = (newSp === null) ? "—" : fmt2(newSp);
+  let dF = Math.abs(bF)<1e-9 ? 0 : err/bF;
+  dF = clamp(dF, -MODEL.limits.max_step_per_feeder_tph, MODEL.limits.max_step_per_feeder_tph);
+  let remain = err - bF*dF;
+  let dP = 0;
+  const hitF = Math.abs(dF) >= MODEL.limits.max_step_per_feeder_tph-1e-9;
+  if(hitF || Math.abs(remain)>0.01){
+    dP = Math.abs(bP)<1e-9 ? 0 : remain/bP;
+    dP = clamp(dP, -MODEL.limits.max_step_per_feeder_tph, MODEL.limits.max_step_per_feeder_tph);
   }
 
-  document.getElementById('calc').addEventListener('click', render);
-  document.getElementById('reset').addEventListener('click', () => {
-    qEl.value = "";
-    spEl.value = "";
-    statusEl.innerHTML = `<p class="big">พร้อมคำนวณ</p><div class="muted">กรอกค่า Quality แล้วกด “คำนวณ”</div>`;
-    devEl.textContent = "-";
-    deltaEl.textContent = "-";
-    newspEl.textContent = "-";
-  });
+  $('kpi_pvsrc').textContent=pvSrc;
+  $('kpi_pred').textContent=fmt(y);
+  $('kpi_err').textContent=sign(err);
+  $('kpi_df').textContent=sign(dF);
+  $('kpi_dp').textContent=sign(dP);
+  $('kpi_conf').textContent=i.transient?'ต่ำ':(Math.abs(err)<0.01?'สูง':'กลาง');
 
-  // คำนวณอัตโนมัติขณะพิมพ์
-  qEl.addEventListener('input', render);
-  spEl.addEventListener('input', render);
-})();
+  const warn = rec?'':`<div class='muted warn'>⚠ ไม่พบ PV ในประวัติที่ ${lagKey} → ใช้ PV ปัจจุบันแทน</div>`;
+  $('outStatus').innerHTML=`<p class='big ok'>Smart Recommend</p><div class='muted'>Pred (+${lag}h): <span class='mono'>${fmt(y)}%</span> | Error: <span class='mono'>${sign(err)}%</span></div><div class='muted'>ΔFeldspar: <span class='mono'>${sign(dF)} t/h</span> | ΔPyro: <span class='mono'>${sign(dP)} t/h</span></div>${warn}`;
+
+  pushLog({tsKey:toHourKey(i.ts), lagKey, pvSrc, pred:+y.toFixed(5), err:+err.toFixed(5), dF:+dF.toFixed(3), dP:+dP.toFixed(3), note:i.note});
+  refreshLogTable();
+  refreshPending();
+}
+
+function confirmAdjusted(){
+  localStorage.setItem(KEY_LAST, String(Date.now()));
+  refreshPending();
+  $('outStatus').innerHTML=`<p class='big ok'>ยืนยันการปรับแล้ว ✅</p><div class='muted'>เริ่ม Pending ${MODEL.limits.lock_after_adjust_hours} ชม.</div>`;
+}
+
+function refreshPending(){
+  if(!MODEL){ $('kpi_pending').textContent='-'; return; }
+  const last=Number(localStorage.getItem(KEY_LAST)||0);
+  if(!last){ $('kpi_pending').innerHTML='<span class="muted">ไม่มี</span>'; return; }
+  const remain = MODEL.limits.lock_after_adjust_hours - (Date.now()-last)/36e5;
+  $('kpi_pending').innerHTML = remain<=0 ? `<span class='ok'>พร้อมปรับ</span>` : `<span class='warn'>Pending ${remain.toFixed(1)}h</span>`;
+}
+
+function exportPVJSON(){ download('rm_pv_history.json', JSON.stringify(loadPV(), null, 2), 'application/json'); }
+function importPVJSON(file){
+  const fr=new FileReader();
+  fr.onload=()=>{ try{ const obj=JSON.parse(fr.result); const merged={...loadPV(), ...obj}; savePVObj(merged); refreshPVTable(); alert('Import PV สำเร็จ'); }catch(e){ alert('Import ไม่สำเร็จ: '+e.message); } };
+  fr.readAsText(file);
+}
+function clearPV(){ if(confirm('ล้าง PV history ทั้งหมด?')){ localStorage.removeItem(KEY_PV); refreshPVTable(); } }
+
+function exportLogCSV(){
+  const logs=loadLog();
+  const header=['tsKey','pred','err','dF','dP','pvSrc','lagKey','note'];
+  const rows=[header.join(',')].concat(logs.map(x=>header.map(h=>`"${String(x[h]??'').replace(/"/g,'""')}"`).join(',')));
+  download('rm_alkali_log.csv', rows.join('
+'), 'text/csv;charset=utf-8');
+}
+function clearLog(){ if(confirm('ล้าง log ทั้งหมด?')){ localStorage.removeItem(KEY_LOG); refreshLogTable(); } }
+
+// Wire events
+$('btn_save_pv').addEventListener('click', savePVHour);
+$('btn_predict').addEventListener('click', predictOnly);
+$('btn_reco').addEventListener('click', recommend);
+$('btn_confirm').addEventListener('click', confirmAdjusted);
+$('btn_refresh_hist').addEventListener('click', refreshPVTable);
+$('btn_export_hist').addEventListener('click', exportPVJSON);
+$('btn_import_hist').addEventListener('click', ()=>$('file_hist').click());
+$('btn_clear_hist').addEventListener('click', clearPV);
+$('file_hist').addEventListener('change', (e)=>{ const f=e.target.files?.[0]; if(f) importPVJSON(f); e.target.value=''; });
+$('btn_export_log').addEventListener('click', exportLogCSV);
+$('btn_clear_log').addEventListener('click', clearLog);
+
+// init
+$('ts').value = tsToInput(nowRoundedHour());
+refreshPVTable();
+refreshLogTable();
+refreshPending();
+
+loadModel().then(()=>{ refreshPending(); }).catch(err=>{
+  console.error(err);
+  $('modelStatus').innerHTML=`<p class='big bad'>โหลดโมเดลไม่สำเร็จ</p><div class='muted'>ตรวจว่าไฟล์ model.json อยู่โฟลเดอร์เดียวกับ index.html</div>`;
+});
+setInterval(refreshPending, 60000);
 </script>
 </body>
 </html>
-``

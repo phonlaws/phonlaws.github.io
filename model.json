@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "model_type": "ridge_arx_unscaled",
-  "trained_at": "2026-02-11T12:19:47Z",
+  "trained_at": "2026-02-11T12:32:06Z",
   "target_alkali": 1.6,
   "selected_lag_hours": 3,
   "training_samples": 253,
