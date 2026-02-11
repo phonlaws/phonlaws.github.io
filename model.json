@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "model_type": "ridge_arx_unscaled",
-  "trained_at": "2026-02-11T12:32:06Z",
+  "trained_at": "2026-02-11T13:08:12Z",
   "target_alkali": 1.6,
   "selected_lag_hours": 3,
   "training_samples": 253,
@@ -64,11 +64,5 @@
     "min_pv_total_feed_tph": 0.5,
     "max_step_per_feeder_tph": 0.05,
     "lock_after_adjust_hours": 3
-  },
-  "notes": [
-    "ใช้ PV ย้อนหลังตาม selected_lag_hours เพื่อสะท้อน delay ของกระบวนการ",
-    "ต้องมี Alkali ล่าสุด 2 ค่า (Alkali_lag1, Alkali_lag2) เพื่อให้โมเดลมี memory",
-    "Fineness ใช้ค่าชั่วโมงปัจจุบัน (ถ้าไม่มีให้กรอก 0 หรือค่าเฉลี่ยหน้างาน)",
-    "event1/event2 ไม่ถูกใช้เป็น feature ในเวอร์ชันนี้ แต่ควรใช้เป็น guardrail (confidence ต่ำ) ใน web app"
-  ]
+  }
 }
