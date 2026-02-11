@@ -138,159 +138,135 @@
   </div>
 
 <script>
-// ================================
-// Smart Recommend Engine (v0.1)
-// Target: Alkali 1.60, Delay ~ 3h
-// Control: Feldspar (หลัก) + Pyro (ช่วยอัตโนมัติ)
-// Limit: ±0.05 t/h ต่อครั้งต่อ feeder
-// ================================
+(function(){
+  const cfg = {
+    min: 1.55,
+    max: 1.65,
 
-const SMART_CFG = {
-  target: 1.60,
-  delayHours: 3,             // ตั้งค่าเริ่มต้น (ปรับเป็น 4/5 ได้ถ้าต้องการ)
-  maxStep: 0.05,             // จำกัดการปรับต่อครั้ง
-  minPVTotal: 0.5,           // ต่ำกว่านี้ถือว่าไม่ steady/ไม่เดิน
-  lockAfterAdjustHours: 3,   // ล็อกหลังปรับเพื่อรอผล (anti-chatter)
+    // High side thresholds
+    high03_top: 1.70, // (1.65, 1.70] => 0.03
+    // > 1.70 => 0.05
 
-  // ---- Model coefficients (ตัวอย่างจากข้อมูล 1 เดือน) ----
-  // Alkali(t) = b0 + bF*Feld(t-3) + bP*Pyro(t-3) + bW*WhiteSand(t-3)
-  //           + bT*Total(t-3) + bFin*Fineness(t-3 หรือ ณ จุดวัด) + a1*Alkali(t-1) + a2*Alkali(t-2)
-  // NOTE: ตัวเลขนี้เป็นรุ่นเริ่มต้น (เราจะปรับ/รีเทรนได้)
-  model: {
-    b0: 0.4951,
-    bFeld:  0.1262,   // + => เพิ่ม feldspar ทำให้ alkali สูงขึ้น
-    bPyro: -0.04295,  // - => เพิ่ม pyro ทำให้ alkali ลดลง
-    bWhite: -0.05840,
-    bTotal:  0.02485,
-    bFin:   -0.00317, // fineness สูงขึ้น => alkali มีแนวโน้มลดลงเล็กน้อย (ในข้อมูลชุดนี้)
-    a1: 0.5609,
-    a2: 0.1564
+    // Low side thresholds
+    low03_bottom: 1.50, // [1.50, 1.55) => 0.03
+    // < 1.50 => 0.05
+
+    adj03: 0.03,
+    adj05: 0.05
+  };
+
+  const qEl = document.getElementById('quality');
+  const spEl = document.getElementById('setpoint');
+
+  const statusEl = document.getElementById('status');
+  const devEl = document.getElementById('dev');
+  const deltaEl = document.getElementById('delta');
+  const newspEl = document.getElementById('newsp');
+
+  function fmt(n, d=3){
+    if (n === null || n === undefined || Number.isNaN(n)) return '-';
+    return Number(n).toFixed(d);
   }
-};
-
-function clamp(x, lo, hi){ return Math.max(lo, Math.min(hi, x)); }
-
-function hoursSince(tsMillis){
-  if(!tsMillis) return Infinity;
-  return (Date.now() - tsMillis) / 36e5;
-}
-
-// ทำนาย Alkali หลัง delayHours (เชิงปฏิบัติ เราใช้ PV ปัจจุบันเป็นตัวแทน PV(t-3) ได้
-// ถ้าคุณเก็บ PV ในแอปเป็น time series จะยิ่งแม่นขึ้น เพราะใช้ PV ย้อนหลังจริง ๆ ได้)
-function predictAlkali({
-  alkali_t1, alkali_t2,
-  pv_feldspar, pv_pyro, pv_white_sand, pv_total,
-  fineness
-}){
-  const m = SMART_CFG.model;
-  // ถ้า fineness ไม่กรอก ให้ถือว่า 0 (หรือจะให้เป็นค่าเฉลี่ยก็ได้)
-  const fin = (Number.isFinite(fineness) ? fineness : 0);
-
-  // ใช้ PV ปัจจุบันเป็น proxy ของ PV(t-3)
-  return (
-    m.b0 +
-    m.bFeld  * pv_feldspar +
-    m.bPyro  * pv_pyro +
-    m.bWhite * pv_white_sand +
-    m.bTotal * pv_total +
-    m.bFin   * fin +
-    m.a1     * alkali_t1 +
-    m.a2     * alkali_t2
-  );
-}
-
-// แนะนำการปรับ (Feldspar เป็นหลัก, Pyro ช่วยอัตโนมัติเมื่อจำเป็น)
-function recommendAdjust({
-  alkali_now, alkali_prev1,
-  pv_feldspar, pv_pyro, pv_white_sand, pv_total,
-  fineness,
-  isTransient = false // operator ติ๊กว่าอยู่ช่วงเหตุการณ์/ปั่นป่วน
-}){
-  // 1) Safety: ถ้า total ต่ำ -> ไม่แนะนำ (น่าจะหยุด/ไม่ steady)
-  if(!(pv_total > SMART_CFG.minPVTotal)){
-    return {
-      ok:false,
-      reason:"PV Total ต่ำ/ไม่ steady → ไม่แนะนำปรับ (ตรวจสถานะการเดินเครื่อง)",
-      predicted:null, deltaF:0, deltaP:0, confidence:"ต่ำ"
-    };
+  function fmt2(n){
+    if (n === null || n === undefined || Number.isNaN(n)) return '-';
+    return Number(n).toFixed(2);
+  }
+  function signText(x){
+    if (x > 0) return "+" + fmt2(x);
+    if (x < 0) return fmt2(x);
+    return "0.00";
   }
 
-  // 2) Anti-chatter lock
-  const last = Number(localStorage.getItem("last_adjust_ts") || 0);
-  if(hoursSince(last) < SMART_CFG.lockAfterAdjustHours){
-    return {
-      ok:false,
-      reason:`อยู่ในช่วงรอผลหลังปรับ (Pending ~${SMART_CFG.lockAfterAdjustHours} ชม.) → แนะนำรอดูผล`,
-      predicted:null, deltaF:0, deltaP:0, confidence:"ต่ำ"
-    };
-  }
+  // คืนค่า: signedDelta (มีเครื่องหมายแล้ว), msg, cls, devSigned
+  function compute(q){
+    // In-spec
+    if (q >= cfg.min && q <= cfg.max){
+      return { signedDelta: 0, msg: "อยู่ในสเปค ✅ ไม่ต้องปรับ", cls: "ok", devSigned: 0 };
+    }
 
-  // 3) Predict Alkali in ~3h using Alkali(t-1), Alkali(t-2)
-  const alkali_t1 = alkali_now;
-  const alkali_t2 = alkali_prev1;
+    // High side: ลด
+    if (q > cfg.max){
+      const dev = q - cfg.max; // + deviation from max
+      if (q <= cfg.high03_top){
+        return {
+          signedDelta: -cfg.adj03,
+          msg: `สูงเกิน Max (${fmt(q,3)}%) → สั่งปรับลด ${cfg.adj03.toFixed(2)} t/hr`,
+          cls: "warn",
+          devSigned: +dev
+        };
+      }
+      return {
+        signedDelta: -cfg.adj05,
+        msg: `สูงเกิน Max มาก (${fmt(q,3)}%) → สั่งปรับลด ${cfg.adj05.toFixed(2)} t/hr`,
+        cls: "bad",
+        devSigned: +dev
+      };
+    }
 
-  const pred = predictAlkali({
-    alkali_t1, alkali_t2,
-    pv_feldspar, pv_pyro, pv_white_sand, pv_total,
-    fineness
-  });
-
-  // 4) Error to target
-  const error = SMART_CFG.target - pred;
-
-  // 5) Compute delta for Feldspar first
-  const bF = SMART_CFG.model.bFeld;
-  const bP = SMART_CFG.model.bPyro;
-
-  // ถ้า bF ใกล้ 0 จะอันตราย ให้กันไว้
-  let dF = (Math.abs(bF) < 1e-6) ? 0 : (error / bF);
-  dF = clamp(dF, -SMART_CFG.maxStep, SMART_CFG.maxStep);
-
-  // 6) Remaining error after Feldspar change
-  let remain = error - (bF * dF);
-
-  // 7) If remain still big or Feldspar hit maxStep -> use Pyro assist
-  let dP = 0;
-  const hitF = (Math.abs(dF) >= SMART_CFG.maxStep - 1e-9);
-
-  // เงื่อนไข “ยังเหลือเยอะ” ตั้งเป็น 0.01% (ปรับได้ตามจริง)
-  const remainThreshold = 0.01;
-
-  if(hitF || Math.abs(remain) > remainThreshold){
-    if(Math.abs(bP) > 1e-6){
-      dP = remain / bP;
-      dP = clamp(dP, -SMART_CFG.maxStep, SMART_CFG.maxStep);
-      remain = remain - (bP * dP);
+    // Low side: เพิ่ม
+    if (q < cfg.min){
+      const dev = cfg.min - q; // magnitude
+      if (q >= cfg.low03_bottom){
+        return {
+          signedDelta: +cfg.adj03,
+          msg: `ต่ำกว่า Min (${fmt(q,3)}%) → สั่งปรับเพิ่ม ${cfg.adj03.toFixed(2)} t/hr`,
+          cls: "warn",
+          devSigned: -dev
+        };
+      }
+      return {
+        signedDelta: +cfg.adj05,
+        msg: `ต่ำกว่า Min มาก (${fmt(q,3)}%) → สั่งปรับเพิ่ม ${cfg.adj05.toFixed(2)} t/hr`,
+        cls: "bad",
+        devSigned: -dev
+      };
     }
   }
 
-  // 8) Confidence scoring (ง่าย ๆ)
-  let confidence = "กลาง";
-  if(isTransient) confidence = "ต่ำ";
-  if(Math.abs(error) < 0.01) confidence = "สูง";
+  function render(){
+    const q = parseFloat(qEl.value);
+    const sp = spEl.value.trim() === "" ? null : parseFloat(spEl.value);
 
-  // 9) ถ้าค่าแนะนำเล็กมาก -> ไม่ต้องปรับ
-  if(Math.abs(dF) < 0.005 && Math.abs(dP) < 0.005){
-    return {
-      ok:true,
-      reason:"ใกล้เป้าหมายมาก → ไม่จำเป็นต้องปรับ",
-      predicted:pred, deltaF:0, deltaP:0, confidence
-    };
+    if (Number.isNaN(q)){
+      statusEl.innerHTML = `<p class="big">กรอกค่า Quality ก่อนครับ</p><div class="muted">ตัวอย่าง: 1.68</div>`;
+      devEl.textContent = "-";
+      deltaEl.textContent = "-";
+      newspEl.textContent = "-";
+      return;
+    }
+
+    const r = compute(q);
+
+    let newSp = null;
+    if (sp !== null && !Number.isNaN(sp)){
+      newSp = sp + r.signedDelta;
+    }
+
+    statusEl.innerHTML = `
+      <p class="big ${r.cls}">${r.msg}</p>
+      <div class="muted">Quality: <span class="mono">${fmt(q,3)}%</span> | สเปค: <span class="mono">${cfg.min.toFixed(2)}–${cfg.max.toFixed(2)}%</span></div>
+    `;
+
+    devEl.textContent = (r.devSigned === 0) ? "0.000" : fmt(r.devSigned, 3);
+    deltaEl.textContent = signText(r.signedDelta) + " t/hr";
+    newspEl.textContent = (newSp === null) ? "—" : fmt2(newSp);
   }
 
-  return {
-    ok:true,
-    reason:"คำนวณจากโมเดล + delay + limiter",
-    predicted:pred,
-    deltaF:+dF.toFixed(3),
-    deltaP:+dP.toFixed(3),
-    confidence
-  };
-}
+  document.getElementById('calc').addEventListener('click', render);
+  document.getElementById('reset').addEventListener('click', () => {
+    qEl.value = "";
+    spEl.value = "";
+    statusEl.innerHTML = `<p class="big">พร้อมคำนวณ</p><div class="muted">กรอกค่า Quality แล้วกด “คำนวณ”</div>`;
+    devEl.textContent = "-";
+    deltaEl.textContent = "-";
+    newspEl.textContent = "-";
+  });
 
-// เรียกเมื่อ operator “ยืนยันว่าปรับจริงแล้ว”
-function markAdjusted(){
-  localStorage.setItem("last_adjust_ts", String(Date.now()));
-}
+  // คำนวณอัตโนมัติขณะพิมพ์
+  qEl.addEventListener('input', render);
+  spEl.addEventListener('input', render);
+})();
 </script>
+</body>
+</html>
 ``
