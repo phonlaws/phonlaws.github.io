@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="th">
 <head>
@@ -23,7 +22,7 @@
     input,textarea,select{width:100%;box-sizing:border-box;padding:12px;border-radius:12px;border:1px solid var(--line);background:#0c1326;color:var(--text);outline:none;font-size:14px;font-family:'Kanit',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
     textarea{min-height:76px;resize:vertical}
     .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    button{padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--btn);color:#fff;font-weight:800;cursor:pointer}
+    button{padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--btn);color:#fff;font-weight:800;cursor:pointer;font-family:'Kanit',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
     button.secondary{background:var(--btn2)}
     button.ghost{background:transparent}
     button.danger{background:#3a0c14}
@@ -41,6 +40,7 @@
     @media (max-width:980px){.entry-grid{grid-template-columns:110px repeat(2, minmax(150px, 1fr));}}
     .hcell{color:#cfe0ff;font-weight:800;font-size:12px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:rgba(12,19,38,.7)}
     .rowlbl{color:#cfe0ff;font-weight:800;font-size:13px;padding:10px;border:1px solid var(--line);border-radius:12px;background:rgba(12,19,38,.45)}
+    .cell input{padding:10px 12px; min-height:38px;}
 
     table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
     th,td{padding:10px;font-size:12px;border-bottom:1px solid var(--line);vertical-align:top}
@@ -55,12 +55,12 @@
   <div class="top">
     <div>
       <h1>RM Alkali Smart Adjuster — Grid Entry (v2)</h1>
-      <div class="sub">✅ Deadband + เลือกแหล่ง PV • lag = <b class="mono">3h</b></div>
+      <div class="sub">เวอร์ชันนี้แก้ให้ “ช่องกรอกค่า” แสดงแน่นอน + เพิ่ม Deadband + เลือกแหล่ง PV</div>
     </div>
     <div>
-      <span class="pill">Target: <b class="mono">1.60%</b></span>
-      <span class="pill">Step max: <b class="mono">±0.05 t/h</b></span>
-      <span class="pill">Lag: <b class="mono">3h</b></span>
+      <span class="pill">Target: <b class="mono" id="pill_target">1.60%</b></span>
+      <span class="pill">Step max: <b class="mono" id="pill_step">±0.05 t/h</b></span>
+      <span class="pill">Lag: <b class="mono" id="pill_lag">3h</b></span>
     </div>
   </div>
 
@@ -82,7 +82,7 @@
             <option value="history">ใช้ PV History (ΔPV)</option>
             <option value="entered">ใช้ PV จากค่าที่กรอกในตาราง (t..t-4)</option>
           </select>
-          <div class="tiny">เลือก “ค่าที่กรอก” จะใช้ PV แถว t-lag เทียบ t-(lag+1)</div>
+          <div class="tiny">ถ้าเลือก “ค่าที่กรอก” จะใช้ PV แถว t-lag เทียบ t-(lag+1)</div>
         </div>
       </div>
 
@@ -98,9 +98,9 @@
         <div class="hcell">เวลา</div>
         <div class="hcell">Alkali (%)</div>
         <div class="hcell">Fineness</div>
-        <div class="hcell">PV Feldspar</div>
-        <div class="hcell">PV Pyro</div>
-        <div class="hcell">PV White Sand</div>
+        <div class="hcell">PV Feldspar (t/h)</div>
+        <div class="hcell">PV Pyro (t/h)</div>
+        <div class="hcell">PV White Sand (t/h)</div>
       </div>
       <div class="tiny" id="min_rules" style="margin-top:10px"></div>
 
@@ -207,30 +207,9 @@ function refreshLogTable(){
   document.getElementById('logBody').innerHTML = logs.map(x=>`<tr><td class='mono'>${x.tsKey}</td><td class='mono'>${fmt(x.pred)}</td><td class='mono'>${sign(x.dF)}</td><td class='mono'>${sign(x.dP)}</td><td>${x.pvSrc||'-'}</td><td>${String(x.note||'').replace(/</g,'&lt;')}</td></tr>`).join('');
 }
 
-async function loadModel(){
-  const url = new URL('model_v3.json', window.location.href).toString();
-  document.getElementById('modelUrl').textContent = url;
-  if(location.protocol==='file:'){
-    document.getElementById('modelStatus').innerHTML=`<p class='big bad'>เปิดผ่าน file://</p><div class='muted'>กรุณาเปิดผ่าน GitHub Pages หรือ web server</div>`;
-    return;
-  }
-  try{
-    const res=await fetch(url,{cache:'no-store'});
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    MODEL=await res.json();
-    const L = MODEL.selected_lag_hours;
-    document.getElementById('min_rules').innerHTML = `กฎขั้นต่ำ: ถ้าเลือก PV=ค่าที่กรอก ต้องกรอก PV อย่างน้อยที่แถว <span class='mono'>t-${L}</span> และ <span class='mono'>t-${L+1}</span> • ถ้าเลือก PV=History ต้องมี PV ใน History ที่เวลานั้น`;
-    document.getElementById('modelStatus').innerHTML=`<p class='big ok'>โหลดโมเดลสำเร็จ ✅</p><div class='muted'>Lag: <span class='mono'>${MODEL.selected_lag_hours}h</span> | Samples: <span class='mono'>${MODEL.training_samples}</span></div>`;
-  }catch(e){
-    document.getElementById('modelErr').innerHTML = `<span class='bad'>${e.message||e}</span>`;
-    document.getElementById('modelStatus').innerHTML=`<p class='big bad'>โหลดโมเดลไม่สำเร็จ</p><div class='muted'>เช็คว่า model_v3.json อยู่โฟลเดอร์เดียวกับไฟล์ html และเปิดผ่าน Pages</div>`;
-  }
-}
-
-function autoTotal(F,P,W){ return (Number.isFinite(F)?F:0)+(Number.isFinite(P)?P:0)+(Number.isFinite(W)?W:0); }
-
 function buildGrid(){
   const grid=document.getElementById('grid');
+  // keep header 6 cells
   while(grid.children.length>6) grid.removeChild(grid.lastChild);
   const labels=['t','t-1','t-2','t-3','t-4'];
   for(let k=0;k<5;k++){
@@ -242,6 +221,8 @@ function buildGrid(){
     const c4=document.createElement('div'); c4.className='cell'; c4.innerHTML=`<input id='W_${k}' type='number' step='0.001' placeholder='White Sand ${labels[k]}'/>`; grid.appendChild(c4);
   }
 }
+
+function autoTotal(F,P,W){ return (Number.isFinite(F)?F:0)+(Number.isFinite(P)?P:0)+(Number.isFinite(W)?W:0); }
 
 function copyPVtDown(){
   const fin=document.getElementById('Fin_0').value;
@@ -436,14 +417,39 @@ function exportLogCSV(){
   const logs=loadLog();
   const header=['tsKey','pred','err','dF','dP','pvSrc','note'];
   const rows=[header.join(',')].concat(logs.map(x=>header.map(h=>`"${String(x[h]??'').replace(/"/g,'""')}"`).join(',')));
-  download('rm_alkali_log_v2.csv', rows.join('
-'), 'text/csv;charset=utf-8');
+  download('rm_alkali_log_v2.csv', rows.join('\n'), 'text/csv;charset=utf-8');
 }
 function clearLog(){ if(confirm('ล้าง log ทั้งหมด?')){ localStorage.removeItem(KEY_LOG); refreshLogTable(); } }
 
+async function loadModel(){
+  const url = new URL('model_v3.json', window.location.href).toString();
+  document.getElementById('modelUrl').textContent = url;
+  if(location.protocol==='file:'){
+    document.getElementById('modelStatus').innerHTML=`<p class='big bad'>เปิดผ่าน file://</p><div class='muted'>กรุณาเปิดผ่าน GitHub Pages หรือ web server</div>`;
+    return;
+  }
+  try{
+    const res=await fetch(url,{cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    MODEL=await res.json();
+    document.getElementById('pill_target').textContent = `${(MODEL.target_alkali??1.6).toFixed(2)}%`;
+    document.getElementById('pill_step').textContent = `±${(MODEL.limits?.max_step_per_feeder_tph??0.05).toFixed(2)} t/h`;
+    document.getElementById('pill_lag').textContent = `${MODEL.selected_lag_hours??3}h`;
+    const L = MODEL.selected_lag_hours;
+    document.getElementById('min_rules').innerHTML = `กฎขั้นต่ำ: ถ้าเลือก PV=ค่าที่กรอก ต้องกรอก PV อย่างน้อยที่แถว <span class='mono'>t-${L}</span> และ <span class='mono'>t-${L+1}</span> • ถ้าเลือก PV=History ต้องมี PV ใน History ที่เวลานั้น`;
+    document.getElementById('modelStatus').innerHTML=`<p class='big ok'>โหลดโมเดลสำเร็จ ✅</p><div class='muted'>Lag: <span class='mono'>${MODEL.selected_lag_hours}h</span> | Samples: <span class='mono'>${MODEL.training_samples??'-'}</span></div>`;
+  }catch(e){
+    document.getElementById('modelErr').innerHTML = `<span class='bad'>${e.message||e}</span>`;
+    document.getElementById('modelStatus').innerHTML=`<p class='big bad'>โหลดโมเดลไม่สำเร็จ</p><div class='muted'>เช็คว่า model_v3.json อยู่โฟลเดอร์เดียวกับไฟล์ html และเปิดผ่าน Pages</div>`;
+  }
+}
+
 window.addEventListener('DOMContentLoaded',()=>{
+  // 1) สร้างช่องกรอกก่อนเสมอ (แก้ปัญหา "ช่องไม่ขึ้น")
   buildGrid();
+  // 2) เวลาเริ่มต้น
   document.getElementById('base_ts').value = toInput(nowRoundedHour());
+  // 3) ตาราง PV/Log
   refreshPVTable();
   refreshLogTable();
 
@@ -463,6 +469,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('btn_export_log').onclick = exportLogCSV;
   document.getElementById('btn_clear_log').onclick = clearLog;
 
+  // 4) โหลดโมเดลหลังสุด
   loadModel();
 });
 </script>
