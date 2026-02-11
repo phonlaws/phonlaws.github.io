@@ -1,7 +1,7 @@
 {
   "schema_version": "3.0",
   "model_type": "constrained_ridge_arx_delta",
-  "trained_at": "2026-02-11T15:24:59Z",
+  "trained_at": "2026-02-11T16:38:04Z",
   "source_file": "training.xlsx",
   "target_alkali": 1.6,
   "selected_lag_hours": 3,
@@ -84,8 +84,8 @@
     }
   },
   "constraints": {
-    "feldspar": "coef(dF) >= 0",
-    "pyro": "coef(dP) <= 0"
+    "feldspar": "coef(dF) >= 0 (เพิ่ม Feld → Alkali เพิ่ม)",
+    "pyro": "coef(dP) <= 0 (เพิ่ม Pyro → Alkali ลด)"
   },
   "limits": {
     "min_pv_total_feed_tph": 0.5,
