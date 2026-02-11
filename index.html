@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <title>RM Alkali Smart Adjuster — Grid Entry (v2)</title>
+  <title>RM Alkali Smart Adjuster — Grid Entry (v3-soft)</title>
   <style>
     :root{--bg:#0b1220;--card:#121b2f;--muted:#9fb0d0;--text:#eaf0ff;--line:#263556;--ok:#24d18f;--warn:#ffcc00;--bad:#ff5d5d;--btn:#2f66ff;--btn2:#1f2b48;}
     body{margin:0;font-family:'Kanit',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(180deg,var(--bg),#070b14);color:var(--text)}
@@ -54,8 +54,8 @@
 <div class="wrap">
   <div class="top">
     <div>
-      <h1>RM Alkali Smart Adjuster — Grid Entry (v2)</h1>
-      <div class="sub">เวอร์ชันนี้แก้ให้ “ช่องกรอกค่า” แสดงแน่นอน + เพิ่ม Deadband + เลือกแหล่ง PV</div>
+      <h1>RM Alkali Smart Adjuster — Grid Entry (v3-soft)</h1>
+      <div class="sub">โหมด “ปรับเบา ๆ”: มี Deadband + จำกัดการใช้ Pyro เฉพาะเมื่อหลุดช่วง (ต่ำกว่า 1.50 หรือสูงกว่า 1.70) และจำกัดขนาด Step ตามขนาด Error</div>
     </div>
     <div>
       <span class="pill">Target: <b class="mono" id="pill_target">1.60%</b></span>
@@ -73,8 +73,8 @@
       <div class="row2">
         <div>
           <label>Deadband (|Error| ≤ deadband ⇒ ไม่สั่งปรับ)</label>
-          <input id="deadband" type="number" step="0.001" value="0.010" />
-          <div class="tiny">ถ้า |Error| ≤ deadband → ΔF=0, ΔP=0</div>
+          <input id="deadband" type="number" step="0.001" value="0.005" />
+          <div class="tiny">แนะนำ 0.003–0.010 • ถ้า Error เล็กมาก (เช่น 0.001) จะไม่ปรับ</div>
         </div>
         <div>
           <label>แหล่ง PV สำหรับคำนวณ ΔPV</label>
@@ -82,7 +82,28 @@
             <option value="history">ใช้ PV History (ΔPV)</option>
             <option value="entered">ใช้ PV จากค่าที่กรอกในตาราง (t..t-4)</option>
           </select>
-          <div class="tiny">ถ้าเลือก “ค่าที่กรอก” จะใช้ PV แถว t-lag เทียบ t-(lag+1)</div>
+          <div class="tiny">เลือก “ค่าที่กรอก” จะใช้ PV แถว t-lag เทียบ t-(lag+1)</div>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label>ช่วงที่ “ไม่ใช้ Pyro” (ใช้ปรับ Feldspar อย่างเดียว)</label>
+          <div class="row2">
+            <div>
+              <input id="pyro_gate_low" type="number" step="0.01" value="1.50" />
+              <div class="tiny">ต่ำกว่าเท่านี้ ถึงจะเริ่มใช้ Pyro</div>
+            </div>
+            <div>
+              <input id="pyro_gate_high" type="number" step="0.01" value="1.70" />
+              <div class="tiny">สูงกว่าเท่านี้ ถึงจะเริ่มใช้ Pyro</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label>ความ “เบา” ของการปรับ (Step cap per Error)</label>
+          <input id="soft_gain" type="number" step="0.1" value="5" />
+          <div class="tiny">สูตร: step_cap = min(max_step, |Error| × gain) • เช่น Error=0.010 และ gain=5 ⇒ cap=0.05</div>
         </div>
       </div>
 
@@ -165,8 +186,8 @@
 
 <script>
 let MODEL=null;
-const KEY_PV='rm_pv_history_grid_fineness_v2';
-const KEY_LOG='rm_calc_log_grid_fineness_v2';
+const KEY_PV='rm_pv_history_grid_fineness_v3soft';
+const KEY_LOG='rm_calc_log_grid_fineness_v3soft';
 
 const clamp=(x,lo,hi)=>Math.max(lo,Math.min(hi,x));
 const fmt=(n,d=3)=>(n==null||Number.isNaN(n))?'-':Number(n).toFixed(d);
@@ -209,7 +230,6 @@ function refreshLogTable(){
 
 function buildGrid(){
   const grid=document.getElementById('grid');
-  // keep header 6 cells
   while(grid.children.length>6) grid.removeChild(grid.lastChild);
   const labels=['t','t-1','t-2','t-3','t-4'];
   for(let k=0;k<5;k++){
@@ -254,14 +274,12 @@ function saveSeriesToPVHistory(){
   const note=document.getElementById('note').value||'';
   for(let k=0;k<5;k++){
     const key=toHourKey(addHours(base,-k));
-    const Alk=parseFloat(document.getElementById('alk_'+k).value);
-    const Fin=parseFloat(document.getElementById('Fin_'+k).value);
     const F=parseFloat(document.getElementById('F_'+k).value);
     const P=parseFloat(document.getElementById('P_'+k).value);
     const W=parseFloat(document.getElementById('W_'+k).value);
-    const hasAny = Number.isFinite(Alk)||Number.isFinite(Fin)||Number.isFinite(F)||Number.isFinite(P)||Number.isFinite(W);
+    const hasAny = Number.isFinite(F)||Number.isFinite(P)||Number.isFinite(W);
     if(!hasAny) continue;
-    hist[key]={pv_feldspar:Number.isFinite(F)?F:0, pv_pyro:Number.isFinite(P)?P:0, pv_white_sand:Number.isFinite(W)?W:0, pv_total:autoTotal(F,P,W), alkali:Number.isFinite(Alk)?Alk:null, fineness:Number.isFinite(Fin)?Fin:null, savedAt:new Date().toISOString(), source:'grid_v2', note};
+    hist[key]={pv_feldspar:Number.isFinite(F)?F:0, pv_pyro:Number.isFinite(P)?P:0, pv_white_sand:Number.isFinite(W)?W:0, pv_total:autoTotal(F,P,W), savedAt:new Date().toISOString(), source:'grid_v3soft', note};
   }
   savePVObj(hist);
   refreshPVTable();
@@ -359,19 +377,54 @@ function doRecommend(base){
 
   const db=parseFloat(document.getElementById('deadband').value);
   const deadband = Number.isFinite(db)?Math.abs(db):0;
+
+  // Deadband: ไม่ปรับ
   if(Math.abs(pr.err) <= deadband){
-    return {...pr, dF:0, dP:0, deadbandHit:true, deadband};
+    return {...pr, dF:0, dP:0, deadbandHit:true, deadband, pyroUsed:false, stepCap:0};
   }
+
+  // Soft cap: จำกัด step ตามขนาด Error
+  const gain=parseFloat(document.getElementById('soft_gain').value);
+  const g = Number.isFinite(gain) ? Math.max(0.1, gain) : 5;
+  const maxStep = MODEL?.limits?.max_step_per_feeder_tph ?? 0.05;
+  const stepCap = Math.min(maxStep, Math.abs(pr.err) * g);
+
+  // Pyro gating: ใช้ Pyro เฉพาะเมื่อ Pred หลุดช่วง
+  const gateLow=parseFloat(document.getElementById('pyro_gate_low').value);
+  const gateHigh=parseFloat(document.getElementById('pyro_gate_high').value);
+  const low = Number.isFinite(gateLow)?gateLow:1.50;
+  const high = Number.isFinite(gateHigh)?gateHigh:1.70;
+
+  const usePyro = (pr.pred < low) || (pr.pred > high);
 
   const L=MODEL.selected_lag_hours;
   const wF=MODEL.coefficients.weights[`d_pv_feldspar_tph_lag${L}`]||0;
   const wP=MODEL.coefficients.weights[`d_pv_pyro_tph_lag${L}`]||0;
-  let dP = (Math.abs(wP)<1e-9)?0:(pr.err/wP);
-  dP = clamp(dP, -MODEL.limits.max_step_per_feeder_tph, MODEL.limits.max_step_per_feeder_tph);
+
+  let dP=0;
+  let dF=0;
+
+  if(usePyro && Math.abs(wP) > 1e-9){
+    dP = pr.err / wP;
+    dP = clamp(dP, -stepCap, stepCap);
+  }
+
+  // เหลือ error ที่ยังไม่ถูกแก้
   let remain = pr.err - wP*dP;
-  let dF = (Math.abs(wF)<1e-9)?0:(remain/wF);
-  dF = clamp(dF, -MODEL.limits.max_step_per_feeder_tph, MODEL.limits.max_step_per_feeder_tph);
-  return {...pr, dF, dP, deadbandHit:false, deadband};
+
+  if(Math.abs(wF) > 1e-9){
+    dF = remain / wF;
+    dF = clamp(dF, -stepCap, stepCap);
+  } else {
+    dF = 0;
+  }
+
+  // ถ้าอยู่ในช่วงไม่ใช้ Pyro → บังคับ dP=0
+  if(!usePyro){
+    dP = 0;
+  }
+
+  return {...pr, dF, dP, deadbandHit:false, deadband, pyroUsed:usePyro, stepCap};
 }
 
 function show(r, mode){
@@ -391,9 +444,12 @@ function show(r, mode){
 
   let reco='';
   if(mode==='Smart Recommend'){
-    reco = r.deadbandHit
-      ? `<div class='ok'>อยู่ในช่วง Deadband (±${fmt(r.deadband,3)}) → ไม่สั่งปรับ</div>`
-      : `<div class='muted'>แนะนำ: ΔPyro <span class='mono'>${sign(r.dP)} t/h</span>, ΔFeldspar <span class='mono'>${sign(r.dF)} t/h</span></div>`;
+    if(r.deadbandHit){
+      reco = `<div class='ok'>อยู่ในช่วง Deadband (±${fmt(r.deadband,3)}) → ไม่สั่งปรับ</div>`;
+    } else {
+      const pyroNote = r.pyroUsed ? 'ใช้ Pyro (หลุดช่วง)' : 'ไม่ใช้ Pyro (อยู่ในช่วง 1.50–1.70)';
+      reco = `<div class='muted'>แนะนำ: ΔFeldspar <span class='mono'>${sign(r.dF)} t/h</span>, ΔPyro <span class='mono'>${sign(r.dP)} t/h</span><br><span class='tiny'>โหมดเบา: step cap = <span class='mono'>${fmt(r.stepCap,3)}</span> t/h • ${pyroNote}</span></div>`;
+    }
   }
 
   document.getElementById('outStatus').innerHTML=`<p class='big ok'>${mode} สำเร็จ</p><div class='muted'>เวลา: <span class='mono'>${tsKey}</span> | Pred: <span class='mono'>${fmt(r.pred)}%</span> | Error: <span class='mono'>${sign(r.err)}%</span></div>${warn}${reco}${pvinfo}`;
@@ -409,7 +465,7 @@ function saveAndRun(reco){
   show(r, reco?'Smart Recommend':'Predict');
 }
 
-function exportPVJSON(){ download('pv_history_grid_fineness_v2.json', JSON.stringify(loadPV(), null, 2), 'application/json'); }
+function exportPVJSON(){ download('pv_history_grid_fineness_v3soft.json', JSON.stringify(loadPV(), null, 2), 'application/json'); }
 function importPVJSON(file){ const fr=new FileReader(); fr.onload=()=>{ try{ const obj=JSON.parse(fr.result); const merged={...loadPV(),...obj}; savePVObj(merged); refreshPVTable(); alert('Import PV สำเร็จ'); }catch(e){ alert('Import ไม่สำเร็จ: '+e.message); } }; fr.readAsText(file); }
 function clearPV(){ if(confirm('ล้าง PV history ทั้งหมด?')){ localStorage.removeItem(KEY_PV); refreshPVTable(); } }
 
@@ -417,7 +473,7 @@ function exportLogCSV(){
   const logs=loadLog();
   const header=['tsKey','pred','err','dF','dP','pvSrc','note'];
   const rows=[header.join(',')].concat(logs.map(x=>header.map(h=>`"${String(x[h]??'').replace(/"/g,'""')}"`).join(',')));
-  download('rm_alkali_log_v2.csv', rows.join('\n'), 'text/csv;charset=utf-8');
+  download('rm_alkali_log_v3soft.csv', rows.join('\n'), 'text/csv;charset=utf-8');
 }
 function clearLog(){ if(confirm('ล้าง log ทั้งหมด?')){ localStorage.removeItem(KEY_LOG); refreshLogTable(); } }
 
@@ -445,11 +501,8 @@ async function loadModel(){
 }
 
 window.addEventListener('DOMContentLoaded',()=>{
-  // 1) สร้างช่องกรอกก่อนเสมอ (แก้ปัญหา "ช่องไม่ขึ้น")
   buildGrid();
-  // 2) เวลาเริ่มต้น
   document.getElementById('base_ts').value = toInput(nowRoundedHour());
-  // 3) ตาราง PV/Log
   refreshPVTable();
   refreshLogTable();
 
@@ -469,7 +522,6 @@ window.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('btn_export_log').onclick = exportLogCSV;
   document.getElementById('btn_clear_log').onclick = clearLog;
 
-  // 4) โหลดโมเดลหลังสุด
   loadModel();
 });
 </script>
