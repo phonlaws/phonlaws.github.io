@@ -3,68 +3,55 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>RM Alkali Smart Adjuster (Grid Entry + Fineness)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <title>RM Alkali Smart Adjuster (Light)</title>
   <style>
-    :root{--bg:#0b1220;--card:#121b2f;--muted:#9fb0d0;--text:#eaf0ff;--line:#263556;--ok:#24d18f;--warn:#ffcc00;--bad:#ff5d5d;--btn:#2f66ff;--btn2:#1f2b48;}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(180deg,var(--bg),#070b14);color:var(--text)}
+    :root{--bg:#f6f7fb;--card:#ffffff;--muted:#667085;--text:#101828;--line:#e4e7ec;--btn:#2563eb;--btn2:#eef2ff;}
+    body{margin:0;font-family:'Kanit',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(180deg,var(--bg),#ffffff);color:var(--text)}
     .wrap{max-width:1180px;margin:24px auto;padding:0 16px}
     .top{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;flex-wrap:wrap}
     h1{margin:0;font-size:22px}
     .sub{margin-top:6px;color:var(--muted);font-size:13px;line-height:1.45}
-    .pill{display:inline-flex;gap:8px;align-items:center;padding:8px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(12,19,38,.35);font-size:12px;color:var(--muted)}
+    .pill{display:inline-flex;gap:8px;align-items:center;padding:8px 10px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:12px;color:var(--muted)}
     .grid2{display:grid;grid-template-columns:1.25fr .75fr;gap:16px;margin-top:14px}
     @media (max-width:980px){.grid2{grid-template-columns:1fr}}
-    .card{background:rgba(18,27,47,.92);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 10px 24px rgba(16,24,40,.08)}
     label{display:block;color:var(--muted);font-size:13px;margin:10px 0 6px}
-    input,textarea{width:100%;box-sizing:border-box;padding:12px;border-radius:12px;border:1px solid var(--line);background:#0c1326;color:var(--text);outline:none;font-size:14px}
-    textarea{min-height:64px;resize:vertical}
+    input,textarea{width:100%;box-sizing:border-box;padding:12px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--text);outline:none;font-size:16px}
+    textarea{min-height:84px;resize:vertical}
     .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    button{padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--btn);color:#fff;font-weight:800;cursor:pointer}
-    button.secondary{background:var(--btn2)}
-    button.ghost{background:transparent}
-    button.danger{background:#3a0c14}
-    .status{margin-top:10px;border:1px dashed var(--line);border-radius:12px;padding:12px;background:rgba(10,16,32,.55)}
+    button{padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--btn);color:#fff;font-weight:700;cursor:pointer}
+    button.secondary{background:var(--btn2);color:#1d4ed8;border-color:#c7d2fe}
+    button.ghost{background:transparent;color:#1f2937}
+    button.danger{background:#fee2e2;color:#991b1b;border-color:#fecaca}
+    .status{margin-top:10px;border:1px dashed #cbd5e1;border-radius:12px;padding:12px;background:#f8fafc}
     .big{font-size:18px;font-weight:900;margin:0 0 4px}
     .muted{color:var(--muted)}
-    .ok{color:var(--ok)}
-    .warn{color:var(--warn)}
-    .bad{color:var(--bad)}
     .mono{font-variant-numeric:tabular-nums;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
     .split{height:1px;background:var(--line);margin:14px 0}
     .tiny{font-size:12px;color:var(--muted);line-height:1.55}
+    input:focus,textarea:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(59,130,246,.15)}
 
     .entry-grid{display:grid;grid-template-columns:120px repeat(5, minmax(140px, 1fr));gap:10px;align-items:center;margin-top:10px}
-    @media (max-width:980px){
-      .entry-grid{grid-template-columns:110px repeat(2, minmax(150px, 1fr));}
-    }
-    .hcell{color:#cfe0ff;font-weight:800;font-size:12px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:rgba(12,19,38,.7)}
-    .rowlbl{color:#cfe0ff;font-weight:800;font-size:13px;padding:10px;border:1px solid var(--line);border-radius:12px;background:rgba(12,19,38,.45)}
-    .cell input{padding:10px 12px}
+    @media (max-width:980px){.entry-grid{grid-template-columns:110px repeat(2, minmax(150px, 1fr));}}
+    .hcell{color:#0f172a;font-weight:800;font-size:12px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:#f1f5f9}
+    .rowlbl{color:#0f172a;font-weight:800;font-size:13px;padding:10px;border:1px solid var(--line);border-radius:12px;background:#f8fafc}
 
     table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
     th,td{padding:10px;font-size:12px;border-bottom:1px solid var(--line);vertical-align:top}
-    th{background:rgba(12,19,38,.85);color:#cfe0ff;text-align:left}
+    th{background:#f1f5f9;color:#0f172a;text-align:left}
     tr:last-child td{border-bottom:none}
     .right{text-align:right}
-
-    body{
-      font-family: 'Kanit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-    }
-
-  input, textarea, button{
-    font-family: 'Kanit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  }
   </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
     <div>
-      <h1>RM Alkali Smart Adjuster — Grid Entry (เพิ่ม Fineness ต่อแถว)</h1>
-      <div class="sub">แถวเป็น t, t-1, t-2, t-3, t-4 • เพิ่มคอลัมน์ <b>Fineness</b> ต่อจาก Alkali ทุกแถว • เว้นช่องได้ (1B) แต่ก่อนรันต้องมี PV ครบที่ t-lag และ t-(lag+1) • โมเดลเลือก lag = <b class="mono">3h</b></div>
+      <h1>RM Alkali Smart Adjuster — โทนสว่าง</h1>
+      <div class="sub">Grid + Fineness ต่อแถว • เว้นช่องได้ (1B) แต่ก่อนรันต้องมี PV ที่ t-lag และ t-(lag+1) • lag = <b class="mono">3h</b></div>
     </div>
     <div>
       <span class="pill">Target: <b class="mono">1.60%</b></span>
@@ -81,7 +68,7 @@
       <div class="btns">
         <button class="secondary" id="btn_now">ใช้เวลา “ชั่วโมงนี้”</button>
         <button class="ghost" id="btn_copy_t_down">คัดลอก PV+Fineness แถว t → ลง t-1..t-4</button>
-        <button class="ghost danger" id="btn_clear">ล้างตาราง</button>
+        <button class="danger" id="btn_clear">ล้างตาราง</button>
       </div>
 
       <div class="split"></div>
@@ -90,14 +77,14 @@
         <div class="hcell">เวลา</div>
         <div class="hcell">Alkali (%)</div>
         <div class="hcell">Fineness</div>
-        <div class="hcell">PV Feldspar (t/h)</div>
-        <div class="hcell">PV Pyro (t/h)</div>
-        <div class="hcell">PV White Sand (t/h)</div>
+        <div class="hcell">PV Feldspar</div>
+        <div class="hcell">PV Pyro</div>
+        <div class="hcell">PV White Sand</div>
       </div>
       <div class="tiny" id="min_rules" style="margin-top:10px"></div>
 
       <label>หมายเหตุ</label>
-      <textarea id="note" placeholder="เช่น Stop/Start/คุมโหลด/อื้อ/ปรับ setpoint"></textarea>
+      <textarea id="note"></textarea>
 
       <div class="btns">
         <button id="btn_save_run">บันทึกชุดเดียว + รัน Smart Recommend</button>
@@ -116,7 +103,7 @@
         <button id="btn_refresh_hist" class="secondary">รีเฟรช</button>
         <button id="btn_export_hist" class="ghost">Export PV (JSON)</button>
         <button id="btn_import_hist" class="ghost">Import PV (JSON)</button>
-        <button id="btn_clear_hist" class="ghost danger">ล้าง PV</button>
+        <button id="btn_clear_hist" class="danger">ล้าง PV</button>
         <input id="file_hist" type="file" accept="application/json" style="display:none" />
       </div>
       <div style="margin-top:10px;overflow:auto">
@@ -130,21 +117,21 @@
 
     <div class="card">
       <h2 style="margin:0">ผลลัพธ์</h2>
-      <div id="outStatus" class="status"><p class="big">พร้อมคำนวณ</p><div class="muted">กด “บันทึก + รัน” เพื่อบันทึกย้อนหลังและคำนวณที่เวลา t</div></div>
+      <div id="outStatus" class="status"><p class="big">พร้อมคำนวณ</p><div class="muted">กด “บันทึก + รัน” เพื่อคำนวณที่เวลา t</div></div>
 
       <div class="split"></div>
-      <div class="kpi" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
-        <div class="box"><div class="lbl">Pred Alkali</div><div class="val mono" id="kpi_pred">-</div></div>
-        <div class="box"><div class="lbl">Error</div><div class="val mono" id="kpi_err">-</div></div>
-        <div class="box"><div class="lbl">Δ Feldspar</div><div class="val mono" id="kpi_df">-</div></div>
-        <div class="box"><div class="lbl">Δ Pyro</div><div class="val mono" id="kpi_dp">-</div></div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+        <div><div class="tiny">Pred Alkali</div><div class="mono" id="kpi_pred">-</div></div>
+        <div><div class="tiny">Error</div><div class="mono" id="kpi_err">-</div></div>
+        <div><div class="tiny">Δ Feldspar</div><div class="mono" id="kpi_df">-</div></div>
+        <div><div class="tiny">Δ Pyro</div><div class="mono" id="kpi_dp">-</div></div>
       </div>
 
       <div class="split"></div>
       <h2 style="margin:0">Log</h2>
       <div class="btns">
         <button id="btn_export_log" class="secondary">Export Log (CSV)</button>
-        <button id="btn_clear_log" class="ghost danger">ล้าง Log</button>
+        <button id="btn_clear_log" class="danger">ล้าง Log</button>
       </div>
       <div style="margin-top:10px;overflow:auto;max-height:520px">
         <table>
@@ -159,8 +146,8 @@
 
 <script>
 let MODEL=null;
-const KEY_PV='rm_pv_history_grid_fineness_v1';
-const KEY_LOG='rm_calc_log_grid_fineness_v1';
+const KEY_PV='rm_pv_history_grid_fineness_light_v1';
+const KEY_LOG='rm_calc_log_grid_fineness_light_v1';
 
 const clamp=(x,lo,hi)=>Math.max(lo,Math.min(hi,x));
 const fmt=(n,d=3)=> (n==null||Number.isNaN(n))?'-':Number(n).toFixed(d);
@@ -212,7 +199,7 @@ async function loadModel(){
     const res=await fetch(url,{cache:'no-store'});
     if(!res.ok) throw new Error('HTTP '+res.status);
     MODEL=await res.json();
-    document.getElementById('min_rules').innerHTML = `กฎขั้นต่ำ (แบบ 1B): เว้นช่องได้ แต่ก่อนรันต้องมี PV ครบที่ <span class='mono'>t-${MODEL.selected_lag_hours}</span> และ <span class='mono'>t-${MODEL.selected_lag_hours+1}</span> • Alkali(t-1), Alkali(t-2) ถ้าว่างจะใช้ 0 • Fineness(t) ถ้าว่างจะใช้ 0`;
+    document.getElementById('min_rules').innerHTML = `กฎขั้นต่ำ (1B): ก่อนรันต้องมี PV ครบที่ <span class='mono'>t-${MODEL.selected_lag_hours}</span> และ <span class='mono'>t-${MODEL.selected_lag_hours+1}</span> • Alkali(t-1), Alkali(t-2) ถ้าว่างใช้ 0 • Fineness(t) ถ้าว่างใช้ 0`;
     document.getElementById('modelStatus').innerHTML=`<p class='big ok'>โหลดโมเดลสำเร็จ ✅</p><div class='muted'>Lag: <span class='mono'>${MODEL.selected_lag_hours}h</span> | Samples: <span class='mono'>${MODEL.training_samples}</span></div>`;
   }catch(e){
     document.getElementById('modelErr').innerHTML = `<span class='bad'>${e.message||e}</span>`;
@@ -268,17 +255,7 @@ function saveSeriesToPVHistory(){
     const W=parseFloat(document.getElementById('W_'+k).value);
     const hasAny = Number.isFinite(Alk)||Number.isFinite(Fin)||Number.isFinite(F)||Number.isFinite(P)||Number.isFinite(W);
     if(!hasAny) continue;
-    hist[key]={
-      pv_feldspar:Number.isFinite(F)?F:0,
-      pv_pyro:Number.isFinite(P)?P:0,
-      pv_white_sand:Number.isFinite(W)?W:0,
-      pv_total:autoTotal(F,P,W),
-      alkali:Number.isFinite(Alk)?Alk:null,
-      fineness:Number.isFinite(Fin)?Fin:null,
-      savedAt:new Date().toISOString(),
-      source:'grid_fineness',
-      note
-    };
+    hist[key]={pv_feldspar:Number.isFinite(F)?F:0, pv_pyro:Number.isFinite(P)?P:0, pv_white_sand:Number.isFinite(W)?W:0, pv_total:autoTotal(F,P,W), alkali:Number.isFinite(Alk)?Alk:null, fineness:Number.isFinite(Fin)?Fin:null, savedAt:new Date().toISOString(), source:'grid_fineness_light', note};
   }
   savePVObj(hist);
   refreshPVTable();
@@ -304,11 +281,9 @@ function computeFeature(base){
   const dP=(a.pv_pyro||0)-(b.pv_pyro||0);
   const dW=(a.pv_white_sand||0)-(b.pv_white_sand||0);
   const dT=(a.pv_total||0)-(b.pv_total||0);
-
   const alk1=parseFloat(document.getElementById('alk_1').value);
   const alk2=parseFloat(document.getElementById('alk_2').value);
   const fin0=parseFloat(document.getElementById('Fin_0').value);
-
   const A1=Number.isFinite(alk1)?alk1:0;
   const A2=Number.isFinite(alk2)?alk2:0;
   const Fin=Number.isFinite(fin0)?fin0:0;
@@ -316,7 +291,6 @@ function computeFeature(base){
   if(!Number.isFinite(alk1)) warn.push('Alkali(t-1) ว่าง → ใช้ 0');
   if(!Number.isFinite(alk2)) warn.push('Alkali(t-2) ว่าง → ใช้ 0');
   if(!Number.isFinite(fin0)) warn.push('Fineness(t) ว่าง → ใช้ 0');
-
   const feat={};
   feat[`d_pv_feldspar_tph_lag${L}`]=dF;
   feat[`d_pv_pyro_tph_lag${L}`]=dP;
@@ -325,7 +299,6 @@ function computeFeature(base){
   feat['Fineness']=Fin;
   feat['Alkali_lag1']=A1;
   feat['Alkali_lag2']=A2;
-
   return {feat, warn, need1, need2};
 }
 
@@ -355,13 +328,10 @@ function show(r, mode){
   document.getElementById('kpi_err').textContent = sign(r.err);
   document.getElementById('kpi_df').textContent = (r.dF==null?'-':sign(r.dF));
   document.getElementById('kpi_dp').textContent = (r.dP==null?'-':sign(r.dP));
-
   const warn = (r.warn && r.warn.length) ? `<div class='warn'>⚠️ ${r.warn.join(' | ')}</div>` : '';
   const reco = (r.dF==null)? '' : `<div class='muted'>แนะนำ: ΔPyro <span class='mono'>${sign(r.dP)} t/h</span>, ΔFeldspar <span class='mono'>${sign(r.dF)} t/h</span></div>`;
   const pvinfo = `<div class='muted'>ΔPV ใช้จาก <span class='mono'>${r.need1}</span> เทียบ <span class='mono'>${r.need2}</span></div>`;
-
   document.getElementById('outStatus').innerHTML = `<p class='big ok'>${mode} สำเร็จ</p><div class='muted'>เวลา: <span class='mono'>${tsKey}</span> | Pred: <span class='mono'>${fmt(r.pred)}%</span> | Error: <span class='mono'>${sign(r.err)}%</span></div>${warn}${reco}${pvinfo}`;
-
   pushLog({tsKey, pred:+r.pred.toFixed(5), err:+r.err.toFixed(5), dF:r.dF==null?0:+r.dF.toFixed(3), dP:r.dP==null?0:+r.dP.toFixed(3), pvSrc:'history (ΔPV)', note:(document.getElementById('note').value||'')});
   refreshLogTable();
 }
@@ -375,7 +345,7 @@ function saveAndRun(reco){
   show(r, reco?'Smart Recommend':'Predict');
 }
 
-function exportPVJSON(){ download('pv_history_grid_fineness.json', JSON.stringify(loadPV(), null, 2), 'application/json'); }
+function exportPVJSON(){ download('pv_history_grid_fineness_light.json', JSON.stringify(loadPV(), null, 2), 'application/json'); }
 function importPVJSON(file){ const fr=new FileReader(); fr.onload=()=>{ try{ const obj=JSON.parse(fr.result); const merged={...loadPV(),...obj}; savePVObj(merged); refreshPVTable(); alert('Import PV สำเร็จ'); }catch(e){ alert('Import ไม่สำเร็จ: '+e.message); } }; fr.readAsText(file); }
 function clearPV(){ if(confirm('ล้าง PV history ทั้งหมด?')){ localStorage.removeItem(KEY_PV); refreshPVTable(); } }
 
@@ -383,7 +353,8 @@ function exportLogCSV(){
   const logs=loadLog();
   const header=['tsKey','pred','err','dF','dP','pvSrc','note'];
   const rows=[header.join(',')].concat(logs.map(x=>header.map(h=>`"${String(x[h]??'').replace(/"/g,'""')}"`).join(',')));
-  download('rm_alkali_log_grid_fineness.csv', rows.join('\n'), 'text/csv;charset=utf-8');
+  download('rm_alkali_log_grid_fineness_light.csv', rows.join('
+'), 'text/csv;charset=utf-8');
 }
 function clearLog(){ if(confirm('ล้าง log ทั้งหมด?')){ localStorage.removeItem(KEY_LOG); refreshLogTable(); } }
 
@@ -392,23 +363,18 @@ window.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('base_ts').value = toInput(nowRoundedHour());
   refreshPVTable();
   refreshLogTable();
-
   document.getElementById('btn_now').onclick = ()=>{ document.getElementById('base_ts').value = toInput(nowRoundedHour()); };
   document.getElementById('btn_copy_t_down').onclick = copyPVtDown;
   document.getElementById('btn_clear').onclick = clearGrid;
-
   document.getElementById('btn_save_run').onclick = ()=>saveAndRun(true);
   document.getElementById('btn_predict').onclick = ()=>saveAndRun(false);
-
   document.getElementById('btn_refresh_hist').onclick = refreshPVTable;
   document.getElementById('btn_export_hist').onclick = exportPVJSON;
   document.getElementById('btn_import_hist').onclick = ()=>document.getElementById('file_hist').click();
   document.getElementById('file_hist').onchange = (e)=>{ const f=e.target.files?.[0]; if(f) importPVJSON(f); e.target.value=''; };
   document.getElementById('btn_clear_hist').onclick = clearPV;
-
   document.getElementById('btn_export_log').onclick = exportLogCSV;
   document.getElementById('btn_clear_log').onclick = clearLog;
-
   loadModel();
 });
 </script>
