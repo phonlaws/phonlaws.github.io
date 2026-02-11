@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <title>RM Alkali Smart Adjuster — Grid Entry (v3-soft)</title>
+  <title>RM Alkali Smart Adjuster — Grid Entry (v4 Startup)</title>
   <style>
     :root{--bg:#0b1220;--card:#121b2f;--muted:#9fb0d0;--text:#eaf0ff;--line:#263556;--ok:#24d18f;--warn:#ffcc00;--bad:#ff5d5d;--btn:#2f66ff;--btn2:#1f2b48;}
     body{margin:0;font-family:'Kanit',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(180deg,var(--bg),#070b14);color:var(--text)}
@@ -20,7 +20,7 @@
     .card{background:rgba(18,27,47,.92);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
     label{display:block;color:var(--muted);font-size:13px;margin:10px 0 6px}
     input,textarea,select{width:100%;box-sizing:border-box;padding:12px;border-radius:12px;border:1px solid var(--line);background:#0c1326;color:var(--text);outline:none;font-size:14px;font-family:'Kanit',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
-    textarea{min-height:76px;resize:vertical}
+    textarea{min-height:74px;resize:vertical}
     .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
     button{padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--btn);color:#fff;font-weight:800;cursor:pointer;font-family:'Kanit',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
     button.secondary{background:var(--btn2)}
@@ -35,6 +35,10 @@
     .mono{font-variant-numeric:tabular-nums;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
     .split{height:1px;background:var(--line);margin:14px 0}
     .tiny{font-size:12px;color:var(--muted);line-height:1.55}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .row3{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:12px}
+    .check{display:flex;gap:10px;align-items:flex-start;margin-top:10px;color:var(--muted)}
+    .check input{width:auto;transform:scale(1.15);margin-top:3px}
 
     .entry-grid{display:grid;grid-template-columns:120px repeat(5, minmax(140px, 1fr));gap:10px;align-items:center;margin-top:10px}
     @media (max-width:980px){.entry-grid{grid-template-columns:110px repeat(2, minmax(150px, 1fr));}}
@@ -47,15 +51,14 @@
     th{background:rgba(12,19,38,.85);color:#cfe0ff;text-align:left}
     tr:last-child td{border-bottom:none}
     .right{text-align:right}
-    .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
     <div>
-      <h1>RM Alkali Smart Adjuster — Grid Entry (v3-soft)</h1>
-      <div class="sub">โหมด “ปรับเบา ๆ”: มี Deadband + จำกัดการใช้ Pyro เฉพาะเมื่อหลุดช่วง (ต่ำกว่า 1.50 หรือสูงกว่า 1.70) และจำกัดขนาด Step ตามขนาด Error</div>
+      <h1>RM Alkali Smart Adjuster — Grid Entry (v4-startup)</h1>
+      <div class="sub">รองรับกรณี “เพิ่งเริ่มเดินหม้อใหม่” (มี Alkali แค่ 1 ค่า) → ใช้ <b>Start-up (Rule-only)</b> ปรับเบา ๆ และ <b>ไม่ใช้ Pyro</b> ถ้า Pred อยู่ในช่วง 1.50–1.70</div>
     </div>
     <div>
       <span class="pill">Target: <b class="mono" id="pill_target">1.60%</b></span>
@@ -70,46 +73,73 @@
       <label>วันที่/เวลา (t) — ต้นชั่วโมง</label>
       <input id="base_ts" type="datetime-local" />
 
-      <div class="row2">
+      <div class="check">
+        <input id="startup_mode" type="checkbox" checked />
+        <div>
+          <b style="color:#cfe0ff">Start-up mode</b>
+          <div class="tiny">ใช้เมื่อเพิ่งเริ่มเดินและยังไม่มีข้อมูลถึง t-3/t-4 • จะใช้ “Rule-only” เป็นค่าเริ่มต้น</div>
+        </div>
+      </div>
+
+      <div class="row3">
         <div>
           <label>Deadband (|Error| ≤ deadband ⇒ ไม่สั่งปรับ)</label>
           <input id="deadband" type="number" step="0.001" value="0.005" />
-          <div class="tiny">แนะนำ 0.003–0.010 • ถ้า Error เล็กมาก (เช่น 0.001) จะไม่ปรับ</div>
+          <div class="tiny">แนะนำ 0.005 สำหรับ start-up</div>
+        </div>
+        <div>
+          <label>Soft gain (ทำให้ปรับเบา)</label>
+          <input id="soft_gain" type="number" step="0.1" value="5" />
+          <div class="tiny">step_cap = min(step_max, |Error|×gain)</div>
+        </div>
+        <div>
+          <label>Start-up max step (จำกัดเพิ่ม)</label>
+          <input id="startup_step_max" type="number" step="0.001" value="0.020" />
+          <div class="tiny">แนะนำไม่เกิน 0.02 t/h ช่วงแรก</div>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label>Start-up fallback</label>
+          <select id="startup_fallback">
+            <option value="rule_only" selected>Rule-only (อิง Alkali ปัจจุบัน) — ปรับ Feldspar เป็นหลัก</option>
+            <option value="zero_delta">ΔPV = 0 (ให้โมเดลรันต่อได้) — ใช้เมื่ออยากอ้างโมเดลตั้งแต่แรก</option>
+          </select>
         </div>
         <div>
           <label>แหล่ง PV สำหรับคำนวณ ΔPV</label>
           <select id="pv_source">
             <option value="history">ใช้ PV History (ΔPV)</option>
-            <option value="entered">ใช้ PV จากค่าที่กรอกในตาราง (t..t-4)</option>
+            <option value="entered" selected>ใช้ PV จากค่าที่กรอกในตาราง (t..t-4)</option>
           </select>
-          <div class="tiny">เลือก “ค่าที่กรอก” จะใช้ PV แถว t-lag เทียบ t-(lag+1)</div>
         </div>
       </div>
 
       <div class="row2">
         <div>
-          <label>ช่วงที่ “ไม่ใช้ Pyro” (ใช้ปรับ Feldspar อย่างเดียว)</label>
+          <label>Pyro gate (ถ้า Pred อยู่ในช่วงนี้ → ไม่ใช้ Pyro)</label>
           <div class="row2">
             <div>
               <input id="pyro_gate_low" type="number" step="0.01" value="1.50" />
-              <div class="tiny">ต่ำกว่าเท่านี้ ถึงจะเริ่มใช้ Pyro</div>
+              <div class="tiny">ต่ำกว่าเท่านี้ ถึงจะอนุญาตใช้ Pyro</div>
             </div>
             <div>
               <input id="pyro_gate_high" type="number" step="0.01" value="1.70" />
-              <div class="tiny">สูงกว่าเท่านี้ ถึงจะเริ่มใช้ Pyro</div>
+              <div class="tiny">สูงกว่าเท่านี้ ถึงจะอนุญาตใช้ Pyro</div>
             </div>
           </div>
         </div>
         <div>
-          <label>ความ “เบา” ของการปรับ (Step cap per Error)</label>
-          <input id="soft_gain" type="number" step="0.1" value="5" />
-          <div class="tiny">สูตร: step_cap = min(max_step, |Error| × gain) • เช่น Error=0.010 และ gain=5 ⇒ cap=0.05</div>
+          <label>Rule gain (ใช้ใน Rule-only)</label>
+          <input id="rule_gain" type="number" step="0.1" value="5" />
+          <div class="tiny">ΔF ≈ clamp(Error×gain, ±step_cap) • Error = Target − Alkali_now</div>
         </div>
       </div>
 
       <div class="btns">
         <button class="secondary" id="btn_now">ใช้เวลา “ชั่วโมงนี้”</button>
-        <button class="ghost" id="btn_copy_t_down">คัดลอก PV+Fineness แถว t → ลง t-1..t-4</button>
+        <button class="ghost" id="btn_copy_t_down">คัดลอก PV+Fineness แถว t → ลง t-1..t-4 (ช่วยตอนเริ่มเดิน)</button>
         <button class="ghost danger" id="btn_clear">ล้างตาราง</button>
       </div>
 
@@ -126,7 +156,7 @@
       <div class="tiny" id="min_rules" style="margin-top:10px"></div>
 
       <label>หมายเหตุ</label>
-      <textarea id="note" placeholder="เช่น Stop/Start/คุมโหลด/อื้อ/ปรับ setpoint"></textarea>
+      <textarea id="note" placeholder="เช่น Restart/Start/คุมโหลด/อื้อ/ปรับ setpoint"></textarea>
 
       <div class="btns">
         <button id="btn_save_run">บันทึกชุดเดียว + รัน Smart Recommend</button>
@@ -186,8 +216,8 @@
 
 <script>
 let MODEL=null;
-const KEY_PV='rm_pv_history_grid_fineness_v3soft';
-const KEY_LOG='rm_calc_log_grid_fineness_v3soft';
+const KEY_PV='rm_pv_history_grid_fineness_v4startup';
+const KEY_LOG='rm_calc_log_grid_fineness_v4startup';
 
 const clamp=(x,lo,hi)=>Math.max(lo,Math.min(hi,x));
 const fmt=(n,d=3)=>(n==null||Number.isNaN(n))?'-':Number(n).toFixed(d);
@@ -272,6 +302,7 @@ function saveSeriesToPVHistory(){
   const base=getBaseTs();
   const hist=loadPV();
   const note=document.getElementById('note').value||'';
+  // บันทึก PV เฉพาะแถวที่มีค่า (อย่างน้อย t)
   for(let k=0;k<5;k++){
     const key=toHourKey(addHours(base,-k));
     const F=parseFloat(document.getElementById('F_'+k).value);
@@ -279,182 +310,161 @@ function saveSeriesToPVHistory(){
     const W=parseFloat(document.getElementById('W_'+k).value);
     const hasAny = Number.isFinite(F)||Number.isFinite(P)||Number.isFinite(W);
     if(!hasAny) continue;
-    hist[key]={pv_feldspar:Number.isFinite(F)?F:0, pv_pyro:Number.isFinite(P)?P:0, pv_white_sand:Number.isFinite(W)?W:0, pv_total:autoTotal(F,P,W), savedAt:new Date().toISOString(), source:'grid_v3soft', note};
+    hist[key]={pv_feldspar:Number.isFinite(F)?F:0, pv_pyro:Number.isFinite(P)?P:0, pv_white_sand:Number.isFinite(W)?W:0, pv_total:autoTotal(F,P,W), savedAt:new Date().toISOString(), source:'grid_v4startup', note};
   }
   savePVObj(hist);
   refreshPVTable();
   return base;
 }
 
-function getDeltaPV(base){
-  const L = MODEL.selected_lag_hours;
-  const src = document.getElementById('pv_source').value;
-
-  if(src==='entered'){
-    if(L+1 > 4){
-      return {error:`โมเดล lag=${L} ต้องใช้แถว t-${L} และ t-${L+1} แต่หน้านี้มีถึง t-4 เท่านั้น`, pvSrc:'entered'};
-    }
-    const i1=L, i2=L+1;
-    const aF=parseFloat(document.getElementById('F_'+i1).value);
-    const aP=parseFloat(document.getElementById('P_'+i1).value);
-    const aW=parseFloat(document.getElementById('W_'+i1).value);
-    const bF=parseFloat(document.getElementById('F_'+i2).value);
-    const bP=parseFloat(document.getElementById('P_'+i2).value);
-    const bW=parseFloat(document.getElementById('W_'+i2).value);
-    const hasA = Number.isFinite(aF)||Number.isFinite(aP)||Number.isFinite(aW);
-    const hasB = Number.isFinite(bF)||Number.isFinite(bP)||Number.isFinite(bW);
-    if(!hasA || !hasB){
-      return {error:`เลือก PV=ค่าที่กรอก ต้องกรอก PV ครบที่แถว t-${L} และ t-${L+1}`, pvSrc:'entered'};
-    }
-    const dF=(Number.isFinite(aF)?aF:0)-(Number.isFinite(bF)?bF:0);
-    const dP=(Number.isFinite(aP)?aP:0)-(Number.isFinite(bP)?bP:0);
-    const dW=(Number.isFinite(aW)?aW:0)-(Number.isFinite(bW)?bW:0);
-    const dT=(autoTotal(aF,aP,aW))-(autoTotal(bF,bP,bW));
-    const keyA=toHourKey(addHours(base,-L));
-    const keyB=toHourKey(addHours(base,-(L+1)));
-    return {dF,dP,dW,dT, keyA, keyB, pvSrc:'entered (ΔPV)'};
-  }
-
-  const need1 = toHourKey(addHours(base, -L));
-  const need2 = toHourKey(addHours(base, -(L+1)));
-  const hist = loadPV();
-  const a = hist[need1];
-  const b = hist[need2];
-  if(!a || !b){
-    return {error:`ต้องมี PV ใน History ที่ ${need1} และ ${need2} เพื่อคำนวณ ΔPV`, pvSrc:'history (ΔPV)'};
-  }
-  return {
-    dF:(a.pv_feldspar||0)-(b.pv_feldspar||0),
-    dP:(a.pv_pyro||0)-(b.pv_pyro||0),
-    dW:(a.pv_white_sand||0)-(b.pv_white_sand||0),
-    dT:(a.pv_total||0)-(b.pv_total||0),
-    keyA:need1,
-    keyB:need2,
-    pvSrc:'history (ΔPV)'
-  };
+function ruleOnlyPredict(){
+  const alk0=parseFloat(document.getElementById('alk_0').value);
+  const pred=Number.isFinite(alk0)?alk0:0;
+  const target = MODEL?.target_alkali ?? 1.60;
+  const err = target - pred;
+  return {pred, err, pvSrc:'rule_only', keyA:'n/a', keyB:'n/a', warn:[]};
 }
 
-function computeFeature(base){
-  const dpv=getDeltaPV(base);
-  if(dpv.error) return {error: dpv.error};
+function modelPredict(base){
+  // delta PV (if missing, may fail — handled by startup fallback)
+  const L=MODEL.selected_lag_hours;
+  const src=document.getElementById('pv_source').value;
+  let dF=0,dP=0,dW=0,dT=0;
+  let keyA='n/a', keyB='n/a', pvSrc='startup (ΔPV=0)';
 
+  if(src==='entered' && L+1<=4){
+    const aF=parseFloat(document.getElementById('F_'+L).value);
+    const aP=parseFloat(document.getElementById('P_'+L).value);
+    const aW=parseFloat(document.getElementById('W_'+L).value);
+    const bF=parseFloat(document.getElementById('F_'+(L+1)).value);
+    const bP=parseFloat(document.getElementById('P_'+(L+1)).value);
+    const bW=parseFloat(document.getElementById('W_'+(L+1)).value);
+    const hasA = Number.isFinite(aF)||Number.isFinite(aP)||Number.isFinite(aW);
+    const hasB = Number.isFinite(bF)||Number.isFinite(bP)||Number.isFinite(bW);
+    if(hasA && hasB){
+      dF=(Number.isFinite(aF)?aF:0)-(Number.isFinite(bF)?bF:0);
+      dP=(Number.isFinite(aP)?aP:0)-(Number.isFinite(bP)?bP:0);
+      dW=(Number.isFinite(aW)?aW:0)-(Number.isFinite(bW)?bW:0);
+      dT=(autoTotal(aF,aP,aW))-(autoTotal(bF,bP,bW));
+      keyA=toHourKey(addHours(base,-L));
+      keyB=toHourKey(addHours(base,-(L+1)));
+      pvSrc='entered (ΔPV)';
+    }
+  }
+
+  const fin0=parseFloat(document.getElementById('Fin_0').value);
   const alk1=parseFloat(document.getElementById('alk_1').value);
   const alk2=parseFloat(document.getElementById('alk_2').value);
-  const fin0=parseFloat(document.getElementById('Fin_0').value);
-  const A1=Number.isFinite(alk1)?alk1:0;
-  const A2=Number.isFinite(alk2)?alk2:0;
+  const alk0=parseFloat(document.getElementById('alk_0').value);
+  const startup=document.getElementById('startup_mode').checked;
+
+  const A0=Number.isFinite(alk0)?alk0:0;
+  const A1=Number.isFinite(alk1)?alk1:(startup?A0:0);
+  const A2=Number.isFinite(alk2)?alk2:(startup?A0:0);
   const Fin=Number.isFinite(fin0)?fin0:0;
 
-  const warn=[];
-  if(!Number.isFinite(alk1)) warn.push('Alkali(t-1) ว่าง → ใช้ 0');
-  if(!Number.isFinite(alk2)) warn.push('Alkali(t-2) ว่าง → ใช้ 0');
-  if(!Number.isFinite(fin0)) warn.push('Fineness(t) ว่าง → ใช้ 0');
-
-  const L = MODEL.selected_lag_hours;
   const feat={};
-  feat[`d_pv_feldspar_tph_lag${L}`]=dpv.dF;
-  feat[`d_pv_pyro_tph_lag${L}`]=dpv.dP;
-  feat[`d_pv_white_sand_tph_lag${L}`]=dpv.dW;
-  feat[`d_pv_total_feed_tph_lag${L}`]=dpv.dT;
+  feat[`d_pv_feldspar_tph_lag${L}`]=dF;
+  feat[`d_pv_pyro_tph_lag${L}`]=dP;
+  feat[`d_pv_white_sand_tph_lag${L}`]=dW;
+  feat[`d_pv_total_feed_tph_lag${L}`]=dT;
   feat['Fineness']=Fin;
   feat['Alkali_lag1']=A1;
   feat['Alkali_lag2']=A2;
 
-  return {feat, warn, pvSrc: dpv.pvSrc, keyA: dpv.keyA, keyB: dpv.keyB};
+  let y=MODEL.coefficients.intercept;
+  for(const name of MODEL.features){ y += (MODEL.coefficients.weights[name]||0)*(feat[name]||0); }
+  const err = (MODEL?.target_alkali ?? 1.6) - y;
+  return {pred:y, err, pvSrc, keyA, keyB, warn:[]};
 }
 
 function doPredict(base){
-  const c=computeFeature(base);
-  if(c.error) return {error:c.error};
-  let y=MODEL.coefficients.intercept;
-  for(const name of MODEL.features){ y += (MODEL.coefficients.weights[name]||0)*(c.feat[name]||0); }
-  return {pred:y, err: MODEL.target_alkali - y, dF:null, dP:null, deadbandHit:false, deadband:null, ...c};
+  const startup=document.getElementById('startup_mode').checked;
+  const fallback=document.getElementById('startup_fallback').value;
+  if(startup && fallback==='rule_only') return ruleOnlyPredict();
+  // else model-based (but may be weak if no delta); ok for zero_delta
+  return modelPredict(base);
 }
 
 function doRecommend(base){
   const pr=doPredict(base);
-  if(pr.error) return pr;
+  const target = MODEL?.target_alkali ?? 1.60;
 
   const db=parseFloat(document.getElementById('deadband').value);
   const deadband = Number.isFinite(db)?Math.abs(db):0;
-
-  // Deadband: ไม่ปรับ
   if(Math.abs(pr.err) <= deadband){
-    return {...pr, dF:0, dP:0, deadbandHit:true, deadband, pyroUsed:false, stepCap:0};
+    return {...pr, dF:0, dP:0, deadbandHit:true, deadband, pyroUsed:false, stepCap:0, modeNote:'deadband'};
   }
 
-  // Soft cap: จำกัด step ตามขนาด Error
   const gain=parseFloat(document.getElementById('soft_gain').value);
   const g = Number.isFinite(gain) ? Math.max(0.1, gain) : 5;
   const maxStep = MODEL?.limits?.max_step_per_feeder_tph ?? 0.05;
-  const stepCap = Math.min(maxStep, Math.abs(pr.err) * g);
 
-  // Pyro gating: ใช้ Pyro เฉพาะเมื่อ Pred หลุดช่วง
+  const startup=document.getElementById('startup_mode').checked;
+  const startupStepMax=parseFloat(document.getElementById('startup_step_max').value);
+  const stMax = Number.isFinite(startupStepMax)?Math.max(0.001, startupStepMax):0.02;
+
+  const stepCapBase = Math.min(maxStep, Math.abs(pr.err)*g);
+  const stepCap = startup ? Math.min(stepCapBase, stMax) : stepCapBase;
+
+  // Pyro gate
   const gateLow=parseFloat(document.getElementById('pyro_gate_low').value);
   const gateHigh=parseFloat(document.getElementById('pyro_gate_high').value);
   const low = Number.isFinite(gateLow)?gateLow:1.50;
   const high = Number.isFinite(gateHigh)?gateHigh:1.70;
+  const pyroAllowed = (pr.pred < low) || (pr.pred > high);
 
-  const usePyro = (pr.pred < low) || (pr.pred > high);
+  // Default behaviour for your requirement: during startup rule-only => Feld only
+  if(pr.pvSrc==='rule_only'){
+    const rg=parseFloat(document.getElementById('rule_gain').value);
+    const rgain = Number.isFinite(rg)?Math.max(0.1, rg):5;
+    let dF = pr.err * rgain;
+    dF = clamp(dF, -stepCap, stepCap);
+    let dP = 0; // always 0 in rule-only (safer)
+    return {...pr, dF, dP, deadbandHit:false, deadband, pyroUsed:false, pyroAllowed, stepCap, modeNote:'startup-rule'};
+  }
 
+  // Model-based: only use pyro when allowed
   const L=MODEL.selected_lag_hours;
   const wF=MODEL.coefficients.weights[`d_pv_feldspar_tph_lag${L}`]||0;
   const wP=MODEL.coefficients.weights[`d_pv_pyro_tph_lag${L}`]||0;
-
   let dP=0;
-  let dF=0;
-
-  if(usePyro && Math.abs(wP) > 1e-9){
+  if(pyroAllowed && Math.abs(wP)>1e-9){
     dP = pr.err / wP;
     dP = clamp(dP, -stepCap, stepCap);
   }
-
-  // เหลือ error ที่ยังไม่ถูกแก้
   let remain = pr.err - wP*dP;
-
-  if(Math.abs(wF) > 1e-9){
+  let dF=0;
+  if(Math.abs(wF)>1e-9){
     dF = remain / wF;
     dF = clamp(dF, -stepCap, stepCap);
-  } else {
-    dF = 0;
   }
-
-  // ถ้าอยู่ในช่วงไม่ใช้ Pyro → บังคับ dP=0
-  if(!usePyro){
-    dP = 0;
-  }
-
-  return {...pr, dF, dP, deadbandHit:false, deadband, pyroUsed:usePyro, stepCap};
+  if(!pyroAllowed) dP=0;
+  return {...pr, dF, dP, deadbandHit:false, deadband, pyroUsed:pyroAllowed && dP!=0, pyroAllowed, stepCap, modeNote:(startup?'startup-model':'normal')};
 }
 
 function show(r, mode){
   const tsKey=toHourKey(getBaseTs());
-  if(r.error){
-    document.getElementById('outStatus').innerHTML=`<p class='big bad'>${mode} ไม่สำเร็จ</p><div class='muted'>${r.error}</div>`;
-    return;
-  }
-
   document.getElementById('kpi_pred').textContent=fmt(r.pred);
   document.getElementById('kpi_err').textContent=sign(r.err);
-  document.getElementById('kpi_df').textContent=(r.dF==null?'-':sign(r.dF));
-  document.getElementById('kpi_dp').textContent=(r.dP==null?'-':sign(r.dP));
+  document.getElementById('kpi_df').textContent=sign(r.dF);
+  document.getElementById('kpi_dp').textContent=sign(r.dP);
 
-  const warn = (r.warn && r.warn.length) ? `<div class='warn'>⚠️ ${r.warn.join(' | ')}</div>` : '';
-  const pvinfo = `<div class='muted'>ΔPV ใช้จาก <span class='mono'>${r.keyA}</span> เทียบ <span class='mono'>${r.keyB}</span> • PV src: <span class='mono'>${r.pvSrc}</span></div>`;
+  const pvinfo = `<div class='muted'>PV src: <span class='mono'>${r.pvSrc}</span> • ΔPV: <span class='mono'>${r.keyA||'-'}</span> เทียบ <span class='mono'>${r.keyB||'-'}</span></div>`;
 
   let reco='';
   if(mode==='Smart Recommend'){
     if(r.deadbandHit){
       reco = `<div class='ok'>อยู่ในช่วง Deadband (±${fmt(r.deadband,3)}) → ไม่สั่งปรับ</div>`;
     } else {
-      const pyroNote = r.pyroUsed ? 'ใช้ Pyro (หลุดช่วง)' : 'ไม่ใช้ Pyro (อยู่ในช่วง 1.50–1.70)';
-      reco = `<div class='muted'>แนะนำ: ΔFeldspar <span class='mono'>${sign(r.dF)} t/h</span>, ΔPyro <span class='mono'>${sign(r.dP)} t/h</span><br><span class='tiny'>โหมดเบา: step cap = <span class='mono'>${fmt(r.stepCap,3)}</span> t/h • ${pyroNote}</span></div>`;
+      const pyroNote = r.pyroAllowed ? (r.pyroUsed?'ใช้ Pyro':'Pyro อนุญาตแต่ยังไม่ใช้/0') : 'ไม่ใช้ Pyro (อยู่ในช่วง 1.50–1.70)';
+      reco = `<div class='muted'>แนะนำ: ΔFeldspar <span class='mono'>${sign(r.dF)} t/h</span>, ΔPyro <span class='mono'>${sign(r.dP)} t/h</span><br><span class='tiny'>step cap = <span class='mono'>${fmt(r.stepCap,3)}</span> t/h • ${pyroNote} • mode=<span class='mono'>${r.modeNote}</span></span></div>`;
     }
   }
 
-  document.getElementById('outStatus').innerHTML=`<p class='big ok'>${mode} สำเร็จ</p><div class='muted'>เวลา: <span class='mono'>${tsKey}</span> | Pred: <span class='mono'>${fmt(r.pred)}%</span> | Error: <span class='mono'>${sign(r.err)}%</span></div>${warn}${reco}${pvinfo}`;
+  document.getElementById('outStatus').innerHTML=`<p class='big ok'>${mode} สำเร็จ</p><div class='muted'>เวลา: <span class='mono'>${tsKey}</span> | Pred: <span class='mono'>${fmt(r.pred)}%</span> | Error: <span class='mono'>${sign(r.err)}%</span></div>${reco}${pvinfo}`;
 
-  pushLog({tsKey, pred:+r.pred.toFixed(5), err:+r.err.toFixed(5), dF:r.dF==null?0:+r.dF.toFixed(3), dP:r.dP==null?0:+r.dP.toFixed(3), pvSrc:r.pvSrc, note:(document.getElementById('note').value||'')});
+  pushLog({tsKey, pred:+(+r.pred).toFixed(5), err:+(+r.err).toFixed(5), dF:+(+r.dF).toFixed(3), dP:+(+r.dP).toFixed(3), pvSrc:r.pvSrc, note:(document.getElementById('note').value||'')});
   refreshLogTable();
 }
 
@@ -465,7 +475,7 @@ function saveAndRun(reco){
   show(r, reco?'Smart Recommend':'Predict');
 }
 
-function exportPVJSON(){ download('pv_history_grid_fineness_v3soft.json', JSON.stringify(loadPV(), null, 2), 'application/json'); }
+function exportPVJSON(){ download('pv_history_grid_fineness_v4startup.json', JSON.stringify(loadPV(), null, 2), 'application/json'); }
 function importPVJSON(file){ const fr=new FileReader(); fr.onload=()=>{ try{ const obj=JSON.parse(fr.result); const merged={...loadPV(),...obj}; savePVObj(merged); refreshPVTable(); alert('Import PV สำเร็จ'); }catch(e){ alert('Import ไม่สำเร็จ: '+e.message); } }; fr.readAsText(file); }
 function clearPV(){ if(confirm('ล้าง PV history ทั้งหมด?')){ localStorage.removeItem(KEY_PV); refreshPVTable(); } }
 
@@ -473,7 +483,7 @@ function exportLogCSV(){
   const logs=loadLog();
   const header=['tsKey','pred','err','dF','dP','pvSrc','note'];
   const rows=[header.join(',')].concat(logs.map(x=>header.map(h=>`"${String(x[h]??'').replace(/"/g,'""')}"`).join(',')));
-  download('rm_alkali_log_v3soft.csv', rows.join('\n'), 'text/csv;charset=utf-8');
+  download('rm_alkali_log_v4startup.csv', rows.join('\n'), 'text/csv;charset=utf-8');
 }
 function clearLog(){ if(confirm('ล้าง log ทั้งหมด?')){ localStorage.removeItem(KEY_LOG); refreshLogTable(); } }
 
@@ -492,7 +502,7 @@ async function loadModel(){
     document.getElementById('pill_step').textContent = `±${(MODEL.limits?.max_step_per_feeder_tph??0.05).toFixed(2)} t/h`;
     document.getElementById('pill_lag').textContent = `${MODEL.selected_lag_hours??3}h`;
     const L = MODEL.selected_lag_hours;
-    document.getElementById('min_rules').innerHTML = `กฎขั้นต่ำ: ถ้าเลือก PV=ค่าที่กรอก ต้องกรอก PV อย่างน้อยที่แถว <span class='mono'>t-${L}</span> และ <span class='mono'>t-${L+1}</span> • ถ้าเลือก PV=History ต้องมี PV ใน History ที่เวลานั้น`;
+    document.getElementById('min_rules').innerHTML = `Start-up: Rule-only ใช้ Alkali(t) ได้เลย (ไม่ต้องรอ t-${L}/t-${L+1}) • ถ้าปิด Start-up จะกลับไปใช้โมเดล`;
     document.getElementById('modelStatus').innerHTML=`<p class='big ok'>โหลดโมเดลสำเร็จ ✅</p><div class='muted'>Lag: <span class='mono'>${MODEL.selected_lag_hours}h</span> | Samples: <span class='mono'>${MODEL.training_samples??'-'}</span></div>`;
   }catch(e){
     document.getElementById('modelErr').innerHTML = `<span class='bad'>${e.message||e}</span>`;
