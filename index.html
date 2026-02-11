@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quality Setpoint Adjuster</title>
+  <style>
+    :root{
+      --bg:#0b1220; --card:#121b2f; --muted:#9fb0d0; --text:#eaf0ff;
+      --ok:#24d18f; --warn:#ffcc00; --bad:#ff5d5d; --line:#263556;
+      --btn:#2f66ff; --btn2:#1f2b48;
+    }
+    body{ margin:0; font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:linear-gradient(180deg,var(--bg),#070b14); color:var(--text); }
+    .wrap{ max-width:920px; margin:28px auto; padding:0 16px; }
+    .title{ display:flex; align-items:flex-end; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    h1{ font-size:22px; margin:0; }
+    .sub{ color:var(--muted); font-size:13px; margin-top:6px; }
+    .grid{ display:grid; grid-template-columns:1.2fr 0.8fr; gap:16px; margin-top:16px; }
+    @media (max-width:860px){ .grid{ grid-template-columns:1fr; } }
+    .card{ background:rgba(18,27,47,.92); border:1px solid var(--line); border-radius:14px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.25); }
+    label{ display:block; font-size:13px; color:var(--muted); margin:10px 0 6px; }
+    input{
+      width:100%; box-sizing:border-box; padding:12px 12px; border-radius:12px;
+      border:1px solid var(--line); background:#0c1326; color:var(--text);
+      outline:none; font-size:15px;
+    }
+    input:focus{ border-color:#3a6cff; box-shadow:0 0 0 3px rgba(47,102,255,.18); }
+    .btns{ display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;}
+    button{
+      padding:11px 14px; border-radius:12px; border:1px solid var(--line);
+      background:var(--btn); color:white; font-weight:600; cursor:pointer;
+    }
+    button.secondary{ background:var(--btn2); }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px; border-radius:999px; border:1px solid var(--line);
+      color:var(--muted); font-size:12px; margin:6px 6px 0 0;
+    }
+    .status{
+      padding:12px; border-radius:12px; border:1px dashed var(--line);
+      margin-top:12px; background:rgba(10,16,32,.55);
+    }
+    .big{ font-size:18px; font-weight:800; margin:0 0 4px; }
+    .muted{ color:var(--muted); }
+    .ok{ color:var(--ok); }
+    .warn{ color:var(--warn); }
+    .bad{ color:var(--bad); }
+    .mono{ font-variant-numeric:tabular-nums; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .hr{ height:1px; background:var(--line); margin:14px 0; }
+    .foot{ color:var(--muted); font-size:12px; margin-top:10px; line-height:1.5; }
+    .kpi{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:10px; }
+    .kpi .box{ border:1px solid var(--line); border-radius:12px; padding:10px; background:rgba(12,19,38,.72); }
+    .kpi .lbl{ color:var(--muted); font-size:12px; }
+    .kpi .val{ font-size:16px; font-weight:800; margin-top:3px; }
+    .rules{ margin-top:10px; border:1px solid var(--line); border-radius:12px; padding:10px; background:rgba(12,19,38,.5); }
+    .rules b{ color:#cfe0ff; }
+    ul{ margin:8px 0 0 18px; padding:0; }
+    li{ margin:4px 0; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">
+      <div>
+        <h1>Quality Setpoint Adjuster</h1>
+        <div class="sub">กรอกค่า Quality (%). ระบบจะแนะนำว่าควรปรับ Set point ไหม และคำนวณ Set point ใหม่ (ถ้ากรอกค่าปัจจุบัน)</div>
+      </div>
+      <div>
+        <span class="pill">Target: <b class="mono">1.60%</b></span>
+        <span class="pill">Min: <b class="mono">1.55%</b></span>
+        <span class="pill">Max: <b class="mono">1.65%</b></span>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Input -->
+      <div class="card">
+        <h2 style="margin:0 0 8px; font-size:16px;">ข้อมูลเข้า</h2>
+
+        <label>ค่าคุณภาพที่วัดได้ (Quality, %)</label>
+        <input id="quality" type="number" inputmode="decimal" step="0.001" placeholder="เช่น 1.68" />
+
+        <label>Set point ปัจจุบัน (t/hr) <span class="muted">(ไม่กรอกก็ได้)</span></label>
+        <input id="setpoint" type="number" inputmode="decimal" step="0.01" placeholder="เช่น 2.50" />
+
+        <div class="btns">
+          <button id="calc">คำนวณ</button>
+          <button class="secondary" id="reset">ล้างค่า</button>
+        </div>
+
+        <div class="rules">
+          <b>กฎการปรับ (ตามที่กำหนด):</b>
+          <ul>
+            <li><span class="mono">1.55 ≤ Q ≤ 1.65</span> → ไม่ต้องปรับ</li>
+            <li><span class="mono">1.65 &lt; Q ≤ 1.70</span> → ปรับ <span class="mono">0.03</span> t/hr (ลด)</li>
+            <li><span class="mono">Q &gt; 1.70</span> → ปรับ <span class="mono">0.05</span> t/hr (ลด)</li>
+            <li><span class="mono">1.50 ≤ Q &lt; 1.55</span> → ปรับ <span class="mono">0.03</span> t/hr (เพิ่ม)</li>
+            <li><span class="mono">Q &lt; 1.50</span> → ปรับ <span class="mono">0.05</span> t/hr (เพิ่ม)</li>
+          </ul>
+        </div>
+
+        <div class="foot">
+          หมายเหตุ: ระบบคิดตามค่าที่กรอกจริง (ทศนิยมได้) เช่น <span class="mono">1.651</span> จะเข้าช่วง <span class="mono">1.65&lt;Q≤1.70</span>
+        </div>
+      </div>
+
+      <!-- Output -->
+      <div class="card">
+        <h2 style="margin:0 0 8px; font-size:16px;">ผลลัพธ์</h2>
+
+        <div id="status" class="status">
+          <p class="big">พร้อมคำนวณ</p>
+          <div class="muted">กรอกค่า Quality แล้วกด “คำนวณ”</div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="kpi">
+          <div class="box">
+            <div class="lbl">Deviation จากสเปค</div>
+            <div class="val mono" id="dev">-</div>
+          </div>
+          <div class="box">
+            <div class="lbl">คำสั่งปรับ (Δ t/hr)</div>
+            <div class="val mono" id="delta">-</div>
+          </div>
+          <div class="box">
+            <div class="lbl">Set point ใหม่ (t/hr)</div>
+            <div class="val mono" id="newsp">-</div>
+          </div>
+        </div>
+
+        <div class="foot">
+          การแสดง Deviation: <span class="mono">+</span> = เกิน Max, <span class="mono">-</span> = ต่ำกว่า Min
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const cfg = {
+    min: 1.55,
+    max: 1.65,
+
+    // High side thresholds
+    high03_top: 1.70, // (1.65, 1.70] => 0.03
+    // > 1.70 => 0.05
+
+    // Low side thresholds
+    low03_bottom: 1.50, // [1.50, 1.55) => 0.03
+    // < 1.50 => 0.05
+
+    adj03: 0.03,
+    adj05: 0.05
+  };
+
+  const qEl = document.getElementById('quality');
+  const spEl = document.getElementById('setpoint');
+
+  const statusEl = document.getElementById('status');
+  const devEl = document.getElementById('dev');
+  const deltaEl = document.getElementById('delta');
+  const newspEl = document.getElementById('newsp');
+
+  function fmt(n, d=3){
+    if (n === null || n === undefined || Number.isNaN(n)) return '-';
+    return Number(n).toFixed(d);
+  }
+  function fmt2(n){
+    if (n === null || n === undefined || Number.isNaN(n)) return '-';
+    return Number(n).toFixed(2);
+  }
+  function signText(x){
+    if (x > 0) return "+" + fmt2(x);
+    if (x < 0) return fmt2(x);
+    return "0.00";
+  }
+
+  // คืนค่า: signedDelta (มีเครื่องหมายแล้ว), msg, cls, devSigned
+  function compute(q){
+    // In-spec
+    if (q >= cfg.min && q <= cfg.max){
+      return { signedDelta: 0, msg: "อยู่ในสเปค ✅ ไม่ต้องปรับ", cls: "ok", devSigned: 0 };
+    }
+
+    // High side: ลด
+    if (q > cfg.max){
+      const dev = q - cfg.max; // + deviation from max
+      if (q <= cfg.high03_top){
+        return {
+          signedDelta: -cfg.adj03,
+          msg: `สูงเกิน Max (${fmt(q,3)}%) → สั่งปรับลด ${cfg.adj03.toFixed(2)} t/hr`,
+          cls: "warn",
+          devSigned: +dev
+        };
+      }
+      return {
+        signedDelta: -cfg.adj05,
+        msg: `สูงเกิน Max มาก (${fmt(q,3)}%) → สั่งปรับลด ${cfg.adj05.toFixed(2)} t/hr`,
+        cls: "bad",
+        devSigned: +dev
+      };
+    }
+
+    // Low side: เพิ่ม
+    if (q < cfg.min){
+      const dev = cfg.min - q; // magnitude
+      if (q >= cfg.low03_bottom){
+        return {
+          signedDelta: +cfg.adj03,
+          msg: `ต่ำกว่า Min (${fmt(q,3)}%) → สั่งปรับเพิ่ม ${cfg.adj03.toFixed(2)} t/hr`,
+          cls: "warn",
+          devSigned: -dev
+        };
+      }
+      return {
+        signedDelta: +cfg.adj05,
+        msg: `ต่ำกว่า Min มาก (${fmt(q,3)}%) → สั่งปรับเพิ่ม ${cfg.adj05.toFixed(2)} t/hr`,
+        cls: "bad",
+        devSigned: -dev
+      };
+    }
+  }
+
+  function render(){
+    const q = parseFloat(qEl.value);
+    const sp = spEl.value.trim() === "" ? null : parseFloat(spEl.value);
+
+    if (Number.isNaN(q)){
+      statusEl.innerHTML = `<p class="big">กรอกค่า Quality ก่อนครับ</p><div class="muted">ตัวอย่าง: 1.68</div>`;
+      devEl.textContent = "-";
+      deltaEl.textContent = "-";
+      newspEl.textContent = "-";
+      return;
+    }
+
+    const r = compute(q);
+
+    let newSp = null;
+    if (sp !== null && !Number.isNaN(sp)){
+      newSp = sp + r.signedDelta;
+    }
+
+    statusEl.innerHTML = `
+      <p class="big ${r.cls}">${r.msg}</p>
+      <div class="muted">Quality: <span class="mono">${fmt(q,3)}%</span> | สเปค: <span class="mono">${cfg.min.toFixed(2)}–${cfg.max.toFixed(2)}%</span></div>
+    `;
+
+    devEl.textContent = (r.devSigned === 0) ? "0.000" : fmt(r.devSigned, 3);
+    deltaEl.textContent = signText(r.signedDelta) + " t/hr";
+    newspEl.textContent = (newSp === null) ? "—" : fmt2(newSp);
+  }
+
+  document.getElementById('calc').addEventListener('click', render);
+  document.getElementById('reset').addEventListener('click', () => {
+    qEl.value = "";
+    spEl.value = "";
+    statusEl.innerHTML = `<p class="big">พร้อมคำนวณ</p><div class="muted">กรอกค่า Quality แล้วกด “คำนวณ”</div>`;
+    devEl.textContent = "-";
+    deltaEl.textContent = "-";
+    newspEl.textContent = "-";
+  });
+
+  // คำนวณอัตโนมัติขณะพิมพ์
+  qEl.addEventListener('input', render);
+  spEl.addEventListener('input', render);
+})();
+</script>
+</body>
+</html>
+``
