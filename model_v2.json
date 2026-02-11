@@ -1,0 +1,70 @@
+{
+  "schema_version": "2.0",
+  "model_type": "constrained_ridge_arx_delta",
+  "trained_at": "2026-02-11T13:42:43Z",
+  "target_alkali": 1.6,
+  "selected_lag_hours": 3,
+  "training_samples": 127,
+  "holdout_metrics": {
+    "candidates": [
+      {
+        "lag": 3,
+        "n": 127,
+        "r2": 0.7105494934810601,
+        "mae": 0.045599439628360425,
+        "opt": {
+          "success": true,
+          "message": "CONVERGENCE: REL_REDUCTION_OF_F_<=_FACTR*EPSMCH",
+          "nit": 24,
+          "fun": 0.5536383629869259,
+          "status": 0
+        }
+      }
+    ],
+    "selected": {
+      "lag": 3,
+      "n": 127,
+      "r2": 0.7105494934810601,
+      "mae": 0.045599439628360425,
+      "opt": {
+        "success": true,
+        "message": "CONVERGENCE: REL_REDUCTION_OF_F_<=_FACTR*EPSMCH",
+        "nit": 24,
+        "fun": 0.5536383629869259,
+        "status": 0
+      }
+    }
+  },
+  "features": [
+    "d_pv_feldspar_tph_lag3",
+    "d_pv_pyro_tph_lag3",
+    "d_pv_white_sand_tph_lag3",
+    "d_pv_total_feed_tph_lag3",
+    "Fineness",
+    "Alkali_lag1",
+    "Alkali_lag2"
+  ],
+  "coefficients": {
+    "intercept": 0.3227032263934728,
+    "weights": {
+      "d_pv_feldspar_tph_lag3": 0.1485844880378847,
+      "d_pv_pyro_tph_lag3": -0.016416869080734014,
+      "d_pv_white_sand_tph_lag3": -0.0052201223324785965,
+      "d_pv_total_feed_tph_lag3": -0.00886116591137916,
+      "Fineness": 0.0014708294634000673,
+      "Alkali_lag1": 0.8811472537168982,
+      "Alkali_lag2": -0.07813576890286987
+    }
+  },
+  "constraints": {
+    "feldspar_delta_coef": ">= 0 (เพิ่ม Feldspar → Alkali เพิ่ม)",
+    "pyro_delta_coef": "<= 0 (เพิ่ม Pyro → Alkali ลด)"
+  },
+  "limits": {
+    "min_pv_total_feed_tph": 0.5,
+    "max_step_per_feeder_tph": 0.05,
+    "lock_after_adjust_hours": 3
+  },
+  "pv_basis": "dry (already moisture-corrected)",
+  "feature_notes": "ใช้ ΔPV (ชั่วโมง t-L เทียบ t-L-1) เพื่อลดปัญหา reverse causality/collinearity และตัดช่วง transient ±2h รอบ event"
+}
