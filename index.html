@@ -507,7 +507,7 @@ function exportLogCSV(){
 function clearLog(){ if(confirm('ล้าง log ทั้งหมด?')){ localStorage.removeItem(KEY_LOG); refreshLogTable(); } }
 
 async function loadModel(){
-  const url = new URL('model_v3.json', window.location.href).toString();
+  const url = new URL('model_v4.json', window.location.href).toString();
   document.getElementById('modelUrl').textContent = url;
   if(location.protocol==='file:'){
     document.getElementById('modelStatus').innerHTML=`<p class='big bad'>เปิดผ่าน file://</p><div class='muted'>กรุณาเปิดผ่าน GitHub Pages หรือ web server</div>`;
@@ -525,7 +525,7 @@ async function loadModel(){
     document.getElementById('modelStatus').innerHTML=`<p class='big ok'>โหลดโมเดลสำเร็จ ✅</p><div class='muted'>Lag: <span class='mono'>${MODEL.selected_lag_hours}h</span> | Samples: <span class='mono'>${MODEL.training_samples??'-'}</span></div>`;
   }catch(e){
     document.getElementById('modelErr').innerHTML = `<span class='bad'>${e.message||e}</span>`;
-    document.getElementById('modelStatus').innerHTML=`<p class='big bad'>โหลดโมเดลไม่สำเร็จ</p><div class='muted'>เช็คว่า model_v3.json อยู่โฟลเดอร์เดียวกับไฟล์ html และเปิดผ่าน Pages</div>`;
+    document.getElementById('modelStatus').innerHTML=`<p class='big bad'>โหลดโมเดลไม่สำเร็จ</p><div class='muted'>เช็คว่า model_v4.json อยู่โฟลเดอร์เดียวกับไฟล์ html และเปิดผ่าน Pages</div>`;
   }
 }
 
