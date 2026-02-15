@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <title>RM Alkali Smart Adjuster — Grid Entry (v3-soft + Excel Paste 1-2-3-4-10-16)</title>
+  <title>RM Alkali Smart Adjuster — Grid Entry (v3-soft + Paste 1-2-3-4-10-16 + Reverse Rows)</title>
   <style>
     :root{--bg:#0b1220;--card:#121b2f;--muted:#9fb0d0;--text:#eaf0ff;--line:#263556;--ok:#24d18f;--warn:#ffcc00;--bad:#ff5d5d;--btn:#2f66ff;--btn2:#1f2b48;}
     body{margin:0;font-family:'Kanit',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(180deg,var(--bg),#070b14);color:var(--text)}
@@ -57,7 +57,7 @@
   <div class="top">
     <div>
       <h1>RM Alkali Smart Adjuster — Grid Entry (v3-soft + Excel Paste)</h1>
-      <div class="sub">✅ โมเดลคำนวณเหมือนเดิม (ใช้ White Sand / Pyro(A) / Feldspar(K)) • เพิ่ม Pyro(B) แค่สำหรับบันทึก • Paste ยาวทั้งแถว: ดึงคอลัมน์ 1,2,3,4,10,16 → W/PA/PB/F/Fin/Alk</div>
+      <div class="sub">✅ โมเดลคำนวณเหมือนเดิม (ใช้ White Sand / Pyro(A) / Feldspar(K)) • Pyro(B) เก็บข้อมูลอย่างเดียว • Paste ยาวทั้งแถว: ดึงคอลัมน์ 1,2,3,4,10,16 • ถ้า paste หลายบรรทัด Excel เรียง t-4→t จะถูกสลับให้ตรงหน้าเว็บ t→t-4</div>
     </div>
     <div>
       <span class="pill">Target: <b class="mono" id="pill_target">1.60%</b></span>
@@ -76,7 +76,7 @@
         <div>
           <label>Deadband (|Error| ≤ deadband ⇒ ไม่สั่งปรับ)</label>
           <input id="deadband" type="number" step="0.001" value="0.005" />
-          <div class="tiny">แนะนำ 0.003–0.010 • ถ้า Error เล็กมาก (เช่น 0.001) จะไม่ปรับ</div>
+          <div class="tiny">แนะนำ 0.003–0.010</div>
         </div>
         <div>
           <label>แหล่ง PV สำหรับคำนวณ ΔPV</label>
@@ -84,7 +84,6 @@
             <option value="history">ใช้ PV History (ΔPV)</option>
             <option value="entered">ใช้ PV จากค่าที่กรอกในตาราง (t..t-4)</option>
           </select>
-          <div class="tiny">เลือก “ค่าที่กรอก” จะใช้ PV แถว t-lag เทียบ t-(lag+1)</div>
         </div>
       </div>
 
@@ -94,19 +93,19 @@
           <div class="row2">
             <div>
               <input id="pyro_gate_low" type="number" step="0.01" value="1.50" />
-              <div class="tiny">ต่ำกว่าเท่านี้ ถึงจะเริ่มใช้ Pyro</div>
+              <div class="tiny">ต่ำกว่าเท่านี้ ถึงจะเริ่มใช้ Pyro(A)</div>
             </div>
             <div>
               <input id="pyro_gate_high" type="number" step="0.01" value="1.70" />
-              <div class="tiny">สูงกว่าเท่านี้ ถึงจะเริ่มใช้ Pyro</div>
+              <div class="tiny">สูงกว่าเท่านี้ ถึงจะเริ่มใช้ Pyro(A)</div>
             </div>
           </div>
-          <div class="tiny">หมายเหตุ: Pyro(B) เก็บเป็นข้อมูลอย่างเดียว (โมเดลยังใช้ Pyro(A) เหมือนเดิม)</div>
+          <div class="tiny">หมายเหตุ: Pyro(B) ไม่ถูกใช้ในโมเดล/ΔPV</div>
         </div>
         <div>
           <label>ความ “เบา” ของการปรับ (Step cap per Error)</label>
           <input id="soft_gain" type="number" step="0.1" value="5" />
-          <div class="tiny">สูตร: step_cap = min(max_step, |Error| × gain) • เช่น Error=0.010 และ gain=5 ⇒ cap=0.05</div>
+          <div class="tiny">step_cap = min(max_step, |Error| × gain)</div>
         </div>
       </div>
 
@@ -117,7 +116,7 @@
         <label class="tiny checkTiny"><input id="auto_shift_after_save" type="checkbox" checked>เลื่อนอัตโนมัติหลังบันทึก</label>
         <button class="ghost danger" id="btn_clear">ล้างตาราง</button>
       </div>
-      <div class="tiny">Excel paste: คัดลอกทั้งแถว (1..16) แล้ว paste ลงช่องใดก็ได้ในแถว t → ระบบจะดึงคอลัมน์ 1,2,3,4,10,16 ให้อัตโนมัติ</div>
+      <div class="tiny">Excel paste: copy ทั้งแถว 1..16 แล้ว paste ลงช่องใดก็ได้ → ระบบดึง 1,2,3,4,10,16 = W/PA/PB/F/Fin/Alk</div>
 
       <div class="split"></div>
       <div class="hcell">ตารางกรอกค่า (t ถึง t-4)</div>
@@ -309,19 +308,9 @@ function saveSeriesToPVHistory(){
     const W=parseFloat(document.getElementById('W_'+k).value);
     const hasAny = Number.isFinite(Fk)||Number.isFinite(PA)||Number.isFinite(W)||Number.isFinite(PB);
     if(!hasAny) continue;
-    // โมเดลเดิมใช้ Pyro(A) เท่านั้น
-    const pyroA = Number.isFinite(PA)?PA:0;
-    hist[key]={
-      pv_feldspar:Number.isFinite(Fk)?Fk:0,
-      pv_pyro:pyroA,
-      pv_pyro_a:pyroA,
-      pv_pyro_b:Number.isFinite(PB)?PB:0,
-      pv_white_sand:Number.isFinite(W)?W:0,
-      pv_total:autoTotal(Fk,pyroA,W),
-      savedAt:new Date().toISOString(),
-      source:'grid_v3soft',
-      note
-    };
+    const pyroA = Number.isFinite(PA)?PA:0; // ใช้ Pyro(A) เท่านั้น
+    hist[key]={pv_feldspar:Number.isFinite(Fk)?Fk:0, pv_pyro:pyroA, pv_pyro_a:pyroA, pv_pyro_b:Number.isFinite(PB)?PB:0,
+              pv_white_sand:Number.isFinite(W)?W:0, pv_total:autoTotal(Fk,pyroA,W), savedAt:new Date().toISOString(), source:'grid_v3soft', note};
   }
   savePVObj(hist);
   refreshPVTable();
@@ -540,23 +529,19 @@ async function loadModel(){
   }
 }
 
-// ===== Paste โปรไฟล์: ดึงคอลัมน์ 1,2,3,4,10,16 จากแถวที่ copy มาทั้งแถว =====
+// ===== Paste โปรไฟล์: ดึงคอลัมน์ 1,2,3,4,10,16 =====
 const COLS = ['W_','PA_','PB_','F_','Fin_','alk_'];
 const PICK_1BASED = [1,2,3,4,10,16];
 
 function splitRows(text){
   return text.replace(/\r/g,'').split('\n').filter(r=>r.length>0);
 }
-
 function splitTabsKeepEmpty(line){
-  // split by tab; keep empty cells
   return line.split('\t');
 }
-
 function cellClean(s){
   return (s??'').trim();
 }
-
 function getInputInfo(id){
   const m = id.match(/^([A-Za-z]+_)(\d+)$/);
   if(!m) return null;
@@ -566,27 +551,19 @@ function getInputInfo(id){
   if(colIndex<0) return null;
   return {row,colIndex};
 }
-
 function fillPicked(rowIdx, cols){
-  // cols: array of strings (len 6) mapped to COLS order
   for(let i=0;i<COLS.length;i++){
     const el=document.getElementById(COLS[i]+rowIdx);
     if(el && cols[i]!==undefined) el.value = cols[i];
   }
 }
-
 function extractFromLine(line){
   const parts = splitTabsKeepEmpty(line);
-  // ensure length at least max index
   const out=[];
-  for(const k of PICK_1BASED){
-    out.push(cellClean(parts[k-1]));
-  }
+  for(const k of PICK_1BASED){ out.push(cellClean(parts[k-1])); }
   return out;
 }
-
 function attachExcelPasteToGrid(){
-  // bind paste to all inputs in grid
   COLS.forEach(pref=>{
     for(let r=0;r<=4;r++){
       const el=document.getElementById(pref+r);
@@ -596,19 +573,17 @@ function attachExcelPasteToGrid(){
         if(!text) return;
         const lines = splitRows(text);
         if(lines.length===0) return;
-
-        // ถ้าข้อมูลไม่ใช่รูปแบบ tab (มีค่าเดียว) ให้ paste ปกติ
-        const looksLikeExcel = lines[0].includes('\t');
-        if(!looksLikeExcel) return;
+        if(!lines[0].includes('\t')) return; // ไม่ใช่ Excel-like
 
         const info=getInputInfo(el.id);
         if(!info) return;
         e.preventDefault();
 
-        // รองรับหลายบรรทัด: เติมลงแถวถัดไป (t, t-1, ...)
+        // ✅ สลับลำดับบรรทัดให้ตรง (Excel: t-4→t, เว็บ: t→t-4)
+        // ถ้า paste มา 5 บรรทัด: บรรทัดสุดท้ายจะลงแถว t
         for(let i=0;i<lines.length;i++){
-          const row = info.row + i;
-          if(row>4) break;
+          const row = info.row + (lines.length - 1 - i);
+          if(row<0 || row>4) continue;
           const picked = extractFromLine(lines[i]);
           fillPicked(row, picked);
         }
