@@ -1,0 +1,42 @@
+{
+  "version": "v4",
+  "selected_lag_hours": 3,
+  "target_alkali": 1.6,
+  "features": [
+    "d_pv_white_sand_tph_lag3",
+    "d_pv_pyro_tph_lag3",
+    "d_pv_feldspar_tph_lag3",
+    "d_pv_total_feed_tph_lag3",
+    "Fineness_cur",
+    "Alkali_lag1",
+    "Alkali_lag2"
+  ],
+  "coefficients": {
+    "intercept": 0.30174371589924764,
+    "weights": {
+      "d_pv_white_sand_tph_lag3": 0.36336997965605855,
+      "d_pv_pyro_tph_lag3": 0.3372260742424113,
+      "d_pv_feldspar_tph_lag3": 0.4420434948698053,
+      "d_pv_total_feed_tph_lag3": -0.3529137806894317,
+      "Fineness_cur": 0.0058876263289947064,
+      "Alkali_lag1": 0.618852295955604,
+      "Alkali_lag2": 0.15435487392643052
+    }
+  },
+  "training_samples": 940,
+  "metrics": {
+    "rmse": 0.08700221210120897,
+    "mae": 0.05578277326783144
+  },
+  "limits": {
+    "max_step_per_feeder_tph": 0.05
+  },
+  "data_filter": {
+    "pv_total_feed_3point_window": "t,t-1,t-2",
+    "pv_total_feed_range_3point_max": 0.1,
+    "if_range_exceed_allow_when": "event contains เพิ่ม/ลด Feed or feeder/setpoint adjustments",
+    "exclude_when": "Stop Mill/Stop RM/หยุด Feed/Overstock/ไฟฟ้าดับ within the 3-point window",
+    "exclude_first_last_row_each_segment": true,
+    "invalid_calendar_dates_dropped": 240
+  }
+}
