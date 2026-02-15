@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <title>RM Alkali Smart Adjuster — Grid Entry (v3-soft)</title>
+  <title>RM Alkali Smart Adjuster — Grid Entry (v3-soft + Excel Paste 1-2-3-4-10-16)</title>
   <style>
     :root{--bg:#0b1220;--card:#121b2f;--muted:#9fb0d0;--text:#eaf0ff;--line:#263556;--ok:#24d18f;--warn:#ffcc00;--bad:#ff5d5d;--btn:#2f66ff;--btn2:#1f2b48;}
     body{margin:0;font-family:'Kanit',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(180deg,var(--bg),#070b14);color:var(--text)}
@@ -21,7 +21,7 @@
     label{display:block;color:var(--muted);font-size:13px;margin:10px 0 6px}
     input,textarea,select{width:100%;box-sizing:border-box;padding:12px;border-radius:12px;border:1px solid var(--line);background:#0c1326;color:var(--text);outline:none;font-size:14px;font-family:'Kanit',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
     textarea{min-height:76px;resize:vertical}
-    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center}
     button{padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--btn);color:#fff;font-weight:800;cursor:pointer;font-family:'Kanit',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
     button.secondary{background:var(--btn2)}
     button.ghost{background:transparent}
@@ -36,7 +36,7 @@
     .split{height:1px;background:var(--line);margin:14px 0}
     .tiny{font-size:12px;color:var(--muted);line-height:1.55}
 
-    .entry-grid{display:grid;grid-template-columns:120px repeat(5, minmax(140px, 1fr));gap:10px;align-items:center;margin-top:10px}
+    .entry-grid{display:grid;grid-template-columns:120px repeat(6, minmax(140px, 1fr));gap:10px;align-items:center;margin-top:10px}
     @media (max-width:980px){.entry-grid{grid-template-columns:110px repeat(2, minmax(150px, 1fr));}}
     .hcell{color:#cfe0ff;font-weight:800;font-size:12px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:rgba(12,19,38,.7)}
     .rowlbl{color:#cfe0ff;font-weight:800;font-size:13px;padding:10px;border:1px solid var(--line);border-radius:12px;background:rgba(12,19,38,.45)}
@@ -48,14 +48,16 @@
     tr:last-child td{border-bottom:none}
     .right{text-align:right}
     .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .checkTiny{display:flex;gap:8px;align-items:center}
+    .checkTiny input{width:auto;transform:scale(1.05)}
   </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
     <div>
-      <h1>RM Alkali Smart Adjuster — Grid Entry (v3-soft)</h1>
-      <div class="sub">โหมด “ปรับเบา ๆ”: มี Deadband + จำกัดการใช้ Pyro เฉพาะเมื่อหลุดช่วง (ต่ำกว่า 1.50 หรือสูงกว่า 1.70) และจำกัดขนาด Step ตามขนาด Error</div>
+      <h1>RM Alkali Smart Adjuster — Grid Entry (v3-soft + Excel Paste)</h1>
+      <div class="sub">✅ โมเดลคำนวณเหมือนเดิม (ใช้ White Sand / Pyro(A) / Feldspar(K)) • เพิ่ม Pyro(B) แค่สำหรับบันทึก • Paste ยาวทั้งแถว: ดึงคอลัมน์ 1,2,3,4,10,16 → W/PA/PB/F/Fin/Alk</div>
     </div>
     <div>
       <span class="pill">Target: <b class="mono" id="pill_target">1.60%</b></span>
@@ -99,6 +101,7 @@
               <div class="tiny">สูงกว่าเท่านี้ ถึงจะเริ่มใช้ Pyro</div>
             </div>
           </div>
+          <div class="tiny">หมายเหตุ: Pyro(B) เก็บเป็นข้อมูลอย่างเดียว (โมเดลยังใช้ Pyro(A) เหมือนเดิม)</div>
         </div>
         <div>
           <label>ความ “เบา” ของการปรับ (Step cap per Error)</label>
@@ -110,23 +113,22 @@
       <div class="btns">
         <button class="secondary" id="btn_now">ใช้เวลา “ชั่วโมงนี้”</button>
         <button class="ghost" id="btn_copy_t_down">คัดลอก PV+Fineness แถว t → ลง t-1..t-4</button>
-  <button class="ghost" id="btn_shift_down">เพิ่มชุดล่าสุด (เลื่อน t → t-1)</button>
-  <label class="tiny" style="display:flex;gap:8px;align-items:center;">
-    <input id="auto_shift_after_save" type="checkbox" checked style="width:auto" />
-    เลื่อนอัตโนมัติหลังบันทึก
-  </label>
+        <button class="ghost" id="btn_shift_down">เพิ่มชุดล่าสุด (เลื่อน t → t-1)</button>
+        <label class="tiny checkTiny"><input id="auto_shift_after_save" type="checkbox" checked>เลื่อนอัตโนมัติหลังบันทึก</label>
         <button class="ghost danger" id="btn_clear">ล้างตาราง</button>
       </div>
+      <div class="tiny">Excel paste: คัดลอกทั้งแถว (1..16) แล้ว paste ลงช่องใดก็ได้ในแถว t → ระบบจะดึงคอลัมน์ 1,2,3,4,10,16 ให้อัตโนมัติ</div>
 
       <div class="split"></div>
       <div class="hcell">ตารางกรอกค่า (t ถึง t-4)</div>
       <div class="entry-grid" id="grid">
         <div class="hcell">เวลา</div>
-        <div class="hcell">Alkali (%)</div>
+        <div class="hcell">White Sand</div>
+        <div class="hcell">Pyro (A)</div>
+        <div class="hcell">Pyro (B)</div>
+        <div class="hcell">Feldspar(K)</div>
         <div class="hcell">Fineness</div>
-        <div class="hcell">PV Feldspar (t/h)</div>
-        <div class="hcell">PV Pyro (t/h)</div>
-        <div class="hcell">PV White Sand (t/h)</div>
+        <div class="hcell">Alkali (%)</div>
       </div>
       <div class="tiny" id="min_rules" style="margin-top:10px"></div>
 
@@ -155,7 +157,7 @@
       </div>
       <div style="margin-top:10px;overflow:auto">
         <table>
-          <thead><tr><th>เวลา</th><th class="right">Feld</th><th class="right">Pyro</th><th class="right">W.Sand</th><th class="right">Total</th></tr></thead>
+          <thead><tr><th>เวลา</th><th class="right">Feld(K)</th><th class="right">Pyro(A)</th><th class="right">W.Sand</th><th class="right">Total</th></tr></thead>
           <tbody id="pvHistBody"><tr><td colspan="5" class="muted">ยังไม่มีข้อมูล</td></tr></tbody>
         </table>
       </div>
@@ -170,7 +172,7 @@
         <div><div class="tiny">Pred Alkali</div><div class="mono" id="kpi_pred">-</div></div>
         <div><div class="tiny">Error</div><div class="mono" id="kpi_err">-</div></div>
         <div><div class="tiny">Δ Feldspar</div><div class="mono" id="kpi_df">-</div></div>
-        <div><div class="tiny">Δ Pyro</div><div class="mono" id="kpi_dp">-</div></div>
+        <div><div class="tiny">Δ Pyro(A)</div><div class="mono" id="kpi_dp">-</div></div>
       </div>
 
       <div class="split"></div>
@@ -181,7 +183,7 @@
       </div>
       <div style="margin-top:10px;overflow:auto;max-height:520px">
         <table>
-          <thead><tr><th>เวลา</th><th>Pred</th><th>ΔF</th><th>ΔP</th><th>PV src</th><th>หมายเหตุ</th></tr></thead>
+          <thead><tr><th>เวลา</th><th>Pred</th><th>ΔF</th><th>ΔP(A)</th><th>PV src</th><th>หมายเหตุ</th></tr></thead>
           <tbody id="logBody"><tr><td colspan="6" class="muted">ยังไม่มีรายการ</td></tr></tbody>
         </table>
       </div>
@@ -223,7 +225,7 @@ function refreshPVTable(){
   if(keys.length===0){ document.getElementById('pvHistBody').innerHTML=`<tr><td colspan='5' class='muted'>ยังไม่มีข้อมูล</td></tr>`; return; }
   document.getElementById('pvHistBody').innerHTML = keys.map(k=>{
     const r=hist[k];
-    return `<tr><td class='mono'>${k}</td><td class='right mono'>${fmt(r.pv_feldspar)}</td><td class='right mono'>${fmt(r.pv_pyro)}</td><td class='right mono'>${fmt(r.pv_white_sand)}</td><td class='right mono'>${fmt(r.pv_total)}</td></tr>`;
+    return `<tr><td class='mono'>${k}</td><td class='right mono'>${fmt(r.pv_feldspar)}</td><td class='right mono'>${fmt(r.pv_pyro_a)}</td><td class='right mono'>${fmt(r.pv_white_sand)}</td><td class='right mono'>${fmt(r.pv_total)}</td></tr>`;
   }).join('');
 }
 
@@ -235,34 +237,43 @@ function refreshLogTable(){
 
 function buildGrid(){
   const grid=document.getElementById('grid');
-  while(grid.children.length>6) grid.removeChild(grid.lastChild);
+  while(grid.children.length>7) grid.removeChild(grid.lastChild);
   const labels=['t','t-1','t-2','t-3','t-4'];
   for(let k=0;k<5;k++){
     const lbl=document.createElement('div'); lbl.className='rowlbl'; lbl.textContent=labels[k]; grid.appendChild(lbl);
-    const c1=document.createElement('div'); c1.className='cell'; c1.innerHTML=`<input id='alk_${k}' type='number' step='0.001' placeholder='Alkali ${labels[k]}'/>`; grid.appendChild(c1);
-    const cFin=document.createElement('div'); cFin.className='cell'; cFin.innerHTML=`<input id='Fin_${k}' type='number' step='0.01' placeholder='Fineness ${labels[k]}'/>`; grid.appendChild(cFin);
-    const c2=document.createElement('div'); c2.className='cell'; c2.innerHTML=`<input id='F_${k}' type='number' step='0.001' placeholder='Feldspar ${labels[k]}'/>`; grid.appendChild(c2);
-    const c3=document.createElement('div'); c3.className='cell'; c3.innerHTML=`<input id='P_${k}' type='number' step='0.001' placeholder='Pyro ${labels[k]}'/>`; grid.appendChild(c3);
-    const c4=document.createElement('div'); c4.className='cell'; c4.innerHTML=`<input id='W_${k}' type='number' step='0.001' placeholder='White Sand ${labels[k]}'/>`; grid.appendChild(c4);
+    const cW=document.createElement('div'); cW.className='cell'; cW.innerHTML=`<input id='W_${k}' type='number' step='0.001'/>`; grid.appendChild(cW);
+    const cPA=document.createElement('div'); cPA.className='cell'; cPA.innerHTML=`<input id='PA_${k}' type='number' step='0.001'/>`; grid.appendChild(cPA);
+    const cPB=document.createElement('div'); cPB.className='cell'; cPB.innerHTML=`<input id='PB_${k}' type='number' step='0.001'/>`; grid.appendChild(cPB);
+    const cF=document.createElement('div'); cF.className='cell'; cF.innerHTML=`<input id='F_${k}' type='number' step='0.001'/>`; grid.appendChild(cF);
+    const cFin=document.createElement('div'); cFin.className='cell'; cFin.innerHTML=`<input id='Fin_${k}' type='number' step='0.01'/>`; grid.appendChild(cFin);
+    const cAlk=document.createElement('div'); cAlk.className='cell'; cAlk.innerHTML=`<input id='alk_${k}' type='number' step='0.001'/>`; grid.appendChild(cAlk);
   }
 }
 
-function autoTotal(F,P,W){ return (Number.isFinite(F)?F:0)+(Number.isFinite(P)?P:0)+(Number.isFinite(W)?W:0); }
+function autoTotal(F,P,W){
+  const f=Number.isFinite(F)?F:0;
+  const p=Number.isFinite(P)?P:0;
+  const w=Number.isFinite(W)?W:0;
+  return f+p+w;
+}
 
 function copyPVtDown(){
   const fin=document.getElementById('Fin_0').value;
-  const f=document.getElementById('F_0').value, p=document.getElementById('P_0').value, w=document.getElementById('W_0').value;
+  const w=document.getElementById('W_0').value;
+  const pa=document.getElementById('PA_0').value;
+  const pb=document.getElementById('PB_0').value;
+  const f=document.getElementById('F_0').value;
   for(let k=1;k<=4;k++){
     document.getElementById('Fin_'+k).value=fin;
-    document.getElementById('F_'+k).value=f;
-    document.getElementById('P_'+k).value=p;
     document.getElementById('W_'+k).value=w;
+    document.getElementById('PA_'+k).value=pa;
+    document.getElementById('PB_'+k).value=pb;
+    document.getElementById('F_'+k).value=f;
   }
 }
 
 function shiftGridDown(){
-  // เลื่อนข้อมูลลง: t → t-1 → t-2 → t-3 → t-4 และเคลียร์แถว t
-  const prefixes=['alk_','Fin_','F_','P_','W_'];
+  const prefixes=['W_','PA_','PB_','F_','Fin_','alk_'];
   for(let k=4;k>=1;k--){
     prefixes.forEach(pref=>{
       const cur=document.getElementById(pref+k);
@@ -270,16 +281,12 @@ function shiftGridDown(){
       if(cur && prev) cur.value = prev.value;
     });
   }
-  // เคลียร์แถว t (k=0) เพื่อรอกรอกข้อมูลล่าสุด
-  prefixes.forEach(pref=>{
-    const el=document.getElementById(pref+0);
-    if(el) el.value='';
-  });
+  prefixes.forEach(pref=>{ const el=document.getElementById(pref+0); if(el) el.value=''; });
 }
 
 function clearGrid(){
   for(let k=0;k<5;k++){
-    ['alk_','Fin_','F_','P_','W_'].forEach(pref=>{ const el=document.getElementById(pref+k); if(el) el.value=''; });
+    ['W_','PA_','PB_','F_','Fin_','alk_'].forEach(pref=>{ const el=document.getElementById(pref+k); if(el) el.value=''; });
   }
   document.getElementById('note').value='';
 }
@@ -296,12 +303,25 @@ function saveSeriesToPVHistory(){
   const note=document.getElementById('note').value||'';
   for(let k=0;k<5;k++){
     const key=toHourKey(addHours(base,-k));
-    const F=parseFloat(document.getElementById('F_'+k).value);
-    const P=parseFloat(document.getElementById('P_'+k).value);
+    const Fk=parseFloat(document.getElementById('F_'+k).value);
+    const PA=parseFloat(document.getElementById('PA_'+k).value);
+    const PB=parseFloat(document.getElementById('PB_'+k).value);
     const W=parseFloat(document.getElementById('W_'+k).value);
-    const hasAny = Number.isFinite(F)||Number.isFinite(P)||Number.isFinite(W);
+    const hasAny = Number.isFinite(Fk)||Number.isFinite(PA)||Number.isFinite(W)||Number.isFinite(PB);
     if(!hasAny) continue;
-    hist[key]={pv_feldspar:Number.isFinite(F)?F:0, pv_pyro:Number.isFinite(P)?P:0, pv_white_sand:Number.isFinite(W)?W:0, pv_total:autoTotal(F,P,W), savedAt:new Date().toISOString(), source:'grid_v3soft', note};
+    // โมเดลเดิมใช้ Pyro(A) เท่านั้น
+    const pyroA = Number.isFinite(PA)?PA:0;
+    hist[key]={
+      pv_feldspar:Number.isFinite(Fk)?Fk:0,
+      pv_pyro:pyroA,
+      pv_pyro_a:pyroA,
+      pv_pyro_b:Number.isFinite(PB)?PB:0,
+      pv_white_sand:Number.isFinite(W)?W:0,
+      pv_total:autoTotal(Fk,pyroA,W),
+      savedAt:new Date().toISOString(),
+      source:'grid_v3soft',
+      note
+    };
   }
   savePVObj(hist);
   refreshPVTable();
@@ -317,21 +337,29 @@ function getDeltaPV(base){
       return {error:`โมเดล lag=${L} ต้องใช้แถว t-${L} และ t-${L+1} แต่หน้านี้มีถึง t-4 เท่านั้น`, pvSrc:'entered'};
     }
     const i1=L, i2=L+1;
+
     const aF=parseFloat(document.getElementById('F_'+i1).value);
-    const aP=parseFloat(document.getElementById('P_'+i1).value);
+    const aPA=parseFloat(document.getElementById('PA_'+i1).value);
     const aW=parseFloat(document.getElementById('W_'+i1).value);
+
     const bF=parseFloat(document.getElementById('F_'+i2).value);
-    const bP=parseFloat(document.getElementById('P_'+i2).value);
+    const bPA=parseFloat(document.getElementById('PA_'+i2).value);
     const bW=parseFloat(document.getElementById('W_'+i2).value);
-    const hasA = Number.isFinite(aF)||Number.isFinite(aP)||Number.isFinite(aW);
-    const hasB = Number.isFinite(bF)||Number.isFinite(bP)||Number.isFinite(bW);
+
+    const hasA = Number.isFinite(aF)||Number.isFinite(aPA)||Number.isFinite(aW);
+    const hasB = Number.isFinite(bF)||Number.isFinite(bPA)||Number.isFinite(bW);
     if(!hasA || !hasB){
       return {error:`เลือก PV=ค่าที่กรอก ต้องกรอก PV ครบที่แถว t-${L} และ t-${L+1}`, pvSrc:'entered'};
     }
+
+    const aP=(Number.isFinite(aPA)?aPA:0);
+    const bP=(Number.isFinite(bPA)?bPA:0);
+
     const dF=(Number.isFinite(aF)?aF:0)-(Number.isFinite(bF)?bF:0);
-    const dP=(Number.isFinite(aP)?aP:0)-(Number.isFinite(bP)?bP:0);
+    const dP=aP-bP;
     const dW=(Number.isFinite(aW)?aW:0)-(Number.isFinite(bW)?bW:0);
-    const dT=(autoTotal(aF,aP,aW))-(autoTotal(bF,bP,bW));
+    const dT=autoTotal(aF,aP,aW)-autoTotal(bF,bP,bW);
+
     const keyA=toHourKey(addHours(base,-L));
     const keyB=toHourKey(addHours(base,-(L+1)));
     return {dF,dP,dW,dT, keyA, keyB, pvSrc:'entered (ΔPV)'};
@@ -400,18 +428,15 @@ function doRecommend(base){
   const db=parseFloat(document.getElementById('deadband').value);
   const deadband = Number.isFinite(db)?Math.abs(db):0;
 
-  // Deadband: ไม่ปรับ
   if(Math.abs(pr.err) <= deadband){
     return {...pr, dF:0, dP:0, deadbandHit:true, deadband, pyroUsed:false, stepCap:0};
   }
 
-  // Soft cap: จำกัด step ตามขนาด Error
   const gain=parseFloat(document.getElementById('soft_gain').value);
   const g = Number.isFinite(gain) ? Math.max(0.1, gain) : 5;
   const maxStep = MODEL?.limits?.max_step_per_feeder_tph ?? 0.05;
   const stepCap = Math.min(maxStep, Math.abs(pr.err) * g);
 
-  // Pyro gating: ใช้ Pyro เฉพาะเมื่อ Pred หลุดช่วง
   const gateLow=parseFloat(document.getElementById('pyro_gate_low').value);
   const gateHigh=parseFloat(document.getElementById('pyro_gate_high').value);
   const low = Number.isFinite(gateLow)?gateLow:1.50;
@@ -424,27 +449,19 @@ function doRecommend(base){
   const wP=MODEL.coefficients.weights[`d_pv_pyro_tph_lag${L}`]||0;
 
   let dP=0;
-  let dF=0;
-
-  if(usePyro && Math.abs(wP) > 1e-9){
+  if(usePyro && Math.abs(wP)>1e-9){
     dP = pr.err / wP;
     dP = clamp(dP, -stepCap, stepCap);
   }
 
-  // เหลือ error ที่ยังไม่ถูกแก้
   let remain = pr.err - wP*dP;
-
-  if(Math.abs(wF) > 1e-9){
+  let dF=0;
+  if(Math.abs(wF)>1e-9){
     dF = remain / wF;
     dF = clamp(dF, -stepCap, stepCap);
-  } else {
-    dF = 0;
   }
 
-  // ถ้าอยู่ในช่วงไม่ใช้ Pyro → บังคับ dP=0
-  if(!usePyro){
-    dP = 0;
-  }
+  if(!usePyro) dP=0;
 
   return {...pr, dF, dP, deadbandHit:false, deadband, pyroUsed:usePyro, stepCap};
 }
@@ -468,9 +485,9 @@ function show(r, mode){
   if(mode==='Smart Recommend'){
     if(r.deadbandHit){
       reco = `<div class='ok'>อยู่ในช่วง Deadband (±${fmt(r.deadband,3)}) → ไม่สั่งปรับ</div>`;
-    } else {
-      const pyroNote = r.pyroUsed ? 'ใช้ Pyro (หลุดช่วง)' : 'ไม่ใช้ Pyro (อยู่ในช่วง 1.50–1.70)';
-      reco = `<div class='muted'>แนะนำ: ΔFeldspar <span class='mono'>${sign(r.dF)} t/h</span>, ΔPyro <span class='mono'>${sign(r.dP)} t/h</span><br><span class='tiny'>โหมดเบา: step cap = <span class='mono'>${fmt(r.stepCap,3)}</span> t/h • ${pyroNote}</span></div>`;
+    }else{
+      const pyroNote = r.pyroUsed ? 'ใช้ Pyro(A) (หลุดช่วง)' : 'ไม่ใช้ Pyro(A) (อยู่ในช่วง 1.50–1.70)';
+      reco = `<div class='muted'>แนะนำ: ΔFeldspar <span class='mono'>${sign(r.dF)} t/h</span>, ΔPyro(A) <span class='mono'>${sign(r.dP)} t/h</span><br><span class='tiny'>step cap = <span class='mono'>${fmt(r.stepCap,3)}</span> t/h • ${pyroNote}</span></div>`;
     }
   }
 
@@ -523,18 +540,101 @@ async function loadModel(){
   }
 }
 
+// ===== Paste โปรไฟล์: ดึงคอลัมน์ 1,2,3,4,10,16 จากแถวที่ copy มาทั้งแถว =====
+const COLS = ['W_','PA_','PB_','F_','Fin_','alk_'];
+const PICK_1BASED = [1,2,3,4,10,16];
+
+function splitRows(text){
+  return text.replace(/\r/g,'').split('\n').filter(r=>r.length>0);
+}
+
+function splitTabsKeepEmpty(line){
+  // split by tab; keep empty cells
+  return line.split('\t');
+}
+
+function cellClean(s){
+  return (s??'').trim();
+}
+
+function getInputInfo(id){
+  const m = id.match(/^([A-Za-z]+_)(\d+)$/);
+  if(!m) return null;
+  const prefix=m[1];
+  const row=parseInt(m[2],10);
+  const colIndex=COLS.indexOf(prefix);
+  if(colIndex<0) return null;
+  return {row,colIndex};
+}
+
+function fillPicked(rowIdx, cols){
+  // cols: array of strings (len 6) mapped to COLS order
+  for(let i=0;i<COLS.length;i++){
+    const el=document.getElementById(COLS[i]+rowIdx);
+    if(el && cols[i]!==undefined) el.value = cols[i];
+  }
+}
+
+function extractFromLine(line){
+  const parts = splitTabsKeepEmpty(line);
+  // ensure length at least max index
+  const out=[];
+  for(const k of PICK_1BASED){
+    out.push(cellClean(parts[k-1]));
+  }
+  return out;
+}
+
+function attachExcelPasteToGrid(){
+  // bind paste to all inputs in grid
+  COLS.forEach(pref=>{
+    for(let r=0;r<=4;r++){
+      const el=document.getElementById(pref+r);
+      if(!el) continue;
+      el.addEventListener('paste',(e)=>{
+        const text=(e.clipboardData||window.clipboardData).getData('text');
+        if(!text) return;
+        const lines = splitRows(text);
+        if(lines.length===0) return;
+
+        // ถ้าข้อมูลไม่ใช่รูปแบบ tab (มีค่าเดียว) ให้ paste ปกติ
+        const looksLikeExcel = lines[0].includes('\t');
+        if(!looksLikeExcel) return;
+
+        const info=getInputInfo(el.id);
+        if(!info) return;
+        e.preventDefault();
+
+        // รองรับหลายบรรทัด: เติมลงแถวถัดไป (t, t-1, ...)
+        for(let i=0;i<lines.length;i++){
+          const row = info.row + i;
+          if(row>4) break;
+          const picked = extractFromLine(lines[i]);
+          fillPicked(row, picked);
+        }
+      });
+    }
+  });
+}
+
 window.addEventListener('DOMContentLoaded',()=>{
   buildGrid();
+  attachExcelPasteToGrid();
+
   document.getElementById('base_ts').value = toInput(nowRoundedHour());
   refreshPVTable();
   refreshLogTable();
 
   document.getElementById('btn_now').onclick = ()=>{ document.getElementById('base_ts').value = toInput(nowRoundedHour()); };
   document.getElementById('btn_copy_t_down').onclick = copyPVtDown;
- document.getElementById('btn_shift_down').onclick = shiftGridDown;
+  document.getElementById('btn_shift_down').onclick = shiftGridDown;
   document.getElementById('btn_clear').onclick = clearGrid;
 
-  document.getElementById('btn_save_run').onclick = ()=>{ const r=saveAndRun(true); const auto=document.getElementById('auto_shift_after_save'); if(auto && auto.checked && r && !r.error) shiftGridDown(); };
+  document.getElementById('btn_save_run').onclick = ()=>{
+    const r=saveAndRun(true);
+    const auto=document.getElementById('auto_shift_after_save');
+    if(auto && auto.checked && r && !r.error) shiftGridDown();
+  };
   document.getElementById('btn_predict').onclick = ()=>saveAndRun(false);
 
   document.getElementById('btn_refresh_hist').onclick = refreshPVTable;
