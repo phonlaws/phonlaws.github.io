@@ -4,23 +4,392 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>กำลังพาไปหน้าเว็บงานเสี่ยง…</title>
+
+  <!-- Font (เหมือนธีมหลัก) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg1:#0b1220;
+      --text:#e9eefc;
+      --muted:#a7b3d6;
+      --stroke:rgba(255,255,255,.12);
+
+      --primary:#5b7cfa;
+      --mint:#2ee59d;
+      --danger:#ff3b3b;
+
+      --card: rgba(255,255,255,.08);
+      --card2: rgba(255,255,255,.05);
+      --shadow: 0 18px 44px rgba(0,0,0,.35);
+      --radius: 18px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+
+    body{
+      margin:0;
+      font-family: "Kanit", system-ui, "Segoe UI", Tahoma, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(1000px 600px at 18% 0%, #233a77 0%, var(--bg1) 60%),
+        radial-gradient(900px 520px at 92% 20%, #2d145c 0%, var(--bg1) 55%);
+      background-attachment: fixed;
+      overflow:hidden;
+    }
+
+    /* Animated background glow */
+    .bg{
+      position:fixed;
+      inset:-40vh -20vw;
+      pointer-events:none;
+      opacity:.70;
+      background:
+        radial-gradient(520px 300px at 18% 30%, rgba(91,124,250,.22), transparent 60%),
+        radial-gradient(680px 380px at 80% 65%, rgba(255,59,59,.10), transparent 60%),
+        radial-gradient(680px 420px at 55% 110%, rgba(46,229,157,.12), transparent 55%);
+      filter: blur(0px);
+      animation: floaty 8s ease-in-out infinite;
+    }
+    @keyframes floaty{
+      0%,100%{ transform: translate3d(0,0,0) scale(1); }
+      50%{ transform: translate3d(-10px, 6px, 0) scale(1.02); }
+    }
+
+    .wrap{
+      min-height:100%;
+      display:grid;
+      place-items:center;
+      padding:24px;
+      position:relative;
+    }
+
+    .card{
+      width:min(720px, 92vw);
+      border:1px solid var(--stroke);
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .card::before{
+      content:"";
+      position:absolute;
+      right:-70px;
+      top:-70px;
+      width:220px;
+      height:220px;
+      border-radius:50%;
+      background: radial-gradient(circle at 30% 30%, rgba(91,124,250,.55), rgba(46,229,157,.22), transparent 70%);
+      filter: blur(10px);
+      opacity:.75;
+      pointer-events:none;
+    }
+
+    header{
+      display:flex;
+      gap:14px;
+      align-items:center;
+      padding:18px 18px 14px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+    }
+
+    .logo{
+      width:48px;
+      height:48px;
+      border-radius:16px;
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      letter-spacing:.5px;
+      background: linear-gradient(135deg, rgba(91,124,250,.95), rgba(46,229,157,.85));
+      color:#071226;
+      box-shadow: 0 14px 34px rgba(0,0,0,.28);
+    }
+
+    .title{
+      margin:0;
+      font-size:20px;
+      font-weight:900;
+      line-height:1.15;
+    }
+    .subtitle{
+      margin:6px 0 0;
+      color: var(--muted);
+      font-size:14px;
+    }
+
+    main{
+      padding:16px 18px 18px;
+      display:grid;
+      gap:14px;
+    }
+
+    .statusRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      padding:10px 12px;
+      border-radius:999px;
+      color: var(--muted);
+      font-size:14px;
+      font-weight:800;
+    }
+
+    .dot{
+      width:10px; height:10px; border-radius:999px;
+      background: rgba(255,255,255,.25);
+    }
+    .dot.ok{ background: rgba(46,229,157,.95); box-shadow: 0 0 0 5px rgba(46,229,157,.15); }
+    .dot.wait{ background: rgba(91,124,250,.95); box-shadow: 0 0 0 5px rgba(91,124,250,.15); }
+    .dot.err{ background: rgba(255,59,59,.95); box-shadow: 0 0 0 5px rgba(255,59,59,.15); }
+
+    .spinner{
+      width:22px; height:22px;
+      border-radius:50%;
+      border: 3px solid rgba(255,255,255,.18);
+      border-top-color: rgba(91,124,250,.95);
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin{ to{ transform: rotate(360deg); } }
+
+    .panel{
+      border:1px dashed rgba(255,255,255,.16);
+      background: rgba(0,0,0,.14);
+      border-radius: 14px;
+      padding:14px;
+      color: var(--muted);
+      font-size:14px;
+    }
+
+    .urlLine{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-top:10px;
+      color: var(--text);
+      font-weight:700;
+    }
+
+    .urlBox{
+      flex:1;
+      min-width: 220px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      word-break: break-all;
+    }
+
+    .btn{
+      border:none;
+      border-radius:14px;
+      padding:10px 12px;
+      font-weight:900;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      text-decoration:none;
+      transition: transform .08s ease, filter .12s ease;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(91,124,250,.95), rgba(46,229,157,.85));
+      color:#06101f;
+    }
+    .btn.ghost{
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      color: var(--text);
+    }
+
+    .hint{
+      color: var(--muted);
+      font-size:13px;
+      margin:0;
+    }
+
+    .footer{
+      padding:12px 18px 16px;
+      border-top:1px solid rgba(255,255,255,.10);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .small{
+      font-size:13px;
+      color: var(--muted);
+      font-weight:700;
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:18px;
+      transform:translateX(-50%);
+      background: rgba(0,0,0,.55);
+      border:1px solid rgba(255,255,255,.12);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius:14px;
+      box-shadow: var(--shadow);
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .2s ease;
+      max-width: min(780px, 92vw);
+      text-align:center;
+      font-weight:900;
+      font-size:14px;
+    }
+    .toast.show{ opacity:1; }
+
+    /* Reduce motion */
+    @media (prefers-reduced-motion: reduce){
+      .bg{ animation:none; }
+      .spinner{ animation:none; }
+      .btn{ transition:none; }
+    }
+  </style>
 </head>
+
 <body>
-  <p>กำลังพาไปยังหน้าเว็บงานเสี่ยง…</p>
+  <div class="bg" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <section class="card" role="status" aria-live="polite">
+      <header>
+        <div class="logo">RW</div>
+        <div>
+          <h1 class="title">กำลังพาไปหน้าเว็บงานเสี่ยง…</h1>
+          <p class="subtitle">โปรดรอสักครู่ ระบบกำลังเชื่อมต่อไปยังลิงก์ล่าสุด</p>
+        </div>
+      </header>
+
+      <main>
+        <div class="statusRow">
+          <div class="pill" id="pillStatus">
+            <span class="dot wait" id="dot"></span>
+            <span id="statusText">กำลังอ่านลิงก์ล่าสุดจาก target.txt</span>
+          </div>
+
+          <div class="pill">
+            <div class="spinner" aria-hidden="true"></div>
+            <span>กำลังเปลี่ยนหน้าอัตโนมัติ…</span>
+          </div>
+        </div>
+
+        <div class="panel" id="panel">
+          <p class="hint" style="margin:0;">
+            ถ้าไม่เด้งภายในไม่กี่วินาที คุณสามารถกดปุ่ม “เปิดหน้าเว็บ” ได้
+          </p>
+
+          <div class="urlLine" style="display:none;" id="urlRow">
+            <div class="urlBox" id="urlBox">—</div>
+            <a class="btn primary" id="btnOpen" href="#" rel="noopener">เปิดหน้าเว็บ</a>
+            <button class="btn ghost" id="btnCopy" type="button">คัดลอกลิงก์</button>
+          </div>
+        </div>
+      </main>
+
+      <div class="footer">
+        <span class="small">แหล่งลิงก์: <b>risk/target.txt</b></span>
+        <span class="small" id="ts">อัปเดตหน้าจอ: —</span>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast">คัดลอกลิงก์แล้ว</div>
 
   <script>
+    const el = (id) => document.getElementById(id);
+
+    const dot = el('dot');
+    const pillStatus = el('pillStatus');
+    const statusText = el('statusText');
+    const urlRow = el('urlRow');
+    const urlBox = el('urlBox');
+    const btnOpen = el('btnOpen');
+    const btnCopy = el('btnCopy');
+    const toast = el('toast');
+    const ts = el('ts');
+
+    function showToast(msg){
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(()=> toast.classList.remove('show'), 1400);
+    }
+
+    function setStatus(state, msg){
+      statusText.textContent = msg;
+      dot.classList.remove('wait','ok','err');
+      dot.classList.add(state);
+    }
+
+    function setTimestamp(){
+      const now = new Date();
+      const datePart = now.toLocaleDateString('th-TH', { year:'numeric', month:'numeric', day:'numeric' });
+      const timePart = now.toLocaleTimeString('th-TH', { hour:'2-digit', minute:'2-digit', hour12:false });
+      ts.textContent = `อัปเดตหน้าจอ: ${datePart} ${timePart}`;
+    }
+
+    setTimestamp();
+
     fetch('./target.txt', { cache: 'no-store' })
       .then(r => r.text())
       .then(url => {
-        url = url.trim();
+        url = (url || '').trim();
         if (!url) throw new Error('empty');
-        location.replace(url);
+
+        setStatus('ok', 'พบลิงก์ล่าสุดแล้ว กำลังพาไป…');
+        urlRow.style.display = 'flex';
+        urlBox.textContent = url;
+        btnOpen.href = url;
+
+        btnCopy.addEventListener('click', async () => {
+          try{
+            await navigator.clipboard.writeText(url);
+            showToast('คัดลอกลิงก์แล้ว');
+          }catch{
+            // fallback: select text
+            showToast('คัดลอกไม่สำเร็จ (เครื่องนี้บล็อก clipboard)');
+          }
+        });
+
+        // หน่วงนิดเดียวให้ UI โชว์ก่อน แล้วค่อยเด้ง (ดูสวยขึ้น)
+        setTimeout(() => {
+          location.replace(url);
+        }, 600);
       })
       .catch(() => {
-        document.body.innerHTML =
-          '<h3>ยังไม่มีลิงก์ล่าสุด</h3>' +
-          '<p>กรุณาแจ้งผู้ดูแลระบบให้อัปเดตไฟล์ target.txt</p>';
+        setStatus('err', 'ยังไม่มีลิงก์ล่าสุด / อ่านไฟล์ target.txt ไม่ได้');
+        document.querySelector('.subtitle').textContent =
+          'กรุณาแจ้งผู้ดูแลระบบให้อัปเดตไฟล์ target.txt แล้วลองใหม่';
       });
   </script>
 </body>
 </html>
+``
