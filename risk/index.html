@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <title>กำลังพาไปหน้าเว็บงานเสี่ยง…</title>
+</head>
+<body>
+  <p>กำลังพาไปยังหน้าเว็บงานเสี่ยง…</p>
+  <script>
+    fetch('./target.txt', { cache: 'no-store' })
+      .then(r => r.text())
+      .then(url => {
+        url = url.trim();
+        if (!url) throw new Error('empty');
+        location.replace(url);
+      })
+      .catch(() => {
+        document.body.innerHTML =
+          '<h3>ยังไม่มีลิงก์ล่าสุด</h3><p>กรุณาแจ้งผู้ดูแลระบบอัปเดตลิงก์</p>';
+      });
+  </script>
+</body>
+</html>
