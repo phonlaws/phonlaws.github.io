@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>งานเสี่ยง • จอเครื่องกลาง</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="mode-kiosk">
+  <div class="bg" aria-hidden="true"></div>
+
+  <header class="topbar kioskbar">
+    <div class="brand">
+      <div class="logo" title="Risk Work">RW</div>
+      <div>
+        <h1>งานเสี่ยง • หน้างานที่กำลังเปิด</h1>
+        <p>รายงาน งานเสี่ยงที่เปิดอยู่</p>
+      </div>
+    </div>
+
+    <div class="stats" aria-label="สรุปสถานะ">
+      <div class="stat">
+        <span class="stat-label">งานที่เปิดอยู่</span>
+        <span class="stat-value" id="kpiOpen">0</span>
+      </div>
+      <div class="stat danger">
+        <span class="stat-label">เกินเวลา</span>
+        <span class="stat-value" id="kpiOver">0</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">อัปเดตล่าสุด</span>
+        <span class="stat-value small" id="lastUpdated">—</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container kiosk-container">
+    <section class="panel kiosk-panel">
+      <div class="panel-head">
+        <h2>รายการงานที่กำลังเปิดอยู่</h2>
+        <span class="hint">อัปเดตอัตโนมัติ (ดึงจากเครื่องที่รัน server)</span>
+      </div>
+
+      <div id="jobsEmpty" class="empty">ไม่มีงานเสี่ยงที่เปิดอยู่</div>
+      <div id="jobsList" class="cards kiosk-cards"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

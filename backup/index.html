@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>งานเสี่ยง • เปิด–ปิด งาน</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="mode-app">
+  <div class="bg" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo" title="Risk Work">RW</div>
+      <div>
+        <h1>งานเสี่ยง • เปิด–ปิด งาน</h1>
+        <p>กรอกข้อมูล สำหรับ เปิด-งาน เสี่ยง</p>
+      </div>
+    </div>
+
+    <div class="stats" aria-label="สรุปสถานะ">
+      <div class="stat">
+        <span class="stat-label">งานที่เปิดอยู่</span>
+        <span class="stat-value" id="kpiOpen">0</span>
+      </div>
+      <div class="stat danger">
+        <span class="stat-label">เกินเวลา</span>
+        <span class="stat-value" id="kpiOver">0</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">อัปเดตล่าสุด</span>
+        <span class="stat-value small" id="lastUpdated">—</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>ข้อมูลเปิดงานเสี่ยง</h2>
+        <span class="hint">กรอกให้ครบ แล้วกด “เปิดงาน”</span>
+      </div>
+
+      <form id="openForm" class="form" autocomplete="off">
+        <div class="grid">
+          <div class="field">
+            <label>ประเภทงานเสี่ยง</label>
+            <div class="segmented" role="group" aria-label="ประเภทงานเสี่ยง">
+              <input type="radio" name="riskType" id="riskConfined" value="confined" checked>
+              <label for="riskConfined">ที่อับอากาศ</label>
+              <input type="radio" name="riskType" id="riskHeight" value="height">
+              <label for="riskHeight">ที่สูง</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>หน่วยงาน</label>
+            <select id="department" required>
+              <option value="" disabled selected>เลือกหน่วยงาน…</option>
+              <option>Crusher</option>
+              <option>RM1</option>
+              <option>RM2</option>
+              <option>Petcoke Mill</option>
+              <option>Pfister</option>
+              <option>Kiln1</option>
+              <option>Kiln2</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>จุดงาน (พิมพ์เอง)</label>
+            <input id="workPoint" type="text" placeholder="เช่น Silo Top / Conveyor Gallery / Hopper Pit" required />
+          </div>
+
+          <div class="field">
+            <label>ชื่อผู้เปิด</label>
+            <select id="requester">
+              <option value="" selected>— เลือกผู้เปิด (ไม่บังคับ) —</option>
+              <option>นาย กฤษดา มโนดุล</option>
+              <option>นาย พลวัฒน์ สุขสำราญ</option>
+              <option>นาย ธนกฤต ราชสีห์</option>
+              <option>นาย ธีรวัฒน์ เพ็ญสวัสดิ์</option>
+              <option>นาย มารุตร บุณเรือง</option>
+              <option>นาย กิตติศักดิ์ วงษ์จิ</option>
+              <option>นาย อนุกูล ทองหุ้ม</option>
+              <option>นาย วีรเดช ปทุมรัตน์</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>มาตรการควบคุม (ย่อ)</label>
+            <input id="control" type="text" placeholder="เช่น กั้นพื้นที่ / Permit / Gas test / Harness" />
+          </div>
+
+          <div class="field">
+            <label>เวลาเริ่มงาน</label>
+            <input id="startTime" type="time" />
+          </div>
+
+          <div class="field span2">
+            <label>รายละเอียดงาน</label>
+            <textarea id="details" rows="3" placeholder="อธิบายงานที่ทำโดยย่อ เช่น ทำความสะอาด, ซ่อมบำรุง, ตรวจเช็ค, เปลี่ยนอะไหล่..."></textarea>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="btn primary"><span class="icon">＋</span> เปิดงาน</button>
+          <button type="button" class="btn ghost" id="clearForm">ล้างข้อมูล</button>
+
+          <div class="overdue-setting" title="ตั้งค่าเวลาเกินเวลา">
+            <span class="label">เกินเวลา</span>
+            <input id="overdueMinutes" type="number" min="1" max="9999" step="1" value="120" />
+            <span class="unit">นาที</span>
+          </div>
+
+          <a class="btn link" href="kiosk.html" title="เปิดหน้าจอเครื่องกลาง">โหมดจอเครื่องกลาง →</a>
+        </div>
+
+        <div class="note">
+          <span class="dot" aria-hidden="true"></span>
+          <span>เปิดได้ “ 1 งานต่อประเภท ” ในหน่วยงาน + จุดงานเดียวกัน</span>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>งานที่กำลังเปิดอยู่</h2>
+        <span class="hint">เรียงงานล่าสุดอยู่บนสุด</span>
+      </div>
+
+      <div id="jobsEmpty" class="empty">ยังไม่มีงานที่เปิดอยู่ — เปิดงานจากฟอร์มด้านบน</div>
+      <div id="jobsList" class="cards"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>สถานะเปิดงานเสี่ยง (สรุปตามหน่วยงาน)</h2>
+        <span class="hint">จำนวนงานที่เปิดอยู่ แยกตามประเภท</span>
+      </div>
+
+      <div class="table-wrap">
+        <table class="table" aria-label="สรุปงานเสี่ยงตามหน่วยงาน">
+          <thead>
+            <tr>
+              <th>หน่วยงาน</th>
+              <th class="col confined">ที่อับอากาศ</th>
+              <th class="col height">ที่สูง</th>
+            </tr>
+          </thead>
+          <tbody id="summaryBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
