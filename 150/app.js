@@ -1,21 +1,29 @@
 // ============================
-// Half 1:50 Plan Calendar App (Mobile-first, soft white theme)
+// Half 1:50 Plan Calendar App
 // Static + LocalStorage
 // ============================
 
-const LS_KEY = "half150_calendar_v2_state"; // status/notes
-const LS_PLAN_KEY = "half150_calendar_v2_plan"; // generated plan (by date)
-
-const DEFAULT_RACE_DATE = "2026-08-02"; // 2 Aug 2569
+const LS_KEY = "half150_calendar_v1";        // status/notes
+const LS_PLAN_KEY = "half150_plan_v1";       // generated plan (by date)
+const DEFAULT_RACE_DATE = "2026-08-02";      // 2 Aug 2569
 const LOCALE = "th-TH";
 
+// ---- Utilities
 const pad2 = (n) => String(n).padStart(2, "0");
 const toISO = (d) => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-const parseISO = (s) => { const [y,m,dd] = s.split("-").map(Number); return new Date(y, m-1, dd); };
-const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
+const parseISO = (s) => {
+  const [y,m,dd] = s.split("-").map(Number);
+  return new Date(y, m-1, dd);
+};
+const addDays = (d, n) => {
+  const x = new Date(d);
+  x.setDate(x.getDate() + n);
+  return x;
+};
 const startOfMonth = (d) => new Date(d.getFullYear(), d.getMonth(), 1);
 const endOfMonth = (d) => new Date(d.getFullYear(), d.getMonth()+1, 0);
 
+// Monday = 1..Sunday = 0 in JS; We want Monday-based week grid
 const mondayOfWeek = (d) => {
   const x = new Date(d);
   const day = x.getDay(); // 0 Sun .. 6 Sat
@@ -26,6 +34,7 @@ const mondayOfWeek = (d) => {
 const fmtDateThai = (d) =>
   d.toLocaleDateString(LOCALE, { weekday:"long", year:"numeric", month:"long", day:"numeric" });
 
+// ---- Workout type color map
 const TYPE_COLOR = {
   REST: "var(--rest)",
   E: "var(--e)",
@@ -36,6 +45,7 @@ const TYPE_COLOR = {
   LONG: "var(--long)"
 };
 
+// ---- Default pace targets for goal 1:50
 const TARGETS = {
   E:  "Easy (E): 5:48–6:56/กม.  | RPE 3–4/10 | คุยเป็นประโยคได้",
   T:  "Threshold (T): ~5:01/กม. | RPE 7/10 | 'เหนื่อยแต่คุมได้'",
@@ -45,80 +55,277 @@ const TARGETS = {
   LONG:"Long (E): คุมง่าย | HR cap 150–155 (ถ้าร้อน/HR drift) | ไม่เร่งท้าย"
 };
 
+// ---- Week-by-week plan (31 weeks) aligned to your plan: 5 running days + Long on Saturday
+// Days: Tue Q1, Wed Easy, Thu Q2, Sat Long, Sun Recovery
+// Mon + Fri = Rest/Strength (no run), but you can add optional short E if needed.
 function buildWeekTemplates() {
+  // Helper creators
   const W = (type, title, details, targets) => ({ type, title, details, targets });
 
+  // A note about warmup/ankle
   const warmupNote =
-`วอร์ม 10–12 นาที (สำคัญ)
+`วอร์ม 10–12 นาที (สำคัญสำหรับตาตุ่ม)
 - 5–6 นาทีแรกช้ามาก
 - ขยับข้อเท้า/น่อง 2 นาที
 - ค่อยเข้าเพซ`;
 
+  // Weeks 1–31 data (based on the plan you asked earlier; can be edited anytime)
+  // For simplicity: store only key workout prescriptions; easy days show ranges.
   const weeks = [
-    // W1 (ตัวอย่างเริ่มต้น + โครงเหมือนที่เราวางไว้)
-    {
+    // Phase A (W1–W8)
+    { // W1
       tue: W("T","Q1: T 3×8′", `${warmupNote}\nT 3×8′ @T (พัก 2′ jog)\nคูล 10′`, TARGETS.T),
       wed: W("E","Easy + Strides", `Easy 45–60′ @E\nStrides 4–6×20″ (ลื่น ๆ ไม่สปรินต์)`, `${TARGETS.E}\n${TARGETS.R}`),
-      thu: W("E","Easy (E)", `Easy 40–55′ @E`, TARGETS.E),
-      sat: W("LONG","Long (เสาร์) 13–14K", `Long 13–14K @Easy ล้วน\nไม่เร่งท้าย`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      thu: W("E","Easy (E)", `Easy 40–55′ @E (สบาย)\nถ้าร้อน/ล้า: คุม HR ไม่ให้ไหล`, TARGETS.E),
+      sat: W("LONG","Long 13K", `Long 13K @Easy ล้วน\nไม่เร่งท้าย`, `${TARGETS.E}\n${TARGETS.LONG}`),
       sun: W("E","Recovery 6–8K", `Recovery 6–8K @Easy ช้ามาก`, TARGETS.E),
     },
-    // W2
-    {
+    { // W2
       tue: W("T","Q1: T 4×1K", `${warmupNote}\n4×1K @T (พัก 1′ jog)\nคูล 10′`, TARGETS.T),
       wed: W("E","Easy + Strides", `Easy 45–60′ @E\nStrides 4–6×20″`, `${TARGETS.E}\n${TARGETS.R}`),
       thu: W("E","Easy (E)", `Easy 40–55′ @E`, TARGETS.E),
-      sat: W("LONG","Long (เสาร์) 14–15K", `Long 14–15K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sat: W("LONG","Long 14K", `Long 14K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
       sun: W("E","Recovery 6–8K", `Recovery 6–8K @E`, TARGETS.E),
     },
-    // W3
-    {
+    { // W3
       tue: W("T","Q1: Tempo 20′", `${warmupNote}\nTempo 20′ @T\nคูล 10′`, TARGETS.T),
       wed: W("E","Easy (E)", `Easy 45–60′ @E`, TARGETS.E),
       thu: W("R","Q2: 8×200m (R)", `${warmupNote}\n8×200m @R (พัก 200m jog)\nคูล 10′`, TARGETS.R),
-      sat: W("LONG","Long (เสาร์) 15–16K", `Long 15–16K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sat: W("LONG","Long 15K", `Long 15K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
       sun: W("E","Recovery 7–9K", `Recovery 7–9K @E`, TARGETS.E),
     },
-    // W4 (ผ่อน)
-    {
-      tue: W("T","Q1: T 2×8′ (ผ่อน)", `${warmupNote}\nT 2×8′ @T\nคูล 10′`, TARGETS.T),
+    { // W4 cutback
+      tue: W("T","Q1: T 2×8′ (เบา)", `${warmupNote}\nT 2×8′ @T (พัก 2′)\nคูล 10′`, TARGETS.T),
       wed: W("E","Easy (E)", `Easy 40–55′ @E`, TARGETS.E),
       thu: W("E","Easy (E)", `Easy 35–50′ @E`, TARGETS.E),
-      sat: W("LONG","Long (เสาร์) 12–14K (ผ่อน)", `Long 12–14K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sat: W("LONG","Long 12K (ผ่อน)", `Long 12K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 6–8K", `Recovery 6–8K @E`, TARGETS.E),
+    },
+    { // W5
+      tue: W("T","Q1: T 3×10′", `${warmupNote}\nT 3×10′ @T (พัก 2′)\nคูล 10′`, TARGETS.T),
+      wed: W("E","Easy + Strides", `Easy 45–60′ @E\nStrides 4–6×20″`, `${TARGETS.E}\n${TARGETS.R}`),
+      thu: W("E","Easy (E)", `Easy 40–55′ @E`, TARGETS.E),
+      sat: W("LONG","Long 16K", `Long 16K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 7–9K", `Recovery 7–9K @E`, TARGETS.E),
+    },
+    { // W6
+      tue: W("T","Q1: T 5×1K", `${warmupNote}\n5×1K @T (พัก 1′)\nคูล 10′`, TARGETS.T),
+      wed: W("E","Easy (E)", `Easy 45–60′ @E`, TARGETS.E),
+      thu: W("R","Q2: 6×400m (R)", `${warmupNote}\n6×400m @R (พัก 400m jog)\nคูล 10′`, TARGETS.R),
+      sat: W("LONG","Long 17K", `Long 17K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 7–9K", `Recovery 7–9K @E`, TARGETS.E),
+    },
+    { // W7
+      tue: W("T","Q1: Tempo 25′", `${warmupNote}\nTempo 25′ @T\nคูล 10′`, TARGETS.T),
+      wed: W("E","Easy + Strides", `Easy 45–60′ @E\nStrides 4–6×20″`, `${TARGETS.E}\n${TARGETS.R}`),
+      thu: W("E","Easy (E)", `Easy 40–55′ @E`, TARGETS.E),
+      sat: W("LONG","Long 18K", `Long 18K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 8–10K", `Recovery 8–10K @E`, TARGETS.E),
+    },
+    { // W8 cutback
+      tue: W("T","Q1: T 2×10′ (ผ่อน)", `${warmupNote}\nT 2×10′ @T\nคูล 10′`, TARGETS.T),
+      wed: W("E","Easy (E)", `Easy 40–55′ @E`, TARGETS.E),
+      thu: W("E","Easy (E)", `Easy 35–50′ @E`, TARGETS.E),
+      sat: W("LONG","Long 14K (ผ่อน)", `Long 14K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
       sun: W("E","Recovery 6–8K", `Recovery 6–8K @E`, TARGETS.E),
     },
 
-    // หมายเหตุ: เพื่อไม่ให้โค้ดยาวเกินไปในข้อความนี้
-    // คุณสามารถ "คัดลอก week templates ทั้ง 31 สัปดาห์" จากเวอร์ชันก่อนหน้าของผมมาแทนส่วนนี้ได้ทันที
-    // หรือบอกผม "เอาเต็ม 31 weeks" แล้วผมจะส่ง app.js เวอร์ชันเต็มให้เป็นไฟล์เดียวให้เลย
-  ];
+    // Phase B (W9–W16)
+    { // W9
+      tue: W("I","Q1: I 5×3′", `${warmupNote}\n5×3′ @I (พัก 2–3′ jog)\nคูล 10′`, TARGETS.I),
+      wed: W("E","Easy (E)", `Easy 45–60′ @E`, TARGETS.E),
+      thu: W("T","Q2: T 3×8′", `${warmupNote}\nT 3×8′ @T (พัก 2′)\nคูล 10′`, TARGETS.T),
+      sat: W("LONG","Long 18K", `Long 18K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 8–10K", `Recovery 8–10K @E`, TARGETS.E),
+    },
+    { // W10
+      tue: W("T","Q1: T 4×1K", `${warmupNote}\n4×1K @T (พัก 1′)\nคูล 10′`, TARGETS.T),
+      wed: W("E","Easy (E)", `Easy 45–60′ @E`, TARGETS.E),
+      thu: W("I","Q2: I 6×2′", `${warmupNote}\n6×2′ @I (พัก 2′)\nคูล 10′`, TARGETS.I),
+      sat: W("LONG","Long 19K", `Long 19K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 8–10K", `Recovery 8–10K @E`, TARGETS.E),
+    },
+    { // W11
+      tue: W("I","Q1: I 4×1K", `${warmupNote}\n4×1K @I (พัก 2–3′)\nคูล 10′`, TARGETS.I),
+      wed: W("E","Easy (E)", `Easy 45–60′ @E`, TARGETS.E),
+      thu: W("T","Q2: Tempo 25′", `${warmupNote}\nTempo 25′ @T\nคูล 10′`, TARGETS.T),
+      sat: W("LONG","Long 20K", `Long 20K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 8–10K", `Recovery 8–10K @E`, TARGETS.E),
+    },
+    { // W12 cutback
+      tue: W("T","Q1: T 2×10′", `${warmupNote}\nT 2×10′ @T\nคูล 10′`, TARGETS.T),
+      wed: W("E","Easy + Strides", `Easy 45–60′ @E\nStrides 4–6×20″`, `${TARGETS.E}\n${TARGETS.R}`),
+      thu: W("E","Easy (E)", `Easy 35–50′ @E`, TARGETS.E),
+      sat: W("LONG","Long 16K (ผ่อน)", `Long 16K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 7–9K", `Recovery 7–9K @E`, TARGETS.E),
+    },
+    { // W13
+      tue: W("I","Q1: I 6×3′", `${warmupNote}\n6×3′ @I (พัก 2–3′)\nคูล 10′`, TARGETS.I),
+      wed: W("E","Easy (E)", `Easy 45–60′ @E`, TARGETS.E),
+      thu: W("T","Q2: T 3×10′", `${warmupNote}\nT 3×10′ @T (พัก 2′)\nคูล 10′`, TARGETS.T),
+      sat: W("LONG","Long 20K", `Long 20K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 8–10K", `Recovery 8–10K @E`, TARGETS.E),
+    },
+    { // W14
+      tue: W("T","Q1: T 5×1K", `${warmupNote}\n5×1K @T (พัก 1′)\nคูล 10′`, TARGETS.T),
+      wed: W("E","Easy (E)", `Easy 45–60′ @E`, TARGETS.E),
+      thu: W("I","Q2: I 5×800m", `${warmupNote}\n5×800m @I (พัก 2–3′)\nคูล 10′`, TARGETS.I),
+      sat: W("LONG","Long 21K", `Long 21K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 8–10K", `Recovery 8–10K @E`, TARGETS.E),
+    },
+    { // W15
+      tue: W("I","Q1: I 3×1600m", `${warmupNote}\n3×1600m @I (พัก 3′)\nคูล 10′`, TARGETS.I),
+      wed: W("E","Easy (E)", `Easy 45–60′ @E`, TARGETS.E),
+      thu: W("T","Q2: Tempo 30′", `${warmupNote}\nTempo 30′ @T\nคูล 10′`, TARGETS.T),
+      sat: W("LONG","Long 22K", `Long 22K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 8–10K", `Recovery 8–10K @E`, TARGETS.E),
+    },
+    { // W16 cutback
+      tue: W("T","Q1: T 2×12′", `${warmupNote}\nT 2×12′ @T (พัก 2′)\nคูล 10′`, TARGETS.T),
+      wed: W("E","Easy (E)", `Easy 40–55′ @E`, TARGETS.E),
+      thu: W("E","Easy (E)", `Easy 35–50′ @E`, TARGETS.E),
+      sat: W("LONG","Long 18K (ผ่อน)", `Long 18K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 7–9K", `Recovery 7–9K @E`, TARGETS.E),
+    },
 
-  // ถ้าต้องการให้ครบ 31 weeks ทันที:
-  // 1) บอกผม แล้วผมจะส่ง app.js เต็มที่รวมทุกสัปดาห์เหมือนแผนเดิม
-  // 2) หรือคุณ paste แผนสัปดาห์ที่เหลือ แล้วผมจะ convert ให้
+    // Phase C (W17–W26): Half Specific
+    { // W17
+      tue: W("T","Q1: T 4×1K", `${warmupNote}\n4×1K @T (พัก 1′)\nคูล 10′`, TARGETS.T),
+      wed: W("E","Easy (E)", `Easy 45–60′ @E`, TARGETS.E),
+      thu: W("HM","Q2: HM 3×2K", `${warmupNote}\n3×2K @HM (พัก 3′ easy)\nคูล 10′`, TARGETS.HM),
+      sat: W("LONG","Long 20K", `Long 20K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 8–10K", `Recovery 8–10K @E`, TARGETS.E),
+    },
+    { // W18
+      tue: W("I","Q1: I 5×3′", `${warmupNote}\n5×3′ @I (พัก 2–3′)\nคูล 10′`, TARGETS.I),
+      wed: W("E","Easy (E)", `Easy 45–60′ @E`, TARGETS.E),
+      thu: W("T","Q2: Tempo 25′", `${warmupNote}\nTempo 25′ @T\nคูล 10′`, TARGETS.T),
+      sat: W("LONG","Long 22K", `Long 22K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 8–10K", `Recovery 8–10K @E`, TARGETS.E),
+    },
+    { // W19 cutback-ish
+      tue: W("HM","Q1: HM 2×3K", `${warmupNote}\n2×3K @HM (พัก 4′)\nคูล 10′`, TARGETS.HM),
+      wed: W("E","Easy (E)", `Easy 45–60′ @E`, TARGETS.E),
+      thu: W("R","Q2: R 10×200m", `${warmupNote}\n10×200m @R (พัก 200 jog)\nคูล 10′`, TARGETS.R),
+      sat: W("LONG","Long 18K (ผ่อน)", `Long 18K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 7–9K", `Recovery 7–9K @E`, TARGETS.E),
+    },
+    { // W20
+      tue: W("T","Q1: T 3×12′", `${warmupNote}\nT 3×12′ @T (พัก 2′)\nคูล 10′`, TARGETS.T),
+      wed: W("E","Easy (E)", `Easy 45–60′ @E`, TARGETS.E),
+      thu: W("HM","Q2: HM 4–6K ต่อเนื่อง", `${warmupNote}\nวิ่งต่อเนื่อง 4–6K @HM\nคูล 10′`, TARGETS.HM),
+      sat: W("LONG","Long 22K", `Long 22K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 8–10K", `Recovery 8–10K @E`, TARGETS.E),
+    },
+    { // W21
+      tue: W("I","Q1: I 4×1K", `${warmupNote}\n4×1K @I (พัก 2–3′)\nคูล 10′`, TARGETS.I),
+      wed: W("E","Easy (E)", `Easy 45–60′ @E`, TARGETS.E),
+      thu: W("T","Q2: T 4×1K", `${warmupNote}\n4×1K @T (พัก 1′)\nคูล 10′`, TARGETS.T),
+      sat: W("LONG","Long 23K", `Long 23K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 8–10K", `Recovery 8–10K @E`, TARGETS.E),
+    },
+    { // W22 cutback
+      tue: W("T","Q1: T 2×10′", `${warmupNote}\nT 2×10′ @T\nคูล 10′`, TARGETS.T),
+      wed: W("E","Easy + Strides", `Easy 45–60′ @E\nStrides 4–6×20″`, `${TARGETS.E}\n${TARGETS.R}`),
+      thu: W("E","Easy (E)", `Easy 35–50′ @E`, TARGETS.E),
+      sat: W("LONG","Long 18K (ผ่อน)", `Long 18K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 7–9K", `Recovery 7–9K @E`, TARGETS.E),
+    },
+    { // W23
+      tue: W("HM","Q1: HM 3×3K", `${warmupNote}\n3×3K @HM (พัก 4′)\nคูล 10′`, TARGETS.HM),
+      wed: W("E","Easy (E)", `Easy 45–60′ @E`, TARGETS.E),
+      thu: W("T","Q2: Tempo 20′", `${warmupNote}\nTempo 20′ @T\nคูล 10′`, TARGETS.T),
+      sat: W("LONG","Long 22K", `Long 22K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 8–10K", `Recovery 8–10K @E`, TARGETS.E),
+    },
+    { // W24
+      tue: W("I","Q1: I 6×2′", `${warmupNote}\n6×2′ @I (พัก 2′)\nคูล 10′`, TARGETS.I),
+      wed: W("E","Easy (E)", `Easy 45–60′ @E`, TARGETS.E),
+      thu: W("HM","Q2: HM 8K ต่อเนื่อง", `${warmupNote}\nวิ่งต่อเนื่อง 8K @HM\nคูล 10′`, TARGETS.HM),
+      sat: W("LONG","Long 20K", `Long 20K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 8–10K", `Recovery 8–10K @E`, TARGETS.E),
+    },
+    { // W25
+      tue: W("T","Q1: Tempo 30′", `${warmupNote}\nTempo 30′ @T\nคูล 10′`, TARGETS.T),
+      wed: W("E","Easy (E)", `Easy 45–60′ @E`, TARGETS.E),
+      thu: W("R","Q2: 6×400m (R)", `${warmupNote}\n6×400m @R (พัก 400 jog)\nคูล 10′`, TARGETS.R),
+      sat: W("LONG","Long 23K", `Long 23K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 8–10K", `Recovery 8–10K @E`, TARGETS.E),
+    },
+    { // W26 cutback
+      tue: W("T","Q1: T 2×12′", `${warmupNote}\nT 2×12′ @T\nคูล 10′`, TARGETS.T),
+      wed: W("E","Easy (E)", `Easy 40–55′ @E`, TARGETS.E),
+      thu: W("E","Easy (E)", `Easy 35–50′ @E`, TARGETS.E),
+      sat: W("LONG","Long 18–20K (ผ่อน)", `Long 18–20K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 7–9K", `Recovery 7–9K @E`, TARGETS.E),
+    },
+
+    // Phase D (W27–W31): Sharpen/Taper
+    { // W27
+      tue: W("I","Q1: I 4×1K", `${warmupNote}\n4×1K @I (พัก 2–3′)\nคูล 10′`, TARGETS.I),
+      wed: W("E","Easy (E)", `Easy 45–55′ @E`, TARGETS.E),
+      thu: W("HM","Q2: HM 6K ต่อเนื่อง", `${warmupNote}\nวิ่งต่อเนื่อง 6K @HM\nคูล 10′`, TARGETS.HM),
+      sat: W("LONG","Long 20K", `Long 20K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 8K", `Recovery 8K @E`, TARGETS.E),
+    },
+    { // W28
+      tue: W("T","Q1: T 3×10′", `${warmupNote}\nT 3×10′ @T (พัก 2′)\nคูล 10′`, TARGETS.T),
+      wed: W("E","Easy (E)", `Easy 45–55′ @E`, TARGETS.E),
+      thu: W("R","Q2: 8×200m (R)", `${warmupNote}\n8×200m @R\nคูล 10′`, TARGETS.R),
+      sat: W("LONG","Long 18K", `Long 18K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 7–8K", `Recovery 7–8K @E`, TARGETS.E),
+    },
+    { // W29
+      tue: W("I","Q1: I 5×2′", `${warmupNote}\n5×2′ @I (พัก 2′)\nคูล 10′`, TARGETS.I),
+      wed: W("E","Easy (E)", `Easy 40–55′ @E`, TARGETS.E),
+      thu: W("HM","Q2: HM 2×3K", `${warmupNote}\n2×3K @HM (พัก 4′)\nคูล 10′`, TARGETS.HM),
+      sat: W("LONG","Long 16K", `Long 16K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 6–7K", `Recovery 6–7K @E`, TARGETS.E),
+    },
+    { // W30 taper
+      tue: W("T","Q1: T 2×8′", `${warmupNote}\nT 2×8′ @T\nคูล 10′`, TARGETS.T),
+      wed: W("E","Easy (E)", `Easy 40–50′ @E`, TARGETS.E),
+      thu: W("R","Q2: Easy + 4 strides", `Easy 35–45′ @E\nStrides 4×20″`, `${TARGETS.E}\n${TARGETS.R}`),
+      sat: W("LONG","Long 12K (เบา)", `Long 12K @E`, `${TARGETS.E}\n${TARGETS.LONG}`),
+      sun: W("E","Recovery 6K", `Recovery 6K @E`, TARGETS.E),
+    },
+    { // W31 race week (Race Sunday)
+      tue: W("E","Easy 40′ + 4 strides", `Easy 40′ @E\nStrides 4×20″`, `${TARGETS.E}\n${TARGETS.R}`),
+      wed: W("E","Easy 35–45′", `Easy 35–45′ @E`, TARGETS.E),
+      thu: W("T","Q2: 3×1K @T (เบามือ)", `${warmupNote}\n3×1K @T (พัก 1′)\nคูล 10′`, TARGETS.T),
+      sat: W("REST","พัก หรือจ็อก 20′", `พักเต็มที่ หรือจ็อกเบา 20′ @E`, TARGETS.E),
+      sun: W("HM","RACE: Half Marathon", `แข่ง 21.1K\nแผนเพซ: เริ่มคุม 0–5K ~5:15–5:18 แล้วค่อยนิ่ง ~5:13\nท้ายค่อยกดตามแรง`, "HM pace ~5:13/กม.\nคุม RPE ให้ไม่พุ่งช่วงต้น"),
+    },
+  ];
 
   return weeks;
 }
 
+// ---- Create plan mapping date -> workout
 function generatePlan(raceDateISO, startDateISO) {
   const raceDate = parseISO(raceDateISO);
   const weeks = buildWeekTemplates();
 
+  // If startDateISO not provided, compute from race week (Monday) - 30 weeks
   let startMonday;
   if (startDateISO) {
     startMonday = parseISO(startDateISO);
   } else {
-    const mondayRace = mondayOfWeek(raceDate);
-    startMonday = addDays(mondayRace, -(weeks.length-1)*7); // align to number of templates
+    const mondayRace = mondayOfWeek(raceDate);           // Monday of race week
+    startMonday = addDays(mondayRace, -30*7);            // Week 1 Monday
   }
+
+  // Ensure it's Monday
   startMonday = mondayOfWeek(startMonday);
 
-  const plan = {};
+  const plan = {}; // { "YYYY-MM-DD": {type,title,details,targets,week,weekday} }
 
   for (let w = 0; w < weeks.length; w++) {
-    const weekStart = addDays(startMonday, w*7);
+    const weekStart = addDays(startMonday, w*7); // Monday
     const tpl = weeks[w];
 
+    // map workouts by weekday
+    // Monday=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5, Sun=6 (offset from Monday)
     const map = [
       { off:0, type:"REST", title:"REST + Strength", details:"พัก + ทำ strength 10–20 นาที (น่อง/อุ้งเท้า/สะโพก)", targets:"—" },
       { off:1, ...tpl.tue },
@@ -132,39 +339,46 @@ function generatePlan(raceDateISO, startDateISO) {
     map.forEach(item => {
       const d = addDays(weekStart, item.off);
       const iso = toISO(d);
-      plan[iso] = { ...item, week: w+1, weekday: item.off };
+      plan[iso] = {
+        ...item,
+        week: w+1,
+        weekday: item.off
+      };
     });
   }
 
+  // Save meta
   return {
     meta: {
       raceDateISO,
       startMondayISO: toISO(startMonday),
       generatedAt: new Date().toISOString(),
-      weeks: weeks.length
+      weeks: 31
     },
     plan
   };
 }
 
+// ---- LocalStorage state
 function loadState() {
   try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; }
   catch { return {}; }
 }
-function saveState(state) { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
-
+function saveState(state) {
+  localStorage.setItem(LS_KEY, JSON.stringify(state));
+}
 function loadPlan() {
   try { return JSON.parse(localStorage.getItem(LS_PLAN_KEY)); }
   catch { return null; }
 }
-function savePlan(planObj) { localStorage.setItem(LS_PLAN_KEY, JSON.stringify(planObj)); }
+function savePlan(planObj) {
+  localStorage.setItem(LS_PLAN_KEY, JSON.stringify(planObj));
+}
 
-// UI
+// ---- UI Elements
 const calendarEl = document.getElementById("calendar");
 const monthTitleEl = document.getElementById("monthTitle");
-const monthSubEl = document.getElementById("monthSub");
 const raceDateLabelEl = document.getElementById("raceDateLabel");
-
 const raceDateInput = document.getElementById("raceDateInput");
 const startDateInput = document.getElementById("startDateInput");
 const rebuildBtn = document.getElementById("rebuildBtn");
@@ -175,12 +389,7 @@ const exportBtn = document.getElementById("exportBtn");
 const importBtn = document.getElementById("importBtn");
 const importFile = document.getElementById("importFile");
 
-// settings drawer
-const openSettingsBtn = document.getElementById("openSettingsBtn");
-const closeSettingsBtn = document.getElementById("closeSettingsBtn");
-const settingsPanel = document.getElementById("settingsPanel");
-
-// modal
+// Modal
 const modalBackdrop = document.getElementById("modalBackdrop");
 const modalCloseBtn = document.getElementById("modalCloseBtn");
 const modalDateEl = document.getElementById("modalDate");
@@ -193,24 +402,33 @@ const doneBtn = document.getElementById("doneBtn");
 const skipBtn = document.getElementById("skipBtn");
 const resetBtn = document.getElementById("resetBtn");
 
-let viewDate = new Date();
+// ---- App state
+let viewDate = new Date(); // month being shown
 let state = loadState();
 let planObj = loadPlan();
 let activeISO = null;
 
+// ---- Initialize
 function init() {
+  // Defaults
+  raceDateInput.value = DEFAULT_RACE_DATE;
+
+  // If no plan saved, generate
   if (!planObj) {
-    raceDateInput.value = DEFAULT_RACE_DATE;
     planObj = generatePlan(raceDateInput.value, null);
     savePlan(planObj);
   }
 
-  raceDateInput.value = planObj.meta.raceDateISO || DEFAULT_RACE_DATE;
-  startDateInput.value = planObj.meta.startMondayISO || toISO(mondayOfWeek(new Date()));
-  raceDateLabelEl.textContent = fmtDateThai(parseISO(raceDateInput.value));
+  // Fill inputs
+  raceDateInput.value = planObj.meta.raceDateISO;
+  startDateInput.value = planObj.meta.startMondayISO;
 
+  raceDateLabelEl.textContent = fmtDateThai(parseISO(planObj.meta.raceDateISO));
+
+  // Render current month
   renderMonth(viewDate);
 
+  // Wire buttons
   prevBtn.onclick = () => { viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth()-1, 1); renderMonth(viewDate); };
   nextBtn.onclick = () => { viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth()+1, 1); renderMonth(viewDate); };
   todayBtn.onclick = () => { viewDate = new Date(); renderMonth(viewDate); };
@@ -222,18 +440,15 @@ function init() {
     savePlan(planObj);
     raceDateLabelEl.textContent = fmtDateThai(parseISO(planObj.meta.raceDateISO));
     renderMonth(viewDate);
-    toast("สร้างแผนใหม่เรียบร้อย");
+    alert("สร้างแผนใหม่เรียบร้อย");
   };
 
-  exportBtn.onclick = exportJSON;
+  // Export/Import plan+state
+  exportBtn.onclick = () => exportJSON();
   importBtn.onclick = () => importFile.click();
-  importFile.onchange = handleImport;
+  importFile.onchange = (e) => handleImport(e);
 
-  // settings drawer
-  openSettingsBtn.onclick = () => toggleSettings(true);
-  closeSettingsBtn.onclick = () => toggleSettings(false);
-
-  // modal
+  // Modal
   modalCloseBtn.onclick = closeModal;
   modalBackdrop.onclick = (e) => { if (e.target === modalBackdrop) closeModal(); };
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
@@ -250,33 +465,12 @@ function init() {
   });
 }
 
-function toggleSettings(open) {
-  settingsPanel.classList.toggle("show", open);
-  settingsPanel.setAttribute("aria-hidden", open ? "false" : "true");
-}
-
-function toast(msg){
-  // lightweight toast without extra libs
-  const el = document.createElement("div");
-  el.textContent = msg;
-  el.style.position="fixed";
-  el.style.left="50%";
-  el.style.bottom="84px";
-  el.style.transform="translateX(-50%)";
-  el.style.background="#111827";
-  el.style.color="#fff";
-  el.style.padding="10px 14px";
-  el.style.borderRadius="999px";
-  el.style.fontWeight="700";
-  el.style.boxShadow="0 10px 22px rgba(0,0,0,.18)";
-  el.style.zIndex="99";
-  document.body.appendChild(el);
-  setTimeout(()=>{ el.style.opacity="0"; el.style.transition="opacity .25s"; }, 1200);
-  setTimeout(()=>el.remove(), 1500);
-}
-
 function exportJSON() {
-  const payload = { exportedAt: new Date().toISOString(), planObj, state };
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    planObj,
+    state
+  };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type:"application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -295,15 +489,20 @@ function handleImport(e) {
   reader.onload = () => {
     try{
       const payload = JSON.parse(reader.result);
-      if (payload.planObj?.plan) { planObj = payload.planObj; savePlan(planObj); }
-      if (payload.state) { state = payload.state; saveState(state); }
-
-      raceDateInput.value = planObj.meta.raceDateISO || DEFAULT_RACE_DATE;
-      startDateInput.value = planObj.meta.startMondayISO || startDateInput.value;
-      raceDateLabelEl.textContent = fmtDateThai(parseISO(raceDateInput.value));
+      if (payload.planObj?.plan) {
+        planObj = payload.planObj;
+        savePlan(planObj);
+      }
+      if (payload.state) {
+        state = payload.state;
+        saveState(state);
+      }
+      raceDateInput.value = planObj.meta.raceDateISO;
+      startDateInput.value = planObj.meta.startMondayISO;
+      raceDateLabelEl.textContent = fmtDateThai(parseISO(planObj.meta.raceDateISO));
       renderMonth(viewDate);
-      toast("Import สำเร็จ");
-    } catch {
+      alert("Import สำเร็จ");
+    } catch(err) {
       alert("ไฟล์ไม่ถูกต้อง หรืออ่านไม่ได้");
     }
   };
@@ -311,25 +510,23 @@ function handleImport(e) {
   importFile.value = "";
 }
 
+// ---- Calendar rendering
 function renderMonth(date) {
+  const y = date.getFullYear();
+  const m = date.getMonth();
   const first = startOfMonth(date);
   const last = endOfMonth(date);
-  const y = first.getFullYear();
-  const m = first.getMonth();
 
+  // month title
   monthTitleEl.textContent = first.toLocaleDateString(LOCALE, { month:"long", year:"numeric" });
 
-  const startISO = planObj?.meta?.startMondayISO ? parseISO(planObj.meta.startMondayISO) : null;
-  const endPlan = startISO ? addDays(startISO, (planObj.meta.weeks*7)-1) : null;
-  monthSubEl.textContent = startISO && endPlan
-    ? `ช่วงแผน: ${toISO(startISO)} → ${toISO(endPlan)}`
-    : "";
-
+  // start from Monday of the grid
   const gridStart = mondayOfWeek(first);
   const gridEnd = addDays(mondayOfWeek(last), 6);
 
   calendarEl.innerHTML = "";
 
+  // Build day cells
   for (let d = new Date(gridStart); d <= gridEnd; d = addDays(d, 1)) {
     const iso = toISO(d);
     const inMonth = (d.getMonth() === m);
@@ -374,7 +571,11 @@ function renderMonth(date) {
 
     const small = document.createElement("div");
     small.className = "small";
-    small.textContent = plan ? shortHint(plan) : "";
+    if (plan) {
+      small.textContent = shortHint(plan);
+    } else {
+      small.textContent = "";
+    }
 
     cell.appendChild(head);
     cell.appendChild(workout);
@@ -387,6 +588,7 @@ function renderMonth(date) {
 }
 
 function shortHint(plan) {
+  // Keep it short for calendar cell
   if (plan.type === "LONG") return "Long day";
   if (plan.type === "REST") return "พัก/Strength";
   if (plan.type === "T") return "งาน T";
@@ -396,6 +598,7 @@ function shortHint(plan) {
   return "Easy";
 }
 
+// ---- Modal
 function openModal(iso) {
   activeISO = iso;
   const d = parseISO(iso);
@@ -438,13 +641,16 @@ function setStatus(newStatus) {
   if (!activeISO) return;
   state[activeISO] = state[activeISO] || {};
 
-  if (newStatus === "none") delete state[activeISO].status;
-  else state[activeISO].status = newStatus;
+  if (newStatus === "none") {
+    delete state[activeISO].status;
+  } else {
+    state[activeISO].status = newStatus;
+  }
 
   saveState(state);
-  renderMonth(viewDate);
-  openModal(activeISO);
+  renderMonth(viewDate); // refresh colors
+  openModal(activeISO);  // refresh tags in modal
 }
 
+// Start app
 init();
-``
