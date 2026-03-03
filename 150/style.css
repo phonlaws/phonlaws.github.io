@@ -416,19 +416,106 @@ textarea{
 }
 .modal-foot .btn{flex:1}
 
-/* Larger screens: keep modal centered (nice on desktop) */
-@media (min-width: 900px){
-  .calendar-wrap{max-width: 980px; margin: 0 auto; padding-bottom: 110px;}
-  .modal-backdrop.show{display:flex; align-items:center; justify-content:center; padding: 16px;}
-  .modal{
-    position: relative;
-    bottom: auto;
-    left:auto; right:auto;
-    width: min(780px, 100%);
-    border-radius: 18px;
-    border: 1px solid var(--line);
-    max-height: 80vh;
+/* =========================
+   Mobile compact calendar
+   (fix: cards too tall on phone)
+   Paste at END of style.css
+   ========================= */
+
+/* Clamp long text to avoid tall cards */
+.workout-text{
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -webkit-line-clamp: 2;   /* max 2 lines */
+  line-clamp: 2;
+}
+
+.small{
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -webkit-line-clamp: 1;   /* max 1 line */
+  line-clamp: 1;
+}
+
+/* Mobile: tighten spacing & reduce card height */
+@media (max-width: 480px){
+  :root{
+    --tap: 48px; /* slightly smaller tap target to save space */
+    --radius: 14px;
   }
-  .modal-body{max-height: calc(80vh - 160px)}
-  .bottom-nav{max-width: 980px; margin:0 auto; left: 50%; transform: translateX(-50%); border-radius: 18px 18px 0 0;}
+
+  .topbar{
+    padding: 12px 12px 8px;
+  }
+  .brand-title{
+    font-size: 16px;
+  }
+  .brand-sub{
+    font-size: 11px;
+  }
+
+  .calendar-wrap{
+    padding: 12px 12px 78px; /* keep space for bottom nav */
+  }
+
+  .dow{
+    gap: 6px;
+    font-size: 11px;
+    padding-bottom: 6px;
+  }
+
+  .calendar{
+    gap: 6px;
+  }
+
+  .day{
+    min-height: 78px;     /* ↓ from ~96 */
+    padding: 8px 8px 6px; /* tighter */
+    border-radius: var(--radius);
+  }
+
+  .date-num{
+    font-size: 13px;
+  }
+
+  .badge{
+    font-size: 10px;
+    padding: 3px 7px;
+  }
+
+  .dot{
+    width: 9px;
+    height: 9px;
+    margin-top: 3px;
+  }
+
+  .workout-text{
+    font-size: 11.5px;
+    line-height: 1.15;
+  }
+
+  .small{
+    font-size: 10.5px;
+    margin-top: 5px;
+  }
+
+  .bottom-nav{
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+    gap: 8px;
+  }
+
+  .nav-btn{
+    min-height: 46px;
+    border-radius: 14px;
+    font-size: 14px;
+  }
+}
+
+/* Very small screens: hide the small hint line to keep cards compact */
+@media (max-width: 360px){
+  .small{ display:none; }
+  .day{ min-height: 70px; }
+  .workout-text{ -webkit-line-clamp: 2; }
 }
