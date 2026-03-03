@@ -512,10 +512,3 @@ textarea{
     font-size: 14px;
   }
 }
-
-/* Very small screens: hide the small hint line to keep cards compact */
-@media (max-width: 360px){
-  .small{ display:none; }
-  .day{ min-height: 70px; }
-  .workout-text{ -webkit-line-clamp: 2; }
-}
