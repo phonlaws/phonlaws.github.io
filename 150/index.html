@@ -1,1 +1,110 @@
-<p>11111</p>
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Half 1:50 Plan Calendar</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-title">แผนซ้อม Half 1:50</div>
+      <div class="brand-sub">Race: <span id="raceDateLabel"></span> • Long Run: เสาร์ • 5 วัน/สัปดาห์</div>
+    </div>
+
+    <div class="controls">
+      <button id="prevBtn" class="btn">◀ เดือนก่อน</button>
+      <button id="todayBtn" class="btn">วันนี้</button>
+      <button id="nextBtn" class="btn">เดือนถัดไป ▶</button>
+    </div>
+  </header>
+
+  <section class="settings">
+    <div class="setting-row">
+      <label>
+        Race date:
+        <input type="date" id="raceDateInput" />
+      </label>
+
+      <label>
+        Start date (Monday week 1):
+        <input type="date" id="startDateInput" />
+      </label>
+
+      <button id="rebuildBtn" class="btn btn-primary">สร้างแผนใหม่</button>
+      <button id="exportBtn" class="btn">Export JSON</button>
+      <button id="importBtn" class="btn">Import JSON</button>
+      <input type="file" id="importFile" accept="application/json" hidden />
+    </div>
+
+    <div class="legend">
+      <span class="pill pill-rest">REST</span>
+      <span class="pill pill-e">E</span>
+      <span class="pill pill-t">T</span>
+      <span class="pill pill-i">I</span>
+      <span class="pill pill-r">R</span>
+      <span class="pill pill-hm">HM</span>
+      <span class="pill pill-long">LONG</span>
+
+      <span class="pill pill-done">ซ้อมสำเร็จ</span>
+      <span class="pill pill-skip">ข้ามซ้อม</span>
+    </div>
+  </section>
+
+  <main class="calendar-wrap">
+    <div class="month-title" id="monthTitle"></div>
+
+    <div class="dow">
+      <div>จ.</div><div>อ.</div><div>พ.</div><div>พฤ.</div><div>ศ.</div><div>ส.</div><div>อา.</div>
+    </div>
+
+    <div class="calendar" id="calendar"></div>
+  </main>
+
+  <!-- Modal -->
+  <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-head">
+        <div>
+          <div class="modal-date" id="modalDate"></div>
+          <div class="modal-title" id="modalTitle"></div>
+          <div class="modal-tags" id="modalTags"></div>
+        </div>
+        <button class="icon-btn" id="modalCloseBtn" aria-label="Close">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="section">
+          <div class="section-title">รายละเอียดโปรแกรม</div>
+          <div class="details" id="modalDetails"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">เป้าหมาย (Pace/HR/RPE)</div>
+          <div class="targets" id="modalTargets"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">โน้ตของคุณ</div>
+          <textarea id="modalNotes" placeholder="จดความรู้สึก / HR / รองเท้า / อาการเจ็บ ฯลฯ"></textarea>
+          <div class="note-hint">บันทึกลงเครื่องอัตโนมัติ</div>
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button class="btn btn-done" id="doneBtn">✅ ซ้อมสำเร็จ</button>
+        <button class="btn btn-skip" id="skipBtn">⏭️ ข้ามซ้อม</button>
+        <button class="btn" id="resetBtn">รีเซ็ตสถานะ</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div>บันทึกสถานะ/โน้ตด้วย LocalStorage (อยู่ในเครื่องของคุณ)</div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
+``
