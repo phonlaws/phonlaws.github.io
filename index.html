@@ -4,23 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Running Training Calendar</title>
+    
+    <!-- Import Google Font: Prompt -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+
     <style>
         /* Theme: Soft White / Comfortable Eyes */
         :root {
-            --bg-color: #fafafa; /* สีพื้นหลังขาวนวล */
+            --bg-color: #f7f9fc; /* ปรับพื้นหลังให้ออกโทนฟ้าจางๆ นิดนึงเพื่อให้ดูพรีเมียมขึ้น */
             --card-bg: #ffffff;
-            --text-main: #444444;
-            --text-sub: #666666;
-            --border-color: #e0e0e0;
-            --primary-color: #4a90e2; /* สีน้ำเงินสำหรับวันที่ปัจจุบัน */
-            --success-color: #28a745;
-            --success-bg: #e8f5e9;
-            --fail-color: #dc3545;
-            --fail-bg: #fbe9eb;
+            --text-main: #2c3e50;
+            --text-sub: #7f8c8d;
+            --border-color: #ecf0f1;
+            --primary-color: #3498db;
+            --success-color: #27ae60;
+            --success-bg: #eafaf1;
+            --fail-color: #e74c3c;
+            --fail-bg: #fdedec;
+            --note-indicator: #f1c40f;
         }
 
         body {
-            font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            /* ใช้ฟอนต์ Prompt */
+            font-family: 'Prompt', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
@@ -30,9 +38,41 @@
             align-items: center;
         }
 
+        /* Header & Navigation */
+        .header-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 1000px;
+            margin-bottom: 25px;
+        }
+
         h1 {
-            color: #333;
-            margin-bottom: 20px;
+            margin: 0;
+            font-size: 1.8em;
+            font-weight: 600;
+            color: #34495e;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-btn {
+            background: white;
+            border: 1px solid #dcdcdc;
+            padding: 8px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Prompt', sans-serif;
+            font-weight: 500;
+            color: var(--text-sub);
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .nav-btn:hover {
+            background: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            color: var(--primary-color);
         }
 
         /* Calendar Grid */
@@ -40,85 +80,110 @@
             max-width: 1000px;
             width: 100%;
             background: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+            padding: 25px;
+            box-sizing: border-box;
         }
 
         .days-header {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             text-align: center;
-            font-weight: bold;
-            color: var(--text-sub);
+            font-weight: 500;
+            color: #b0b8c1;
+            font-size: 0.9em;
+            text-transform: uppercase;
         }
 
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 10px;
+            gap: 12px;
         }
 
         /* Day Cell */
         .day-cell {
             background-color: #fff;
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            min-height: 100px;
-            padding: 10px;
+            border-radius: 12px;
+            min-height: 110px;
+            padding: 12px;
             position: relative;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
             display: flex;
             flex-direction: column;
         }
 
         .day-cell:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            border-color: #ccc;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            border-color: var(--primary-color);
+            z-index: 1;
         }
 
         .date-number {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #888;
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #bdc3c7;
+            display: flex;
+            justify-content: space-between;
         }
 
         .program-preview {
             font-size: 0.85em;
+            font-weight: 400;
             color: var(--text-main);
+            line-height: 1.4;
             overflow: hidden;
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
         }
 
-        .empty-cell {
+        .day-cell.empty-cell {
             background-color: transparent;
             border: none;
             cursor: default;
+            box-shadow: none;
         }
+        .day-cell.empty-cell:hover { transform: none; }
 
-        /* Status Styles */
+        /* Status & Indicators */
         .day-cell.current-day {
             border: 2px solid var(--primary-color);
-            box-shadow: 0 0 10px rgba(74, 144, 226, 0.2);
+            background-color: #f4faff;
+        }
+        .day-cell.current-day .date-number {
+            color: var(--primary-color);
         }
 
         .day-cell.status-success {
-            border: 2px solid var(--success-color);
+            border: 1px solid var(--success-color);
             background-color: var(--success-bg);
+            box-shadow: inset 0 0 0 1px var(--success-color); /* Double border effect */
         }
-
         .day-cell.status-fail {
-            border: 2px solid var(--fail-color);
+            border: 1px solid var(--fail-color);
             background-color: var(--fail-bg);
+            box-shadow: inset 0 0 0 1px var(--fail-color);
+        }
+        
+        /* Note Indicator (Orange Dot) */
+        .note-dot {
+            height: 8px;
+            width: 8px;
+            background-color: var(--note-indicator);
+            border-radius: 50%;
+            display: inline-block;
+            margin-top: 5px;
+            box-shadow: 0 0 5px rgba(241, 196, 15, 0.5);
         }
 
-        /* Modal / Popup */
+        /* Modal */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -126,302 +191,360 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(44, 62, 80, 0.4); /* Darker overlay */
+            backdrop-filter: blur(3px); /* Modern blur effect */
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            transition: opacity 0.3s;
         }
-
+        
         .modal-content {
             background: #fff;
             padding: 30px;
-            border-radius: 12px;
+            border-radius: 20px;
             width: 90%;
-            max-width: 400px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 420px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
             position: relative;
-        }
-
-        .modal-header {
-            font-size: 1.5em;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: var(--text-main);
-        }
-
-        .modal-details {
-            text-align: left;
-            margin-bottom: 25px;
-            background: #f4f4f4;
-            padding: 15px;
-            border-radius: 8px;
-        }
-
-        .modal-details p {
-            margin: 8px 0;
-        }
-
-        .btn-group {
             display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-
-        button {
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: bold;
-            transition: opacity 0.2s;
-        }
-
-        button:hover {
-            opacity: 0.9;
-        }
-
-        .btn-success {
-            background-color: var(--success-color);
-            color: white;
-        }
-
-        .btn-fail {
-            background-color: var(--fail-color);
-            color: white;
-        }
-
-        .btn-close {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: transparent;
-            color: #999;
-            font-size: 1.2em;
-            padding: 5px;
+            flex-direction: column;
+            gap: 20px;
+            font-family: 'Prompt', sans-serif;
         }
         
-        .btn-clear {
-            background-color: #999;
-            color: white;
-            margin-top: 10px;
-            font-size: 0.8em;
-            padding: 5px 10px;
+        .program-info {
+            text-align:left; 
+            background:#f8f9fa; 
+            padding: 20px; 
+            border-radius: 12px;
+            font-size: 0.95em;
+            border: 1px solid #eee;
         }
 
-        /* Mobile Responsive */
+        /* Note Section */
+        .note-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        label {
+            font-weight: 500;
+            color: #34495e;
+            font-size: 0.9em;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            resize: vertical;
+            font-family: 'Prompt', sans-serif;
+            font-weight: 300;
+            box-sizing: border-box;
+            background: #fff;
+            transition: border-color 0.2s;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        /* Buttons */
+        .btn-group { display: flex; gap: 12px; justify-content: center; }
+        
+        button { 
+            border: none; 
+            padding: 12px 15px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-family: 'Prompt', sans-serif;
+            font-weight: 500; 
+            font-size: 0.95em; 
+            transition: all 0.2s; 
+        }
+        button:hover { transform: translateY(-1px); }
+        
+        .btn-success { background: var(--success-color); color: white; flex:1; box-shadow: 0 4px 10px rgba(39, 174, 96, 0.2); }
+        .btn-fail { background: var(--fail-color); color: white; flex:1; box-shadow: 0 4px 10px rgba(231, 76, 60, 0.2); }
+        
+        .btn-save-note { 
+            background: #34495e; 
+            color: white; 
+            margin-top: 5px; 
+            width: 100%;
+        }
+        
+        .btn-close { 
+            position: absolute; 
+            top: 15px; 
+            right: 15px; 
+            background: transparent; 
+            font-size: 1.4em; 
+            padding: 5px; 
+            color: #bdc3c7; 
+            line-height: 1;
+        }
+        .btn-close:hover { color: #34495e; transform: none; }
+        
+        /* Active State for Status Buttons */
+        .btn-success.active { background: #219150; box-shadow: inset 0 3px 5px rgba(0,0,0,0.2); transform: translateY(1px); }
+        .btn-fail.active { background: #c0392b; box-shadow: inset 0 3px 5px rgba(0,0,0,0.2); transform: translateY(1px); }
+        
+        /* Disabled State (when the other is active) */
+        button.dimmed { opacity: 0.4; box-shadow: none; transform: none; }
+
         @media (max-width: 600px) {
-            .calendar-grid {
-                grid-template-columns: repeat(1, 1fr); /* List view on mobile */
-            }
-            .days-header {
-                display: none; /* Hide days header on mobile */
-            }
-            .day-cell {
-                flex-direction: row;
-                align-items: center;
-                gap: 15px;
-                min-height: auto;
-            }
-            .program-preview {
-                -webkit-line-clamp: 2;
-            }
+            .calendar-grid { grid-template-columns: 1fr; }
+            .days-header { display: none; }
+            .day-cell { min-height: auto; flex-direction: row; align-items: center; justify-content: space-between; gap: 15px; }
+            .date-number { margin-bottom: 0; min-width: 30px; }
+            .program-preview { -webkit-line-clamp: 2; text-align: right; width: 100%; }
         }
     </style>
 </head>
 <body>
 
-    <h1>🏃 Training Calendar: March</h1>
+    <div class="header-controls">
+        <button class="nav-btn" onclick="changeMonth(-1)">&#10094; เดือนก่อน</button>
+        <h1 id="monthYearDisplay">March 2026</h1>
+        <button class="nav-btn" onclick="changeMonth(1)">เดือนถัดไป &#10095;</button>
+    </div>
 
     <div class="calendar-container">
         <div class="days-header">
-            <div>SUN</div>
-            <div>MON</div>
-            <div>TUE</div>
-            <div>WED</div>
-            <div>THU</div>
-            <div>FRI</div>
-            <div>SAT</div>
+            <div>อา</div><div>จ</div><div>อ</div><div>พ</div><div>พฤ</div><div>ศ</div><div>ส</div>
         </div>
-        <div class="calendar-grid" id="calendarGrid">
-            <!-- JS will inject cells here -->
-        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
     </div>
 
     <!-- Modal Popup -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-content">
             <button class="btn-close" onclick="closeModal()">✕</button>
-            <div class="modal-header" id="modalDate">วันที่ ...</div>
+            <h2 id="modalDate" style="margin:0; font-size:1.4em; text-align:center; color:#2c3e50;"></h2>
             
-            <div class="modal-details">
-                <p><strong>โปรแกรม:</strong> <span id="modalProgram">-</span></p>
-                <p><strong>เป้าหมายเพซ:</strong> <span id="modalPace">-</span></p>
+            <div class="program-info">
+                <p style="margin:5px 0;"><strong>🏃 โปรแกรม:</strong> <span id="modalProgram" style="color:#3498db;"></span></p>
+                <p style="margin:5px 0;"><strong>⏱️ เป้าหมาย:</strong> <span id="modalPace"></span></p>
             </div>
 
-            <p style="margin-bottom: 10px; font-size: 0.9em; color: #666;">วันนี้ทำสำเร็จหรือไม่?</p>
-            
-            <div class="btn-group">
-                <button class="btn-success" onclick="updateStatus(true)">สำเร็จ (Completed)</button>
-                <button class="btn-fail" onclick="updateStatus(false)">ไม่สำเร็จ (Fail)</button>
+            <!-- Status Buttons -->
+            <div>
+                <div style="text-align:center; font-size:0.85em; color:#7f8c8d; margin-bottom:8px;">ผลการซ้อมวันนี้</div>
+                <div class="btn-group">
+                    <button id="btnSuccess" class="btn-success" onclick="setStatus(true)">สำเร็จ (Done)</button>
+                    <button id="btnFail" class="btn-fail" onclick="setStatus(false)">ไม่สำเร็จ (Fail)</button>
+                </div>
             </div>
-            
-            <button class="btn-clear" onclick="clearStatus()">รีเซ็ตสถานะ</button>
+
+            <!-- Note Section -->
+            <div class="note-section">
+                <label>📝 บันทึกช่วยจำ (Note):</label>
+                <textarea id="noteInput" rows="3" placeholder="วันนี้วิ่งเป็นยังไงบ้าง? เหนื่อยไหม? (HR, Pace จริง)..."></textarea>
+                <button class="btn-save-note" onclick="saveNote()">บันทึกโน้ต</button>
+            </div>
+
+            <button style="background:none; color:#95a5a6; text-decoration:underline; font-size:0.8em; align-self:center; margin-top:-10px;" onclick="clearStatus()">รีเซ็ตข้อมูลวันน้ี</button>
         </div>
     </div>
 
     <script>
-        // Data Configuration
-        // Assuming March starts such that Mar 4 is Wednesday. 
-        // Logic: If Mar 4 is Wed -> Mar 1 is Sunday.
-        // Calendar Grid starts at Sunday.
-        
-        const trainingPlan = [
-            { date: 4, day: "Wed", program: "Easy (E) 7K", pace: "6:30–7:15/กม." },
-            { date: 5, day: "Thu", program: "พัก + Strength 10–15 นาที", pace: "-" },
-            { date: 6, day: "Fri", program: "Easy 6–7K + Strides 4×20″", pace: "Easy 6:35–7:15 / Strides 4:40–5:00" },
-            { date: 7, day: "Sat", program: "Long 12K (E ล้วน)", pace: "6:40–7:20/กม. (ไม่เร่งท้าย)" },
-            { date: 8, day: "Sun", program: "Recovery 5–6K", pace: "6:55–7:35/กม." },
-            { date: 9, day: "Mon", program: "พัก", pace: "-" },
-            { date: 10, day: "Tue", program: "T: 3×8′ @T (พักจ็อก 2′)", pace: "ช่วง T = 5:15–5:25/กม." },
-            
-            { date: 11, day: "Wed", program: "Easy 7–8K", pace: "6:30–7:15" },
-            { date: 12, day: "Thu", program: "พัก + Strength 10–15 นาที", pace: "-" },
-            { date: 13, day: "Fri", program: "Easy 6–8K + Strides 5×20″", pace: "Easy 6:35–7:15 / Strides 4:40–5:00" },
-            { date: 14, day: "Sat", program: "Long 13K (E ล้วน)", pace: "6:40–7:20" },
-            { date: 15, day: "Sun", program: "Recovery 5–7K", pace: "6:55–7:35" },
-            { date: 16, day: "Mon", program: "พัก", pace: "-" },
-            { date: 17, day: "Tue", program: "T: 4×1K @T (พักจ็อก 1′)", pace: "1K แต่ละช่วง = 5:15–5:25" },
+        // ==========================================
+        // ส่วนที่ 1: ข้อมูลโปรแกรมซ้อม
+        // ==========================================
+        const allTrainingData = [
+            // --- เดือนมีนาคม (3) ปี 2026 ---
+            { d: 4, m: 3, y: 2026, program: "Easy (E) 7K", pace: "6:30–7:15" },
+            { d: 5, m: 3, y: 2026, program: "พัก + Strength", pace: "-" },
+            { d: 6, m: 3, y: 2026, program: "Easy 6–7K + Strides", pace: "Easy 6:35 / Strides 4:40" },
+            { d: 7, m: 3, y: 2026, program: "Long 12K (E)", pace: "6:40–7:20" },
+            { d: 8, m: 3, y: 2026, program: "Recovery 5–6K", pace: "6:55–7:35" },
+            { d: 10, m: 3, y: 2026, program: "T: 3×8′ @T", pace: "T = 5:15–5:25" },
+            { d: 11, m: 3, y: 2026, program: "Easy 7–8K", pace: "6:30–7:15" },
+            { d: 13, m: 3, y: 2026, program: "Easy 6–8K + Strides", pace: "Easy 6:35 / Strides 4:40" },
+            { d: 14, m: 3, y: 2026, program: "Long 13K (E)", pace: "6:40–7:20" },
+            { d: 15, m: 3, y: 2026, program: "Recovery 5–7K", pace: "6:55–7:35" },
+            { d: 17, m: 3, y: 2026, program: "T: 4×1K @T", pace: "5:15–5:25" },
+            { d: 18, m: 3, y: 2026, program: "Easy 8–9K", pace: "6:30–7:10" },
+            { d: 20, m: 3, y: 2026, program: "Easy 7–8K + Strides", pace: "Easy 6:35 / Strides 4:40" },
+            { d: 21, m: 3, y: 2026, program: "Long 14K (E)", pace: "6:40–7:20" },
+            { d: 22, m: 3, y: 2026, program: "Recovery 6–7K", pace: "6:55–7:35" },
+            { d: 24, m: 3, y: 2026, program: "Tempo 20′ @T", pace: "5:18–5:25" },
+            { d: 25, m: 3, y: 2026, program: "Easy 6–7K", pace: "6:35–7:20" },
+            { d: 27, m: 3, y: 2026, program: "Easy 6K + Strides", pace: "Easy 6:40 / Strides 4:45" },
+            { d: 28, m: 3, y: 2026, program: "Long 12K (ผ่อน)", pace: "6:45–7:25" },
+            { d: 29, m: 3, y: 2026, program: "Recovery 5–6K", pace: "7:00–7:40" },
+            { d: 31, m: 3, y: 2026, program: "T: 2×8′ @T", pace: "5:18–5:25" },
 
-            { date: 18, day: "Wed", program: "Easy 8–9K", pace: "6:30–7:10" },
-            { date: 19, day: "Thu", program: "พัก + Strength 10–20 นาที", pace: "-" },
-            { date: 20, day: "Fri", program: "Easy 7–8K + Strides 6×20″", pace: "Easy 6:35–7:15 / Strides 4:40–5:00" },
-            { date: 21, day: "Sat", program: "Long 14K (E ล้วน)", pace: "6:40–7:20" },
-            { date: 22, day: "Sun", program: "Recovery 6–7K", pace: "6:55–7:35" },
-            { date: 23, day: "Mon", program: "พัก", pace: "-" },
-            { date: 24, day: "Tue", program: "Tempo 20′ @T", pace: "ช่วง 20′ = 5:18–5:25 (นิ่ง ๆ)" },
-
-            { date: 25, day: "Wed", program: "Easy 6–7K", pace: "6:35–7:20" },
-            { date: 26, day: "Thu", program: "พัก + Strength 10–15 นาที", pace: "-" },
-            { date: 27, day: "Fri", program: "Easy 6K + Strides 4×20″ (เบา)", pace: "Easy 6:40–7:25 / Strides 4:45–5:05" },
-            { date: 28, day: "Sat", program: "Long 12K (ผ่อน)", pace: "6:45–7:25" },
-            { date: 29, day: "Sun", program: "Recovery 5–6K", pace: "7:00–7:40" },
-            { date: 30, day: "Mon", program: "พัก", pace: "-" },
-            { date: 31, day: "Tue", program: "T: 2×8′ @T (พัก 2′)", pace: "ช่วง T = 5:18–5:25" },
+            // --- เดือนเมษายน (4) ---
+            { d: 1, m: 4, y: 2026, program: "Easy 8K", pace: "6:30" },
         ];
 
-        // State Management
-        let currentSelectedDate = null;
-        const STORAGE_KEY = 'runningAppStatus_v1';
-        let statusData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+        // ==========================================
+        // ส่วนที่ 2: ระบบปฏิทิน และ Storage
+        // ==========================================
+        let currentDisplayDate = new Date(); 
+        const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", 
+                            "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+        
+        const STORAGE_KEY_STATUS = 'runApp_status_v2';
+        const STORAGE_KEY_NOTES = 'runApp_notes_v1';
 
-        const calendarGrid = document.getElementById('calendarGrid');
-        const modalOverlay = document.getElementById('modalOverlay');
+        let statusData = JSON.parse(localStorage.getItem(STORAGE_KEY_STATUS)) || {};
+        let notesData = JSON.parse(localStorage.getItem(STORAGE_KEY_NOTES)) || {};
+        
+        let selectedDataKey = null;
 
-        // Render Function
         function renderCalendar() {
-            calendarGrid.innerHTML = '';
+            const year = currentDisplayDate.getFullYear();
+            const month = currentDisplayDate.getMonth();
+            
+            document.getElementById('monthYearDisplay').innerText = `${monthNames[month]} ${year}`;
+            
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
 
-            // Since Mar 4 is Wed, Mar 1 is Sunday. No offset needed for grid starting Sunday.
-            // We'll generate slots for days 1, 2, 3 as empty or placeholders first.
-            
-            const daysInMonth = 31;
-            
-            // Loop through all days in March
-            for (let i = 1; i <= daysInMonth; i++) {
-                const dayData = trainingPlan.find(d => d.date === i);
-                
+            for (let i = 0; i < firstDayIndex; i++) {
+                let empty = document.createElement('div');
+                empty.className = 'day-cell empty-cell';
+                grid.appendChild(empty);
+            }
+
+            for (let d = 1; d <= daysInMonth; d++) {
                 const cell = document.createElement('div');
-                cell.classList.add('day-cell');
+                cell.className = 'day-cell';
                 
-                // Add Date Number
-                const dateNum = document.createElement('div');
-                dateNum.classList.add('date-number');
-                dateNum.innerText = i;
-                cell.appendChild(dateNum);
+                const plan = allTrainingData.find(item => item.d === d && item.m === (month + 1) && item.y === year);
+                const dataKey = `${year}-${month+1}-${d}`;
+                
+                let html = `<div class="date-number"><span>${d}</span>`;
+                
+                if (notesData[dataKey] && notesData[dataKey].trim() !== "") {
+                    html += `<span class="note-dot" title="มีบันทึกโน้ต"></span>`;
+                }
+                html += `</div>`;
 
-                // Add Program Preview (if exists)
-                if (dayData) {
-                    const preview = document.createElement('div');
-                    preview.classList.add('program-preview');
-                    preview.innerText = dayData.program;
-                    cell.appendChild(preview);
+                if (plan) {
+                    html += `<div class="program-preview">${plan.program}</div>`;
+                    
+                    if (statusData[dataKey] === 'success') cell.classList.add('status-success');
+                    if (statusData[dataKey] === 'fail') cell.classList.add('status-fail');
 
-                    // Add Click Event
-                    cell.onclick = () => openModal(dayData);
-
-                    // Apply Status Color from Saved Data
-                    if (statusData[i] === 'success') {
-                        cell.classList.add('status-success');
-                    } else if (statusData[i] === 'fail') {
-                        cell.classList.add('status-fail');
-                    }
+                    cell.onclick = () => openModal(plan, dataKey);
                 } else {
-                    // Days 1, 2, 3 (Not in the plan provided)
-                    cell.style.color = '#ccc';
-                    const preview = document.createElement('div');
-                    preview.innerText = "-";
-                    cell.appendChild(preview);
+                     html += `<div style="font-size:0.8em; color:#e0e0e0;">-</div>`;
+                     cell.onclick = () => openModal({ d: d, m: month+1, y: year, program: "วันพัก / ไม่มีรายการ", pace: "-" }, dataKey);
                 }
 
-                // Check Current Date
                 const today = new Date();
-                // Note: In real usage, check Month/Year too. For demo, we just check Date number if Month is March.
-                if (today.getDate() === i && today.getMonth() === 2) { // Month 2 is March (0-indexed)
+                if (d === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
                     cell.classList.add('current-day');
                 }
 
-                calendarGrid.appendChild(cell);
+                cell.innerHTML = html;
+                grid.appendChild(cell);
             }
         }
 
-        // Modal Logic
-        function openModal(data) {
-            currentSelectedDate = data.date;
-            document.getElementById('modalDate').innerText = `วัน${data.day} ที่ ${data.date} มีนาคม`;
-            document.getElementById('modalProgram').innerText = data.program;
-            document.getElementById('modalPace').innerText = data.pace;
-            modalOverlay.style.display = 'flex';
+        function changeMonth(step) {
+            currentDisplayDate.setMonth(currentDisplayDate.getMonth() + step);
+            renderCalendar();
+        }
+
+        // ==========================================
+        // ส่วนที่ 3: Modal & Actions
+        // ==========================================
+        const modal = document.getElementById('modalOverlay');
+        const noteInput = document.getElementById('noteInput');
+        const btnSuccess = document.getElementById('btnSuccess');
+        const btnFail = document.getElementById('btnFail');
+        
+        function openModal(plan, key) {
+            selectedDataKey = key;
+            document.getElementById('modalDate').innerText = `${plan.d} ${monthNames[plan.m-1]} ${plan.y}`;
+            document.getElementById('modalProgram').innerText = plan.program;
+            document.getElementById('modalPace').innerText = plan.pace;
+            
+            noteInput.value = notesData[key] || '';
+            
+            updateButtonStyles(statusData[key]);
+
+            modal.style.display = 'flex';
+            setTimeout(() => { modal.style.opacity = 1; }, 10); // Fade in animation
         }
 
         function closeModal() {
-            modalOverlay.style.display = 'none';
-            currentSelectedDate = null;
+            modal.style.opacity = 0;
+            setTimeout(() => { 
+                modal.style.display = 'none';
+                selectedDataKey = null;
+            }, 300);
         }
 
-        function updateStatus(isSuccess) {
-            if (!currentSelectedDate) return;
-
-            // Save to object
-            statusData[currentSelectedDate] = isSuccess ? 'success' : 'fail';
+        function setStatus(isSuccess) {
+            if (!selectedDataKey) return;
+            const status = isSuccess ? 'success' : 'fail';
             
-            // Save to LocalStorage
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(statusData));
-
-            // Re-render
+            statusData[selectedDataKey] = status;
+            localStorage.setItem(STORAGE_KEY_STATUS, JSON.stringify(statusData));
+            
+            updateButtonStyles(status);
             renderCalendar();
+        }
+
+        function saveNote() {
+            if (!selectedDataKey) return;
+            
+            const text = noteInput.value;
+            notesData[selectedDataKey] = text;
+            localStorage.setItem(STORAGE_KEY_NOTES, JSON.stringify(notesData));
+            
+            renderCalendar();
+            alert("บันทึกโน้ตเรียบร้อยครับ!");
             closeModal();
         }
-        
-        function clearStatus() {
-             if (!currentSelectedDate) return;
-             delete statusData[currentSelectedDate];
-             localStorage.setItem(STORAGE_KEY, JSON.stringify(statusData));
-             renderCalendar();
-             closeModal();
-        }
 
-        // Click outside to close
-        modalOverlay.addEventListener('click', (e) => {
-            if (e.target === modalOverlay) {
+        function clearStatus() {
+            if (!selectedDataKey) return;
+            
+            if(confirm("ต้องการลบสถานะและโน้ตของวันนี้ใช่ไหมครับ?")) {
+                delete statusData[selectedDataKey];
+                delete notesData[selectedDataKey];
+                
+                localStorage.setItem(STORAGE_KEY_STATUS, JSON.stringify(statusData));
+                localStorage.setItem(STORAGE_KEY_NOTES, JSON.stringify(notesData));
+                
+                renderCalendar();
                 closeModal();
             }
-        });
+        }
 
-        // Initial Render
+        function updateButtonStyles(status) {
+            btnSuccess.classList.remove('active', 'dimmed');
+            btnFail.classList.remove('active', 'dimmed');
+            
+            if (status === 'success') {
+                btnSuccess.classList.add('active');
+                btnFail.classList.add('dimmed');
+            } else if (status === 'fail') {
+                btnFail.classList.add('active');
+                btnSuccess.classList.add('dimmed');
+            }
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) closeModal();
+        }
+
+        // Init
         renderCalendar();
-
     </script>
 </body>
 </html>
