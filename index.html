@@ -93,7 +93,7 @@
         // ==========================================
         // ⚠️ ใส่ URL ที่ได้จาก Google Apps Script ตรงนี้ ⚠️
         // ==========================================
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzpQibgrqU37TftfZHJDCTyvo4hPPgtGDmgxUXnuOJfqGjL5oC5OoUC2MlssoeuxZMVSA/exec'; 
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbySiR4GYh3eH_eN5fWuosImkhdrBQpeHfwXUI09aFfHwyR4au9D2JvXnuMhEut9dcZW/exec'; 
         // ==========================================
 
         const allTrainingData = [
@@ -128,33 +128,45 @@
         let cloudData = {}; 
         let selectedDataKey = null;
 
-        // --- ฟังก์ชันดึงข้อมูล (แก้ให้รองรับ GitHub Pages โดยไม่ติด Cache) ---
+        // --- ส่วนที่ต้องแก้ในไฟล์ HTML ---
         async function fetchCloudData() {
             try {
                 document.getElementById('loadingOverlay').style.display = 'flex';
                 
-                // 1. สร้างตัวเลขสุ่มจากเวลาปัจจุบัน (Timestamp)
+                // เพิ่ม timestamp กัน cache
                 const timestamp = new Date().getTime(); 
-                
-                // 2. ต่อท้าย URL ด้วย &t=... เพื่อให้ Browser คิดว่าเป็นลิงก์ใหม่ทุกครั้งที่กดรีเฟรช
-                // (ถ้าไม่ใส่ Browser บนคอมจะจำค่าเดิมนานมาก)
                 const url = GOOGLE_SCRIPT_URL + '?action=get&t=' + timestamp;
 
-                console.log("Fetching from:", url); // ไว้ดูใน Console ว่าเรียก URL ใหม่จริงไหม
+                console.log("Fetching data from:", url); // เช็คใน Console
 
-                const response = await fetch(url);
-                
+                // ใช้ method: 'GET' ชัดเจน
+                const response = await fetch(url, {
+                    method: 'GET'
+                });
+
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                const result = await response.json();
+                const textData = await response.text(); // อ่านเป็น Text ก่อนเผื่อไม่ใช่ JSON
+                console.log("Raw Response:", textData); // ดูค่าที่ได้จาก Google Sheet
+
+                let result;
+                try {
+                    result = JSON.parse(textData);
+                } catch (e) {
+                    console.error("JSON Parse Error:", e);
+                    throw new Error("Google Script ส่งค่ามาไม่ใช่ JSON");
+                }
+
                 cloudData = result;
+                console.log("Parsed Data:", cloudData); // ดูข้อมูลที่แปลงแล้ว
+
                 renderCalendar();
+                
             } catch (error) {
                 console.error('Error fetching data:', error);
-                // กรณีโหลดไม่ได้ ให้แสดงข้อมูลว่างๆ ไปก่อน จะได้ใช้งานหน้าเว็บต่อได้
-                alert('โหลดข้อมูลล่าสุดไม่ได้ (อาจเป็นที่เน็ต หรือ GitHub ยังไม่อัปเดต)');
+                alert('โหลดข้อมูลไม่สำเร็จ: ' + error.message);
             } finally {
                 document.getElementById('loadingOverlay').style.display = 'none';
             }
