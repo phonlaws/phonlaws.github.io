@@ -16,12 +16,13 @@
             --card-bg: #ffffff;
             --text-main: #1f2937;
             --text-sub: #6b7280;
-            --primary-color: #3b82f6; /* Modern Blue */
+            --primary-color: #3b82f6; 
             --success-color: #10b981;
             --success-bg: #ecfdf5;
             --fail-color: #ef4444;
             --fail-bg: #fef2f2;
-            --note-color: #f59e0b;
+            --note-text-color: #b45309;
+            --note-bg: #fffbeb;
         }
 
         body {
@@ -29,17 +30,17 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
-            padding: 20px 15px; /* ลด padding ด้านข้างในมือถือ */
+            padding: 20px 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* --- Header ปรับใหม่ --- */
+        /* --- Header --- */
         .header-controls {
             display: grid;
-            grid-template-columns: 50px 1fr 50px; /* ล็อคขนาดปุ่มซ้ายขวา */
+            grid-template-columns: 50px 1fr 50px;
             align-items: center;
             width: 100%;
             max-width: 800px;
@@ -49,11 +50,10 @@
 
         h1 {
             margin: 0;
-            font-size: 1.5em; /* ลดขนาดลงนิดนึงเพื่อมือถือ */
+            font-size: 1.4em;
             font-weight: 600;
             color: #111827;
             text-align: center;
-            white-space: nowrap;
         }
 
         .nav-btn {
@@ -70,18 +70,16 @@
             font-size: 1.2em;
             transition: all 0.2s;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            padding: 0; /* ลบ padding เพื่อให้ icon กลางเป๊ะ */
+            padding: 0;
         }
         .nav-btn:active { transform: scale(0.95); background: #f9fafb; }
 
-        /* --- Calendar Container --- */
+        /* --- Calendar --- */
         .calendar-container {
             max-width: 800px;
             width: 100%;
-            background: transparent; /* บนมือถือเอาพื้นหลังออกให้ดูคลีน */
         }
 
-        /* Desktop View: Grid */
         .days-header {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -98,58 +96,59 @@
             gap: 10px;
         }
 
-        /* --- Day Cell Style --- */
+        /* --- Day Cell --- */
         .day-cell {
             background-color: #fff;
-            border: 1px solid #e5e7eb; /* เส้นขอบบางลง */
+            border: 1px solid #e5e7eb;
             border-radius: 16px;
             min-height: 100px;
             padding: 12px;
             position: relative;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s;
             display: flex;
             flex-direction: column;
             box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-        }
-        
-        /* Desktop Hover */
-        @media (min-width: 601px) {
-            .calendar-container {
-                background: var(--card-bg);
-                padding: 25px;
-                border-radius: 24px;
-                box-shadow: 0 10px 40px rgba(0,0,0,0.03);
-            }
-            .day-cell:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-                border-color: var(--primary-color);
-                z-index: 10;
-            }
         }
 
         .date-number {
             font-size: 1.1em;
             font-weight: 600;
             color: #9ca3af;
+            margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
+        }
+
+        /* Wrapper สำหรับเนื้อหา (โปรแกรม + โน้ต) */
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
         }
 
         .program-preview {
-            font-size: 0.85em;
+            font-size: 0.95em;
             color: var(--text-main);
-            line-height: 1.5;
             font-weight: 400;
-            
-            /* ตัดคำ */
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+            line-height: 1.4;
         }
+
+        /* Note Display Style */
+        .note-display {
+            margin-top: 8px;
+            background-color: var(--note-bg);
+            color: var(--note-text-color);
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            font-weight: 400;
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            border: 1px solid #fcd34d;
+        }
+        .note-icon { font-size: 1em; margin-top: 1px; }
 
         .day-cell.empty-cell {
             background: transparent;
@@ -158,7 +157,7 @@
             cursor: default;
         }
 
-        /* Status & Indicators */
+        /* Status Styles */
         .day-cell.current-day {
             border: 2px solid var(--primary-color);
             background-color: #eff6ff;
@@ -168,66 +167,40 @@
         .day-cell.status-success {
             background-color: var(--success-bg);
             border-color: var(--success-color);
-            border-left: 4px solid var(--success-color); /* แถบสีด้านซ้าย */
+            border-left: 4px solid var(--success-color);
         }
         .day-cell.status-fail {
             background-color: var(--fail-bg);
             border-color: var(--fail-color);
             border-left: 4px solid var(--fail-color);
         }
-        
-        .note-dot {
-            height: 8px;
-            width: 8px;
-            background-color: var(--note-color);
-            border-radius: 50%;
-            display: inline-block;
-        }
 
-        /* --- Mobile Styles (แก้ไขจุดเพี้ยน) --- */
+        /* --- Mobile Responsive --- */
         @media (max-width: 600px) {
             .days-header { display: none; }
+            .calendar-grid { grid-template-columns: 1fr; gap: 12px; }
+            .day-cell.empty-cell { display: none; } /* ซ่อนวันว่างในมือถือ */
             
-            .calendar-grid {
-                grid-template-columns: 1fr; /* เรียงเป็นแนวตั้ง */
-                gap: 12px;
-            }
-            
-            /* ซ่อนวันว่างในมือถือ */
-            .day-cell.empty-cell { display: none; }
-
             .day-cell {
-                flex-direction: row; /* เรียงแนวนอน */
-                align-items: center;
+                flex-direction: row;
+                align-items: flex-start; /* จัดชิดบนเพื่อให้วันที่อยู่ตรงกับบรรทัดแรก */
                 min-height: auto;
                 padding: 15px;
                 gap: 15px;
-                border-radius: 14px;
             }
 
             .date-number {
                 flex-direction: column;
                 align-items: center;
-                justify-content: center;
                 margin-bottom: 0;
                 min-width: 35px;
-                font-size: 1.3em;
-                border-right: 1px solid #f3f4f6; /* เส้นคั่นกลาง */
+                font-size: 1.4em;
+                border-right: 1px solid #f3f4f6;
                 padding-right: 15px;
                 margin-right: 5px;
-                color: #d1d5db; /* สีจางๆ */
+                color: #d1d5db;
+                height: 100%; /* ลากยาวลงมา */
             }
-
-            .day-cell.current-day .date-number { color: var(--primary-color); font-weight: 700; }
-
-            .program-preview {
-                text-align: left;
-                font-size: 1em;
-                -webkit-line-clamp: 2;
-                width: 100%;
-            }
-
-            .note-dot { margin-top: 4px; }
         }
 
         /* --- Modal --- */
@@ -240,66 +213,38 @@
             z-index: 1000;
             justify-content: center; align-items: center;
         }
-        
         .modal-content {
             background: #fff;
             width: 85%;
             max-width: 380px;
             border-radius: 24px;
             padding: 25px;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
             display: flex; flex-direction: column; gap: 15px;
             position: relative;
-            animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        @keyframes modalPop {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
         .btn-close {
             position: absolute; top: 15px; right: 15px;
             background: #f3f4f6; border-radius: 50%; width: 30px; height: 30px;
             border: none; color: #6b7280; font-size: 1rem; cursor: pointer;
         }
-
         .program-box {
-            background: #f9fafb;
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid #f3f4f6;
+            background: #f9fafb; padding: 15px; border-radius: 12px; border: 1px solid #f3f4f6;
         }
-
         textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            font-family: inherit;
-            box-sizing: border-box;
-            background: #fff;
+            width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 12px;
+            font-family: inherit; box-sizing: border-box; background: #fff;
         }
-        textarea:focus { outline:none; border-color: var(--primary-color); }
-
         .btn-group { display: flex; gap: 10px; margin-top: 5px; }
         button.action-btn {
-            flex: 1;
-            padding: 12px;
-            border-radius: 12px;
-            border: none;
-            font-weight: 500;
-            font-family: inherit;
-            font-size: 0.95em;
-            cursor: pointer;
+            flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: 500; font-family: inherit; font-size: 0.95em; cursor: pointer;
         }
-        .btn-success { background: #10b981; color: white; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3); }
-        .btn-fail { background: #ef4444; color: white; box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3); }
+        .btn-success { background: #10b981; color: white; }
+        .btn-fail { background: #ef4444; color: white; }
+        .btn-save { background: #1f2937; color: white; width: 100%; padding: 12px; border-radius: 12px; border: none; font-family: inherit; cursor: pointer; }
         
-        .btn-save { background: #1f2937; color: white; width: 100%; padding: 12px; border-radius: 12px; border: none; font-family: inherit; margin-top: 5px; cursor: pointer;}
-
-        .action-btn.dimmed { opacity: 0.3; box-shadow: none; transform: scale(0.95); }
+        .action-btn.dimmed { opacity: 0.3; }
         .action-btn.active { transform: scale(1.02); ring: 2px solid white; }
-
     </style>
 </head>
 <body>
@@ -311,7 +256,6 @@
     </div>
 
     <div class="calendar-container">
-        <!-- Header วัน จะหายไปในมือถือ -->
         <div class="days-header">
             <div>อา</div><div>จ</div><div>อ</div><div>พ</div><div>พฤ</div><div>ศ</div><div>ส</div>
         </div>
@@ -332,27 +276,24 @@
             <div>
                 <div style="font-size:0.85em; color:#9ca3af; margin-bottom:5px;">ผลการซ้อม</div>
                 <div class="btn-group">
-                    <button id="btnSuccess" class="action-btn btn-success" onclick="setStatus(true)">สำเร็จ (Done)</button>
-                    <button id="btnFail" class="action-btn btn-fail" onclick="setStatus(false)">ไม่สำเร็จ (Fail)</button>
+                    <button id="btnSuccess" class="action-btn btn-success" onclick="setStatus(true)">สำเร็จ</button>
+                    <button id="btnFail" class="action-btn btn-fail" onclick="setStatus(false)">ไม่สำเร็จ</button>
                 </div>
             </div>
 
             <div>
                 <div style="font-size:0.85em; color:#9ca3af; margin-bottom:5px;">บันทึก (Note)</div>
-                <textarea id="noteInput" rows="2" placeholder="ความรู้สึก, HR, สถิติ..."></textarea>
+                <textarea id="noteInput" rows="2" placeholder="จดบันทึกที่นี่..."></textarea>
                 <button class="btn-save" onclick="saveNote()">บันทึกโน้ต</button>
             </div>
-
+            
             <button style="background:none; border:none; color:#9ca3af; text-decoration:underline; font-size:0.8em; margin-top:-5px; cursor:pointer;" onclick="clearStatus()">รีเซ็ตข้อมูล</button>
         </div>
     </div>
 
     <script>
-        // ========================
-        // 1. DATA (ข้อมูลโปรแกรม)
-        // ========================
+        // Data & Logic
         const allTrainingData = [
-            // --- เดือนมีนาคม (3) ---
             { d: 4, m: 3, y: 2026, program: "Easy (E) 7K", pace: "6:30–7:15" },
             { d: 5, m: 3, y: 2026, program: "พัก + Strength", pace: "-" },
             { d: 6, m: 3, y: 2026, program: "Easy 6–7K + Strides", pace: "Easy 6:35 / Strides 4:40" },
@@ -374,20 +315,15 @@
             { d: 28, m: 3, y: 2026, program: "Long 12K (ผ่อน)", pace: "6:45–7:25" },
             { d: 29, m: 3, y: 2026, program: "Recovery 5–6K", pace: "7:00–7:40" },
             { d: 31, m: 3, y: 2026, program: "T: 2×8′ @T", pace: "5:18–5:25" },
-
-            // --- เดือนเมษายน (4) ---
             { d: 1, m: 4, y: 2026, program: "Easy 8K", pace: "6:30" },
         ];
 
-        // ========================
-        // 2. LOGIC
-        // ========================
         let currentDisplayDate = new Date(); 
         const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", 
                             "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
         
-        const STORAGE_KEY_STATUS = 'runApp_status_v3';
-        const STORAGE_KEY_NOTES = 'runApp_notes_v3';
+        const STORAGE_KEY_STATUS = 'runApp_status_v4';
+        const STORAGE_KEY_NOTES = 'runApp_notes_v4';
 
         let statusData = JSON.parse(localStorage.getItem(STORAGE_KEY_STATUS)) || {};
         let notesData = JSON.parse(localStorage.getItem(STORAGE_KEY_NOTES)) || {};
@@ -396,16 +332,13 @@
         function renderCalendar() {
             const year = currentDisplayDate.getFullYear();
             const month = currentDisplayDate.getMonth();
-            
             document.getElementById('monthYearDisplay').innerText = `${monthNames[month]} ${year}`;
             
             const firstDayIndex = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-            
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
 
-            // Empty cells (Hidden on mobile via CSS)
             for (let i = 0; i < firstDayIndex; i++) {
                 let empty = document.createElement('div');
                 empty.className = 'day-cell empty-cell';
@@ -419,20 +352,27 @@
                 const plan = allTrainingData.find(item => item.d === d && item.m === (month + 1) && item.y === year);
                 const dataKey = `${year}-${month+1}-${d}`;
                 
-                let html = `<div class="date-number"><span>${d}</span>`;
-                if (notesData[dataKey] && notesData[dataKey].trim() !== "") {
-                    html += `<span class="note-dot"></span>`;
-                }
-                html += `</div>`;
+                // --- ส่วนวันที่ ---
+                let html = `<div class="date-number"><span>${d}</span></div>`;
 
+                // --- ส่วนเนื้อหา ---
                 if (plan) {
+                    html += `<div class="content-wrapper">`;
                     html += `<div class="program-preview">${plan.program}</div>`;
+                    
+                    // เพิ่ม: แสดง Note ถ้ามี
+                    if (notesData[dataKey] && notesData[dataKey].trim() !== "") {
+                        html += `<div class="note-display"><span class="note-icon">✎</span> ${notesData[dataKey]}</div>`;
+                    }
+                    
+                    html += `</div>`; // Close content-wrapper
+
                     if (statusData[dataKey] === 'success') cell.classList.add('status-success');
                     if (statusData[dataKey] === 'fail') cell.classList.add('status-fail');
                     cell.onclick = () => openModal(plan, dataKey);
                 } else {
-                     html += `<div style="font-size:0.8em; color:#e5e7eb;">-</div>`;
-                     cell.onclick = () => openModal({ d: d, m: month+1, y: year, program: "วันพัก / ไม่มีรายการ", pace: "-" }, dataKey);
+                     html += `<div class="content-wrapper"><div style="font-size:0.8em; color:#e5e7eb;">-</div></div>`;
+                     cell.onclick = () => openModal({ d: d, m: month+1, y: year, program: "วันพัก", pace: "-" }, dataKey);
                 }
 
                 const today = new Date();
@@ -450,7 +390,6 @@
             renderCalendar();
         }
 
-        // --- Modal Logic ---
         const modal = document.getElementById('modalOverlay');
         const noteInput = document.getElementById('noteInput');
         const btnSuccess = document.getElementById('btnSuccess');
@@ -487,13 +426,12 @@
             notesData[selectedDataKey] = noteInput.value;
             localStorage.setItem(STORAGE_KEY_NOTES, JSON.stringify(notesData));
             renderCalendar();
-            alert("บันทึกแล้ว");
             closeModal();
         }
 
         function clearStatus() {
             if (!selectedDataKey) return;
-            if(confirm("ลบสถานะและโน้ตของวันนี้?")) {
+            if(confirm("ลบข้อมูลของวันนี้?")) {
                 delete statusData[selectedDataKey];
                 delete notesData[selectedDataKey];
                 localStorage.setItem(STORAGE_KEY_STATUS, JSON.stringify(statusData));
@@ -506,7 +444,6 @@
         function updateButtonStyles(status) {
             btnSuccess.classList.remove('active', 'dimmed');
             btnFail.classList.remove('active', 'dimmed');
-            
             if (status === 'success') {
                 btnSuccess.classList.add('active');
                 btnFail.classList.add('dimmed');
@@ -516,11 +453,8 @@
             }
         }
 
-        window.onclick = function(e) {
-            if (e.target == modal) closeModal();
-        }
+        window.onclick = function(e) { if (e.target == modal) closeModal(); }
 
-        // Start
         renderCalendar();
     </script>
 </body>
