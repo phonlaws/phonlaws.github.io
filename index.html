@@ -128,15 +128,21 @@
         let cloudData = {}; 
         let selectedDataKey = null;
 
-        // --- Fetch Data from Cloud ---
+        // --- ฟังก์ชันดึงข้อมูล (แก้ให้รองรับ GitHub Pages โดยไม่ติด Cache) ---
         async function fetchCloudData() {
             try {
                 document.getElementById('loadingOverlay').style.display = 'flex';
                 
-                // เพิ่ม mode: 'no-cors' จะช่วยให้ยิง request ไปได้ แต่จะอ่านค่ากลับมาไม่ได้ในบางกรณี
-                // ดังนั้นเราจะใช้ท่าปกติก่อน แต่ถ้า error ให้ลองเช็ค URL ดีๆ
+                // 1. สร้างตัวเลขสุ่มจากเวลาปัจจุบัน (Timestamp)
+                const timestamp = new Date().getTime(); 
                 
-                const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get');
+                // 2. ต่อท้าย URL ด้วย &t=... เพื่อให้ Browser คิดว่าเป็นลิงก์ใหม่ทุกครั้งที่กดรีเฟรช
+                // (ถ้าไม่ใส่ Browser บนคอมจะจำค่าเดิมนานมาก)
+                const url = GOOGLE_SCRIPT_URL + '?action=get&t=' + timestamp;
+
+                console.log("Fetching from:", url); // ไว้ดูใน Console ว่าเรียก URL ใหม่จริงไหม
+
+                const response = await fetch(url);
                 
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -147,11 +153,8 @@
                 renderCalendar();
             } catch (error) {
                 console.error('Error fetching data:', error);
-                
-                // ถ้าโหลดไม่ได้จริงๆ ให้ใช้ข้อมูลว่างๆ ไปก่อน เพื่อให้เว็บเปิดได้
-                alert('เชื่อมต่อ Google Sheet ไม่ได้ (อาจติดเรื่องสิทธิ์) ระบบจะใช้โหมดออฟไลน์ชั่วคราว');
-                cloudData = {}; 
-                renderCalendar(); 
+                // กรณีโหลดไม่ได้ ให้แสดงข้อมูลว่างๆ ไปก่อน จะได้ใช้งานหน้าเว็บต่อได้
+                alert('โหลดข้อมูลล่าสุดไม่ได้ (อาจเป็นที่เน็ต หรือ GitHub ยังไม่อัปเดต)');
             } finally {
                 document.getElementById('loadingOverlay').style.display = 'none';
             }
