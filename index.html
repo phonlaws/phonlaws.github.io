@@ -2,319 +2,316 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Running Training Calendar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Running Plan</title>
     
-    <!-- Import Google Font: Prompt -->
+    <!-- Google Font: Prompt -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
 
     <style>
-        /* Theme: Soft White / Comfortable Eyes */
         :root {
-            --bg-color: #f7f9fc; /* ปรับพื้นหลังให้ออกโทนฟ้าจางๆ นิดนึงเพื่อให้ดูพรีเมียมขึ้น */
+            --bg-color: #f4f6f9;
             --card-bg: #ffffff;
-            --text-main: #2c3e50;
-            --text-sub: #7f8c8d;
-            --border-color: #ecf0f1;
-            --primary-color: #3498db;
-            --success-color: #27ae60;
-            --success-bg: #eafaf1;
-            --fail-color: #e74c3c;
-            --fail-bg: #fdedec;
-            --note-indicator: #f1c40f;
+            --text-main: #1f2937;
+            --text-sub: #6b7280;
+            --primary-color: #3b82f6; /* Modern Blue */
+            --success-color: #10b981;
+            --success-bg: #ecfdf5;
+            --fail-color: #ef4444;
+            --fail-bg: #fef2f2;
+            --note-color: #f59e0b;
         }
 
         body {
-            /* ใช้ฟอนต์ Prompt */
             font-family: 'Prompt', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
-            padding: 20px;
+            padding: 20px 15px; /* ลด padding ด้านข้างในมือถือ */
             display: flex;
             flex-direction: column;
             align-items: center;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* Header & Navigation */
+        /* --- Header ปรับใหม่ --- */
         .header-controls {
-            display: flex;
+            display: grid;
+            grid-template-columns: 50px 1fr 50px; /* ล็อคขนาดปุ่มซ้ายขวา */
             align-items: center;
-            justify-content: space-between;
             width: 100%;
-            max-width: 1000px;
-            margin-bottom: 25px;
+            max-width: 800px;
+            margin-bottom: 20px;
+            gap: 10px;
         }
 
         h1 {
             margin: 0;
-            font-size: 1.8em;
+            font-size: 1.5em; /* ลดขนาดลงนิดนึงเพื่อมือถือ */
             font-weight: 600;
-            color: #34495e;
-            letter-spacing: -0.5px;
+            color: #111827;
+            text-align: center;
+            white-space: nowrap;
         }
 
         .nav-btn {
             background: white;
-            border: 1px solid #dcdcdc;
-            padding: 8px 20px;
-            border-radius: 30px;
+            border: 1px solid #e5e7eb;
+            height: 40px;
+            width: 40px;
+            border-radius: 12px;
             cursor: pointer;
-            font-family: 'Prompt', sans-serif;
-            font-weight: 500;
             color: var(--text-sub);
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2em;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            padding: 0; /* ลบ padding เพื่อให้ icon กลางเป๊ะ */
         }
-        .nav-btn:hover {
-            background: #fff;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            color: var(--primary-color);
-        }
+        .nav-btn:active { transform: scale(0.95); background: #f9fafb; }
 
-        /* Calendar Grid */
+        /* --- Calendar Container --- */
         .calendar-container {
-            max-width: 1000px;
+            max-width: 800px;
             width: 100%;
-            background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-            padding: 25px;
-            box-sizing: border-box;
+            background: transparent; /* บนมือถือเอาพื้นหลังออกให้ดูคลีน */
         }
 
+        /* Desktop View: Grid */
         .days-header {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             text-align: center;
             font-weight: 500;
-            color: #b0b8c1;
+            color: #9ca3af;
             font-size: 0.9em;
-            text-transform: uppercase;
         }
 
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 12px;
+            gap: 10px;
         }
 
-        /* Day Cell */
+        /* --- Day Cell Style --- */
         .day-cell {
             background-color: #fff;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            min-height: 110px;
+            border: 1px solid #e5e7eb; /* เส้นขอบบางลง */
+            border-radius: 16px;
+            min-height: 100px;
             padding: 12px;
             position: relative;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transition: transform 0.2s, box-shadow 0.2s;
             display: flex;
             flex-direction: column;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         }
-
-        .day-cell:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-            border-color: var(--primary-color);
-            z-index: 1;
+        
+        /* Desktop Hover */
+        @media (min-width: 601px) {
+            .calendar-container {
+                background: var(--card-bg);
+                padding: 25px;
+                border-radius: 24px;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+            }
+            .day-cell:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+                border-color: var(--primary-color);
+                z-index: 10;
+            }
         }
 
         .date-number {
             font-size: 1.1em;
             font-weight: 600;
-            margin-bottom: 8px;
-            color: #bdc3c7;
+            color: #9ca3af;
             display: flex;
             justify-content: space-between;
+            margin-bottom: 8px;
         }
 
         .program-preview {
             font-size: 0.85em;
-            font-weight: 400;
             color: var(--text-main);
-            line-height: 1.4;
-            overflow: hidden;
+            line-height: 1.5;
+            font-weight: 400;
+            
+            /* ตัดคำ */
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .day-cell.empty-cell {
-            background-color: transparent;
+            background: transparent;
             border: none;
-            cursor: default;
             box-shadow: none;
+            cursor: default;
         }
-        .day-cell.empty-cell:hover { transform: none; }
 
         /* Status & Indicators */
         .day-cell.current-day {
             border: 2px solid var(--primary-color);
-            background-color: #f4faff;
+            background-color: #eff6ff;
         }
-        .day-cell.current-day .date-number {
-            color: var(--primary-color);
-        }
+        .day-cell.current-day .date-number { color: var(--primary-color); }
 
         .day-cell.status-success {
-            border: 1px solid var(--success-color);
             background-color: var(--success-bg);
-            box-shadow: inset 0 0 0 1px var(--success-color); /* Double border effect */
+            border-color: var(--success-color);
+            border-left: 4px solid var(--success-color); /* แถบสีด้านซ้าย */
         }
         .day-cell.status-fail {
-            border: 1px solid var(--fail-color);
             background-color: var(--fail-bg);
-            box-shadow: inset 0 0 0 1px var(--fail-color);
+            border-color: var(--fail-color);
+            border-left: 4px solid var(--fail-color);
         }
         
-        /* Note Indicator (Orange Dot) */
         .note-dot {
             height: 8px;
             width: 8px;
-            background-color: var(--note-indicator);
+            background-color: var(--note-color);
             border-radius: 50%;
             display: inline-block;
-            margin-top: 5px;
-            box-shadow: 0 0 5px rgba(241, 196, 15, 0.5);
         }
 
-        /* Modal */
+        /* --- Mobile Styles (แก้ไขจุดเพี้ยน) --- */
+        @media (max-width: 600px) {
+            .days-header { display: none; }
+            
+            .calendar-grid {
+                grid-template-columns: 1fr; /* เรียงเป็นแนวตั้ง */
+                gap: 12px;
+            }
+            
+            /* ซ่อนวันว่างในมือถือ */
+            .day-cell.empty-cell { display: none; }
+
+            .day-cell {
+                flex-direction: row; /* เรียงแนวนอน */
+                align-items: center;
+                min-height: auto;
+                padding: 15px;
+                gap: 15px;
+                border-radius: 14px;
+            }
+
+            .date-number {
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 0;
+                min-width: 35px;
+                font-size: 1.3em;
+                border-right: 1px solid #f3f4f6; /* เส้นคั่นกลาง */
+                padding-right: 15px;
+                margin-right: 5px;
+                color: #d1d5db; /* สีจางๆ */
+            }
+
+            .day-cell.current-day .date-number { color: var(--primary-color); font-weight: 700; }
+
+            .program-preview {
+                text-align: left;
+                font-size: 1em;
+                -webkit-line-clamp: 2;
+                width: 100%;
+            }
+
+            .note-dot { margin-top: 4px; }
+        }
+
+        /* --- Modal --- */
         .modal-overlay {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(44, 62, 80, 0.4); /* Darker overlay */
-            backdrop-filter: blur(3px); /* Modern blur effect */
-            justify-content: center;
-            align-items: center;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
             z-index: 1000;
-            transition: opacity 0.3s;
+            justify-content: center; align-items: center;
         }
         
         .modal-content {
             background: #fff;
-            padding: 30px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 420px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            width: 85%;
+            max-width: 380px;
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            display: flex; flex-direction: column; gap: 15px;
             position: relative;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            font-family: 'Prompt', sans-serif;
+            animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        
-        .program-info {
-            text-align:left; 
-            background:#f8f9fa; 
-            padding: 20px; 
-            border-radius: 12px;
-            font-size: 0.95em;
-            border: 1px solid #eee;
+        @keyframes modalPop {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
 
-        /* Note Section */
-        .note-section {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+        .btn-close {
+            position: absolute; top: 15px; right: 15px;
+            background: #f3f4f6; border-radius: 50%; width: 30px; height: 30px;
+            border: none; color: #6b7280; font-size: 1rem; cursor: pointer;
         }
-        
-        label {
-            font-weight: 500;
-            color: #34495e;
-            font-size: 0.9em;
+
+        .program-box {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #f3f4f6;
         }
 
         textarea {
             width: 100%;
             padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            resize: vertical;
-            font-family: 'Prompt', sans-serif;
-            font-weight: 300;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            font-family: inherit;
             box-sizing: border-box;
             background: #fff;
-            transition: border-color 0.2s;
         }
-        textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-        }
+        textarea:focus { outline:none; border-color: var(--primary-color); }
 
-        /* Buttons */
-        .btn-group { display: flex; gap: 12px; justify-content: center; }
-        
-        button { 
-            border: none; 
-            padding: 12px 15px; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            font-family: 'Prompt', sans-serif;
-            font-weight: 500; 
-            font-size: 0.95em; 
-            transition: all 0.2s; 
+        .btn-group { display: flex; gap: 10px; margin-top: 5px; }
+        button.action-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 500;
+            font-family: inherit;
+            font-size: 0.95em;
+            cursor: pointer;
         }
-        button:hover { transform: translateY(-1px); }
+        .btn-success { background: #10b981; color: white; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3); }
+        .btn-fail { background: #ef4444; color: white; box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3); }
         
-        .btn-success { background: var(--success-color); color: white; flex:1; box-shadow: 0 4px 10px rgba(39, 174, 96, 0.2); }
-        .btn-fail { background: var(--fail-color); color: white; flex:1; box-shadow: 0 4px 10px rgba(231, 76, 60, 0.2); }
-        
-        .btn-save-note { 
-            background: #34495e; 
-            color: white; 
-            margin-top: 5px; 
-            width: 100%;
-        }
-        
-        .btn-close { 
-            position: absolute; 
-            top: 15px; 
-            right: 15px; 
-            background: transparent; 
-            font-size: 1.4em; 
-            padding: 5px; 
-            color: #bdc3c7; 
-            line-height: 1;
-        }
-        .btn-close:hover { color: #34495e; transform: none; }
-        
-        /* Active State for Status Buttons */
-        .btn-success.active { background: #219150; box-shadow: inset 0 3px 5px rgba(0,0,0,0.2); transform: translateY(1px); }
-        .btn-fail.active { background: #c0392b; box-shadow: inset 0 3px 5px rgba(0,0,0,0.2); transform: translateY(1px); }
-        
-        /* Disabled State (when the other is active) */
-        button.dimmed { opacity: 0.4; box-shadow: none; transform: none; }
+        .btn-save { background: #1f2937; color: white; width: 100%; padding: 12px; border-radius: 12px; border: none; font-family: inherit; margin-top: 5px; cursor: pointer;}
 
-        @media (max-width: 600px) {
-            .calendar-grid { grid-template-columns: 1fr; }
-            .days-header { display: none; }
-            .day-cell { min-height: auto; flex-direction: row; align-items: center; justify-content: space-between; gap: 15px; }
-            .date-number { margin-bottom: 0; min-width: 30px; }
-            .program-preview { -webkit-line-clamp: 2; text-align: right; width: 100%; }
-        }
+        .action-btn.dimmed { opacity: 0.3; box-shadow: none; transform: scale(0.95); }
+        .action-btn.active { transform: scale(1.02); ring: 2px solid white; }
+
     </style>
 </head>
 <body>
 
     <div class="header-controls">
-        <button class="nav-btn" onclick="changeMonth(-1)">&#10094; เดือนก่อน</button>
+        <button class="nav-btn" onclick="changeMonth(-1)">❮</button>
         <h1 id="monthYearDisplay">March 2026</h1>
-        <button class="nav-btn" onclick="changeMonth(1)">เดือนถัดไป &#10095;</button>
+        <button class="nav-btn" onclick="changeMonth(1)">❯</button>
     </div>
 
     <div class="calendar-container">
+        <!-- Header วัน จะหายไปในมือถือ -->
         <div class="days-header">
             <div>อา</div><div>จ</div><div>อ</div><div>พ</div><div>พฤ</div><div>ศ</div><div>ส</div>
         </div>
@@ -325,39 +322,37 @@
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-content">
             <button class="btn-close" onclick="closeModal()">✕</button>
-            <h2 id="modalDate" style="margin:0; font-size:1.4em; text-align:center; color:#2c3e50;"></h2>
+            <h2 id="modalDate" style="margin:0; font-size:1.3em; color:#111827;"></h2>
             
-            <div class="program-info">
-                <p style="margin:5px 0;"><strong>🏃 โปรแกรม:</strong> <span id="modalProgram" style="color:#3498db;"></span></p>
-                <p style="margin:5px 0;"><strong>⏱️ เป้าหมาย:</strong> <span id="modalPace"></span></p>
+            <div class="program-box">
+                <p style="margin:5px 0; color:#374151;"><strong>🏃 โปรแกรม:</strong> <span id="modalProgram" style="color:var(--primary-color);"></span></p>
+                <p style="margin:5px 0; color:#6b7280; font-size:0.9em;"><strong>⏱️ เป้าหมาย:</strong> <span id="modalPace"></span></p>
             </div>
 
-            <!-- Status Buttons -->
             <div>
-                <div style="text-align:center; font-size:0.85em; color:#7f8c8d; margin-bottom:8px;">ผลการซ้อมวันนี้</div>
+                <div style="font-size:0.85em; color:#9ca3af; margin-bottom:5px;">ผลการซ้อม</div>
                 <div class="btn-group">
-                    <button id="btnSuccess" class="btn-success" onclick="setStatus(true)">สำเร็จ (Done)</button>
-                    <button id="btnFail" class="btn-fail" onclick="setStatus(false)">ไม่สำเร็จ (Fail)</button>
+                    <button id="btnSuccess" class="action-btn btn-success" onclick="setStatus(true)">สำเร็จ (Done)</button>
+                    <button id="btnFail" class="action-btn btn-fail" onclick="setStatus(false)">ไม่สำเร็จ (Fail)</button>
                 </div>
             </div>
 
-            <!-- Note Section -->
-            <div class="note-section">
-                <label>📝 บันทึกช่วยจำ (Note):</label>
-                <textarea id="noteInput" rows="3" placeholder="วันนี้วิ่งเป็นยังไงบ้าง? เหนื่อยไหม? (HR, Pace จริง)..."></textarea>
-                <button class="btn-save-note" onclick="saveNote()">บันทึกโน้ต</button>
+            <div>
+                <div style="font-size:0.85em; color:#9ca3af; margin-bottom:5px;">บันทึก (Note)</div>
+                <textarea id="noteInput" rows="2" placeholder="ความรู้สึก, HR, สถิติ..."></textarea>
+                <button class="btn-save" onclick="saveNote()">บันทึกโน้ต</button>
             </div>
 
-            <button style="background:none; color:#95a5a6; text-decoration:underline; font-size:0.8em; align-self:center; margin-top:-10px;" onclick="clearStatus()">รีเซ็ตข้อมูลวันน้ี</button>
+            <button style="background:none; border:none; color:#9ca3af; text-decoration:underline; font-size:0.8em; margin-top:-5px; cursor:pointer;" onclick="clearStatus()">รีเซ็ตข้อมูล</button>
         </div>
     </div>
 
     <script>
-        // ==========================================
-        // ส่วนที่ 1: ข้อมูลโปรแกรมซ้อม
-        // ==========================================
+        // ========================
+        // 1. DATA (ข้อมูลโปรแกรม)
+        // ========================
         const allTrainingData = [
-            // --- เดือนมีนาคม (3) ปี 2026 ---
+            // --- เดือนมีนาคม (3) ---
             { d: 4, m: 3, y: 2026, program: "Easy (E) 7K", pace: "6:30–7:15" },
             { d: 5, m: 3, y: 2026, program: "พัก + Strength", pace: "-" },
             { d: 6, m: 3, y: 2026, program: "Easy 6–7K + Strides", pace: "Easy 6:35 / Strides 4:40" },
@@ -384,19 +379,18 @@
             { d: 1, m: 4, y: 2026, program: "Easy 8K", pace: "6:30" },
         ];
 
-        // ==========================================
-        // ส่วนที่ 2: ระบบปฏิทิน และ Storage
-        // ==========================================
+        // ========================
+        // 2. LOGIC
+        // ========================
         let currentDisplayDate = new Date(); 
         const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", 
                             "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
         
-        const STORAGE_KEY_STATUS = 'runApp_status_v2';
-        const STORAGE_KEY_NOTES = 'runApp_notes_v1';
+        const STORAGE_KEY_STATUS = 'runApp_status_v3';
+        const STORAGE_KEY_NOTES = 'runApp_notes_v3';
 
         let statusData = JSON.parse(localStorage.getItem(STORAGE_KEY_STATUS)) || {};
         let notesData = JSON.parse(localStorage.getItem(STORAGE_KEY_NOTES)) || {};
-        
         let selectedDataKey = null;
 
         function renderCalendar() {
@@ -411,6 +405,7 @@
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
 
+            // Empty cells (Hidden on mobile via CSS)
             for (let i = 0; i < firstDayIndex; i++) {
                 let empty = document.createElement('div');
                 empty.className = 'day-cell empty-cell';
@@ -425,21 +420,18 @@
                 const dataKey = `${year}-${month+1}-${d}`;
                 
                 let html = `<div class="date-number"><span>${d}</span>`;
-                
                 if (notesData[dataKey] && notesData[dataKey].trim() !== "") {
-                    html += `<span class="note-dot" title="มีบันทึกโน้ต"></span>`;
+                    html += `<span class="note-dot"></span>`;
                 }
                 html += `</div>`;
 
                 if (plan) {
                     html += `<div class="program-preview">${plan.program}</div>`;
-                    
                     if (statusData[dataKey] === 'success') cell.classList.add('status-success');
                     if (statusData[dataKey] === 'fail') cell.classList.add('status-fail');
-
                     cell.onclick = () => openModal(plan, dataKey);
                 } else {
-                     html += `<div style="font-size:0.8em; color:#e0e0e0;">-</div>`;
+                     html += `<div style="font-size:0.8em; color:#e5e7eb;">-</div>`;
                      cell.onclick = () => openModal({ d: d, m: month+1, y: year, program: "วันพัก / ไม่มีรายการ", pace: "-" }, dataKey);
                 }
 
@@ -458,9 +450,7 @@
             renderCalendar();
         }
 
-        // ==========================================
-        // ส่วนที่ 3: Modal & Actions
-        // ==========================================
+        // --- Modal Logic ---
         const modal = document.getElementById('modalOverlay');
         const noteInput = document.getElementById('noteInput');
         const btnSuccess = document.getElementById('btnSuccess');
@@ -473,54 +463,41 @@
             document.getElementById('modalPace').innerText = plan.pace;
             
             noteInput.value = notesData[key] || '';
-            
             updateButtonStyles(statusData[key]);
-
+            
             modal.style.display = 'flex';
-            setTimeout(() => { modal.style.opacity = 1; }, 10); // Fade in animation
         }
 
         function closeModal() {
-            modal.style.opacity = 0;
-            setTimeout(() => { 
-                modal.style.display = 'none';
-                selectedDataKey = null;
-            }, 300);
+            modal.style.display = 'none';
+            selectedDataKey = null;
         }
 
         function setStatus(isSuccess) {
             if (!selectedDataKey) return;
             const status = isSuccess ? 'success' : 'fail';
-            
             statusData[selectedDataKey] = status;
             localStorage.setItem(STORAGE_KEY_STATUS, JSON.stringify(statusData));
-            
             updateButtonStyles(status);
             renderCalendar();
         }
 
         function saveNote() {
             if (!selectedDataKey) return;
-            
-            const text = noteInput.value;
-            notesData[selectedDataKey] = text;
+            notesData[selectedDataKey] = noteInput.value;
             localStorage.setItem(STORAGE_KEY_NOTES, JSON.stringify(notesData));
-            
             renderCalendar();
-            alert("บันทึกโน้ตเรียบร้อยครับ!");
+            alert("บันทึกแล้ว");
             closeModal();
         }
 
         function clearStatus() {
             if (!selectedDataKey) return;
-            
-            if(confirm("ต้องการลบสถานะและโน้ตของวันนี้ใช่ไหมครับ?")) {
+            if(confirm("ลบสถานะและโน้ตของวันนี้?")) {
                 delete statusData[selectedDataKey];
                 delete notesData[selectedDataKey];
-                
                 localStorage.setItem(STORAGE_KEY_STATUS, JSON.stringify(statusData));
                 localStorage.setItem(STORAGE_KEY_NOTES, JSON.stringify(notesData));
-                
                 renderCalendar();
                 closeModal();
             }
@@ -539,11 +516,11 @@
             }
         }
 
-        window.onclick = function(event) {
-            if (event.target == modal) closeModal();
+        window.onclick = function(e) {
+            if (e.target == modal) closeModal();
         }
 
-        // Init
+        // Start
         renderCalendar();
     </script>
 </body>
