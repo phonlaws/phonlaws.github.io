@@ -96,30 +96,8 @@
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzIlosoGVBgYaDGZDNbOq6gDF2BPQNcMMoViFsn3ITVQJyrjQVl46DtsxXyPopAsFxVJA/exec'; 
         // ==========================================
 
-        const allTrainingData = [
-            { d: 4, m: 3, y: 2026, program: "Easy (E) 7K", pace: "6:30–7:15" },
-            { d: 5, m: 3, y: 2026, program: "พัก + Strength", pace: "-" },
-            { d: 6, m: 3, y: 2026, program: "Easy 6–7K + Strides", pace: "Easy 6:35 / Strides 4:40" },
-            { d: 7, m: 3, y: 2026, program: "Long 12K (E)", pace: "6:40–7:20" },
-            { d: 8, m: 3, y: 2026, program: "Recovery 5–6K", pace: "6:55–7:35" },
-            { d: 10, m: 3, y: 2026, program: "T: 3×8′ @T", pace: "T = 5:15–5:25" },
-            { d: 11, m: 3, y: 2026, program: "Easy 7–8K", pace: "6:30–7:15" },
-            { d: 13, m: 3, y: 2026, program: "Easy 6–8K + Strides", pace: "Easy 6:35 / Strides 4:40" },
-            { d: 14, m: 3, y: 2026, program: "Long 13K (E)", pace: "6:40–7:20" },
-            { d: 15, m: 3, y: 2026, program: "Recovery 5–7K", pace: "6:55–7:35" },
-            { d: 17, m: 3, y: 2026, program: "T: 4×1K @T", pace: "5:15–5:25" },
-            { d: 18, m: 3, y: 2026, program: "Easy 8–9K", pace: "6:30–7:10" },
-            { d: 20, m: 3, y: 2026, program: "Easy 7–8K + Strides", pace: "Easy 6:35 / Strides 4:40" },
-            { d: 21, m: 3, y: 2026, program: "Long 14K (E)", pace: "6:40–7:20" },
-            { d: 22, m: 3, y: 2026, program: "Recovery 6–7K", pace: "6:55–7:35" },
-            { d: 24, m: 3, y: 2026, program: "Tempo 20′ @T", pace: "5:18–5:25" },
-            { d: 25, m: 3, y: 2026, program: "Easy 6–7K", pace: "6:35–7:20" },
-            { d: 27, m: 3, y: 2026, program: "Easy 6K + Strides", pace: "Easy 6:40 / Strides 4:45" },
-            { d: 28, m: 3, y: 2026, program: "Long 12K (ผ่อน)", pace: "6:45–7:25" },
-            { d: 29, m: 3, y: 2026, program: "Recovery 5–6K", pace: "7:00–7:40" },
-            { d: 31, m: 3, y: 2026, program: "T: 2×8′ @T", pace: "5:18–5:25" },
-            { d: 1, m: 4, y: 2026, program: "Easy 8K", pace: "6:30" },
-        ];
+        // ประกาศตัวแปรว่างไว้ก่อน เดี๋ยวข้อมูลจะไหลเข้ามาจาก Google Sheet เอง
+        let allTrainingData = []; 
 
         let currentDisplayDate = new Date(); 
         const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
@@ -128,44 +106,28 @@
         let cloudData = {}; 
         let selectedDataKey = null;
 
-        // --- ส่วนที่ต้องแก้ในไฟล์ HTML ---
         async function fetchCloudData() {
             try {
                 document.getElementById('loadingOverlay').style.display = 'flex';
                 
-                // เพิ่ม timestamp กัน cache
                 const timestamp = new Date().getTime(); 
-                const url = GOOGLE_SCRIPT_URL + '?action=get&t=' + timestamp;
+                // เปลี่ยน action เป็น get_all เพื่อดึงทั้งคู่
+                const url = GOOGLE_SCRIPT_URL + '?action=get_all&t=' + timestamp;
 
-                console.log("Fetching data from:", url); // เช็คใน Console
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Network error');
 
-                // ใช้ method: 'GET' ชัดเจน
-                const response = await fetch(url, {
-                    method: 'GET'
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const textData = await response.text(); // อ่านเป็น Text ก่อนเผื่อไม่ใช่ JSON
-                console.log("Raw Response:", textData); // ดูค่าที่ได้จาก Google Sheet
-
-                let result;
-                try {
-                    result = JSON.parse(textData);
-                } catch (e) {
-                    console.error("JSON Parse Error:", e);
-                    throw new Error("Google Script ส่งค่ามาไม่ใช่ JSON");
-                }
-
-                cloudData = result;
-                console.log("Parsed Data:", cloudData); // ดูข้อมูลที่แปลงแล้ว
+                const result = await response.json();
+                
+                // รับค่าจาก Google Sheet มาใส่ตัวแปร
+                cloudData = result.logs || {};       // ประวัติการบันทึก
+                allTrainingData = result.programs || []; // ตารางซ้อม (จาก Sheet Program)
+                
+                console.log("Programs Loaded:", allTrainingData.length);
 
                 renderCalendar();
-                
             } catch (error) {
-                console.error('Error fetching data:', error);
+                console.error('Error:', error);
                 alert('โหลดข้อมูลไม่สำเร็จ: ' + error.message);
             } finally {
                 document.getElementById('loadingOverlay').style.display = 'none';
