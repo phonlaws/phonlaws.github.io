@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Running Training Calendar</title>
+    <style>
+        /* Theme: Soft White / Comfortable Eyes */
+        :root {
+            --bg-color: #fafafa; /* สีพื้นหลังขาวนวล */
+            --card-bg: #ffffff;
+            --text-main: #444444;
+            --text-sub: #666666;
+            --border-color: #e0e0e0;
+            --primary-color: #4a90e2; /* สีน้ำเงินสำหรับวันที่ปัจจุบัน */
+            --success-color: #28a745;
+            --success-bg: #e8f5e9;
+            --fail-color: #dc3545;
+            --fail-bg: #fbe9eb;
+        }
+
+        body {
+            font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Calendar Grid */
+        .calendar-container {
+            max-width: 1000px;
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            padding: 20px;
+        }
+
+        .days-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: bold;
+            color: var(--text-sub);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+
+        /* Day Cell */
+        .day-cell {
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            min-height: 100px;
+            padding: 10px;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .day-cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            border-color: #ccc;
+        }
+
+        .date-number {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #888;
+        }
+
+        .program-preview {
+            font-size: 0.85em;
+            color: var(--text-main);
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+
+        .empty-cell {
+            background-color: transparent;
+            border: none;
+            cursor: default;
+        }
+
+        /* Status Styles */
+        .day-cell.current-day {
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 0 10px rgba(74, 144, 226, 0.2);
+        }
+
+        .day-cell.status-success {
+            border: 2px solid var(--success-color);
+            background-color: var(--success-bg);
+        }
+
+        .day-cell.status-fail {
+            border: 2px solid var(--fail-color);
+            background-color: var(--fail-bg);
+        }
+
+        /* Modal / Popup */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .modal-header {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--text-main);
+        }
+
+        .modal-details {
+            text-align: left;
+            margin-bottom: 25px;
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .modal-details p {
+            margin: 8px 0;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        button {
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-fail {
+            background-color: var(--fail-color);
+            color: white;
+        }
+
+        .btn-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: transparent;
+            color: #999;
+            font-size: 1.2em;
+            padding: 5px;
+        }
+        
+        .btn-clear {
+            background-color: #999;
+            color: white;
+            margin-top: 10px;
+            font-size: 0.8em;
+            padding: 5px 10px;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 600px) {
+            .calendar-grid {
+                grid-template-columns: repeat(1, 1fr); /* List view on mobile */
+            }
+            .days-header {
+                display: none; /* Hide days header on mobile */
+            }
+            .day-cell {
+                flex-direction: row;
+                align-items: center;
+                gap: 15px;
+                min-height: auto;
+            }
+            .program-preview {
+                -webkit-line-clamp: 2;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🏃 Training Calendar: March</h1>
+
+    <div class="calendar-container">
+        <div class="days-header">
+            <div>SUN</div>
+            <div>MON</div>
+            <div>TUE</div>
+            <div>WED</div>
+            <div>THU</div>
+            <div>FRI</div>
+            <div>SAT</div>
+        </div>
+        <div class="calendar-grid" id="calendarGrid">
+            <!-- JS will inject cells here -->
+        </div>
+    </div>
+
+    <!-- Modal Popup -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <button class="btn-close" onclick="closeModal()">✕</button>
+            <div class="modal-header" id="modalDate">วันที่ ...</div>
+            
+            <div class="modal-details">
+                <p><strong>โปรแกรม:</strong> <span id="modalProgram">-</span></p>
+                <p><strong>เป้าหมายเพซ:</strong> <span id="modalPace">-</span></p>
+            </div>
+
+            <p style="margin-bottom: 10px; font-size: 0.9em; color: #666;">วันนี้ทำสำเร็จหรือไม่?</p>
+            
+            <div class="btn-group">
+                <button class="btn-success" onclick="updateStatus(true)">สำเร็จ (Completed)</button>
+                <button class="btn-fail" onclick="updateStatus(false)">ไม่สำเร็จ (Fail)</button>
+            </div>
+            
+            <button class="btn-clear" onclick="clearStatus()">รีเซ็ตสถานะ</button>
+        </div>
+    </div>
+
+    <script>
+        // Data Configuration
+        // Assuming March starts such that Mar 4 is Wednesday. 
+        // Logic: If Mar 4 is Wed -> Mar 1 is Sunday.
+        // Calendar Grid starts at Sunday.
+        
+        const trainingPlan = [
+            { date: 4, day: "Wed", program: "Easy (E) 7K", pace: "6:30–7:15/กม." },
+            { date: 5, day: "Thu", program: "พัก + Strength 10–15 นาที", pace: "-" },
+            { date: 6, day: "Fri", program: "Easy 6–7K + Strides 4×20″", pace: "Easy 6:35–7:15 / Strides 4:40–5:00" },
+            { date: 7, day: "Sat", program: "Long 12K (E ล้วน)", pace: "6:40–7:20/กม. (ไม่เร่งท้าย)" },
+            { date: 8, day: "Sun", program: "Recovery 5–6K", pace: "6:55–7:35/กม." },
+            { date: 9, day: "Mon", program: "พัก", pace: "-" },
+            { date: 10, day: "Tue", program: "T: 3×8′ @T (พักจ็อก 2′)", pace: "ช่วง T = 5:15–5:25/กม." },
+            
+            { date: 11, day: "Wed", program: "Easy 7–8K", pace: "6:30–7:15" },
+            { date: 12, day: "Thu", program: "พัก + Strength 10–15 นาที", pace: "-" },
+            { date: 13, day: "Fri", program: "Easy 6–8K + Strides 5×20″", pace: "Easy 6:35–7:15 / Strides 4:40–5:00" },
+            { date: 14, day: "Sat", program: "Long 13K (E ล้วน)", pace: "6:40–7:20" },
+            { date: 15, day: "Sun", program: "Recovery 5–7K", pace: "6:55–7:35" },
+            { date: 16, day: "Mon", program: "พัก", pace: "-" },
+            { date: 17, day: "Tue", program: "T: 4×1K @T (พักจ็อก 1′)", pace: "1K แต่ละช่วง = 5:15–5:25" },
+
+            { date: 18, day: "Wed", program: "Easy 8–9K", pace: "6:30–7:10" },
+            { date: 19, day: "Thu", program: "พัก + Strength 10–20 นาที", pace: "-" },
+            { date: 20, day: "Fri", program: "Easy 7–8K + Strides 6×20″", pace: "Easy 6:35–7:15 / Strides 4:40–5:00" },
+            { date: 21, day: "Sat", program: "Long 14K (E ล้วน)", pace: "6:40–7:20" },
+            { date: 22, day: "Sun", program: "Recovery 6–7K", pace: "6:55–7:35" },
+            { date: 23, day: "Mon", program: "พัก", pace: "-" },
+            { date: 24, day: "Tue", program: "Tempo 20′ @T", pace: "ช่วง 20′ = 5:18–5:25 (นิ่ง ๆ)" },
+
+            { date: 25, day: "Wed", program: "Easy 6–7K", pace: "6:35–7:20" },
+            { date: 26, day: "Thu", program: "พัก + Strength 10–15 นาที", pace: "-" },
+            { date: 27, day: "Fri", program: "Easy 6K + Strides 4×20″ (เบา)", pace: "Easy 6:40–7:25 / Strides 4:45–5:05" },
+            { date: 28, day: "Sat", program: "Long 12K (ผ่อน)", pace: "6:45–7:25" },
+            { date: 29, day: "Sun", program: "Recovery 5–6K", pace: "7:00–7:40" },
+            { date: 30, day: "Mon", program: "พัก", pace: "-" },
+            { date: 31, day: "Tue", program: "T: 2×8′ @T (พัก 2′)", pace: "ช่วง T = 5:18–5:25" },
+        ];
+
+        // State Management
+        let currentSelectedDate = null;
+        const STORAGE_KEY = 'runningAppStatus_v1';
+        let statusData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+
+        const calendarGrid = document.getElementById('calendarGrid');
+        const modalOverlay = document.getElementById('modalOverlay');
+
+        // Render Function
+        function renderCalendar() {
+            calendarGrid.innerHTML = '';
+
+            // Since Mar 4 is Wed, Mar 1 is Sunday. No offset needed for grid starting Sunday.
+            // We'll generate slots for days 1, 2, 3 as empty or placeholders first.
+            
+            const daysInMonth = 31;
+            
+            // Loop through all days in March
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dayData = trainingPlan.find(d => d.date === i);
+                
+                const cell = document.createElement('div');
+                cell.classList.add('day-cell');
+                
+                // Add Date Number
+                const dateNum = document.createElement('div');
+                dateNum.classList.add('date-number');
+                dateNum.innerText = i;
+                cell.appendChild(dateNum);
+
+                // Add Program Preview (if exists)
+                if (dayData) {
+                    const preview = document.createElement('div');
+                    preview.classList.add('program-preview');
+                    preview.innerText = dayData.program;
+                    cell.appendChild(preview);
+
+                    // Add Click Event
+                    cell.onclick = () => openModal(dayData);
+
+                    // Apply Status Color from Saved Data
+                    if (statusData[i] === 'success') {
+                        cell.classList.add('status-success');
+                    } else if (statusData[i] === 'fail') {
+                        cell.classList.add('status-fail');
+                    }
+                } else {
+                    // Days 1, 2, 3 (Not in the plan provided)
+                    cell.style.color = '#ccc';
+                    const preview = document.createElement('div');
+                    preview.innerText = "-";
+                    cell.appendChild(preview);
+                }
+
+                // Check Current Date
+                const today = new Date();
+                // Note: In real usage, check Month/Year too. For demo, we just check Date number if Month is March.
+                if (today.getDate() === i && today.getMonth() === 2) { // Month 2 is March (0-indexed)
+                    cell.classList.add('current-day');
+                }
+
+                calendarGrid.appendChild(cell);
+            }
+        }
+
+        // Modal Logic
+        function openModal(data) {
+            currentSelectedDate = data.date;
+            document.getElementById('modalDate').innerText = `วัน${data.day} ที่ ${data.date} มีนาคม`;
+            document.getElementById('modalProgram').innerText = data.program;
+            document.getElementById('modalPace').innerText = data.pace;
+            modalOverlay.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modalOverlay.style.display = 'none';
+            currentSelectedDate = null;
+        }
+
+        function updateStatus(isSuccess) {
+            if (!currentSelectedDate) return;
+
+            // Save to object
+            statusData[currentSelectedDate] = isSuccess ? 'success' : 'fail';
+            
+            // Save to LocalStorage
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(statusData));
+
+            // Re-render
+            renderCalendar();
+            closeModal();
+        }
+        
+        function clearStatus() {
+             if (!currentSelectedDate) return;
+             delete statusData[currentSelectedDate];
+             localStorage.setItem(STORAGE_KEY, JSON.stringify(statusData));
+             renderCalendar();
+             closeModal();
+        }
+
+        // Click outside to close
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                closeModal();
+            }
+        });
+
+        // Initial Render
+        renderCalendar();
+
+    </script>
+</body>
+</html>
