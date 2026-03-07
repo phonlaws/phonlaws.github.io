@@ -39,6 +39,11 @@ const logoutBtn = $("#logoutBtn");
 
 let state = { jobs: [], overdueMinutes: 120, updatedAt: null };
 
+// ===== New job flash control =====
+let hasLoadedOnce = false;
+const flashUntil = new Map(); // jobId -> timestamp(ms) ที่แฟลชถึงเมื่อไหร่
+const FLASH_MS = 5000;
+
 // สถานะล็อกอิน
 let currentUser = null;
 let currentRole = "user"; // "user" | "admin"
@@ -318,7 +323,18 @@ function renderJobs(){
   state.jobs.forEach(job => {
     const overdue = isOverdue(job);
     const card = document.createElement("div");
-    card.className = `card ${job.riskType} ${overdue ? "overdue" : ""}`;
+
+    // เช็คว่างานนี้ยังอยู่ในช่วงแฟลชไหม
+    const id = String(job.id);
+    const until = flashUntil.get(id) || 0;
+    const isFlash = Date.now() < until;
+
+    // เคลียร์รายการที่หมดอายุแล้ว (ช่วยไม่ให้ Map โตเรื่อย ๆ)
+    if(!isFlash && until){
+      flashUntil.delete(id);
+    }
+
+    card.className = `card ${job.riskType} ${overdue ? "overdue" : ""} ${isFlash ? "flash" : ""}`;
 
     const badgeClass = job.riskType === "confined" ? "confined" : "height";
     const overdueBadge = overdue
@@ -412,11 +428,25 @@ function tickElapsed(){
   renderKPIs();
 }
 
-// -------------------- API --------------------
 async function apiGetStatus(){
   const res = await fetch('/api/status', { cache: 'no-store' });
   if(!res.ok) throw new Error('status');
   const data = await res.json();
+
+  // --- detect new jobs (หลังโหลดครั้งแรกเท่านั้น) ---
+  const prevIds = new Set((state.jobs || []).map(j => String(j.id)));
+  const nextIds = new Set((data.jobs || []).map(j => String(j.id)));
+
+  if(hasLoadedOnce){
+    for(const id of nextIds){
+      if(!prevIds.has(id)){
+        flashUntil.set(id, Date.now() + FLASH_MS); // แฟลช 5 วิ
+      }
+    }
+  }else{
+    hasLoadedOnce = true; // โหลดครั้งแรกไม่แฟลช
+  }
+
   state = data;
 
   if(overdueMinutesInput && !isKiosk){

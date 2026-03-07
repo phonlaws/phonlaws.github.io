@@ -39,7 +39,7 @@
       <!-- Login Chip (ซ่อนจนกว่าจะ login) -->
       <div id="loginChip" class="stat" style="min-width:220px; display:none;">
         <span class="stat-label">ผู้ใช้งาน</span>
-        <span class="stat-value small" style="font-weight:900;">
+        <span class="stat-value small" style="font-weight:500;">
           <span id="loginName">—</span>
         </span>
       </div>
@@ -132,7 +132,7 @@
             <span class="unit">นาที</span>
           </div>
 
-          <a class="btn link" href="kiosk.html" title="เปิดหน้าจอเครื่องกลาง">โหมดจอเครื่องกลาง →</a>
+          <a class="btn link" href="kiosk.html" title="Dashboard">DASHBOARD</a>
         </div>
 
         <div class="note">
@@ -178,7 +178,7 @@
   <!-- LOGIN MODAL -->
   <div id="loginModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); backdrop-filter: blur(6px); z-index:9999;">
     <div style="max-width:560px; margin:10vh auto; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); border-radius:18px; padding:18px; box-shadow:0 18px 44px rgba(0,0,0,.35); color:#e9eefc; font-family:Kanit,system-ui;">
-      <h2 style="margin:0 0 6px; font-weight:900;">เข้าสู่ระบบ</h2>
+      <h2 style="margin:0 0 6px; font-weight:500;">เข้าสู่ระบบ</h2>
       <p id="loginHint" style="margin:0 0 14px; color:rgba(233,238,252,.75);">
         กรุณาเลือกชื่อผู้ใช้งานและกรอก PIN 6 หลัก
       </p>
@@ -186,7 +186,7 @@
       <div style="display:grid; gap:10px;">
 
         <!-- ✅ Slide/Segmented Mode (ใช้ CSS เดียวกับ segmented งานเสี่ยง 100%) -->
-        <label style="font-weight:800; font-size:14px; color:rgba(233,238,252,.8);">โหมดเข้าสู่ระบบ</label>
+        <label style="font-weight:500; font-size:14px; color:rgba(233,238,252,.8);">โหมดเข้าสู่ระบบ</label>
         <div class="segmented" role="group" aria-label="โหมดเข้าสู่ระบบ">
           <input type="radio" name="loginMode" id="modeUser" value="user" checked>
           <label for="modeUser">User</label>
@@ -196,7 +196,7 @@
         </div>
 
         <!-- USER: Dropdown -->
-        <label style="font-weight:800; font-size:14px; color:rgba(233,238,252,.8);">ชื่อผู้ใช้งาน (User)</label>
+        <label style="font-weight:500; font-size:14px; color:rgba(233,238,252,.8);">ชื่อผู้ใช้งาน (User)</label>
         <select id="loginUser" class="login-select">
           <option value="">— เลือกชื่อ —</option>
           <option>ผจก.โกญจนาท สังฆโสภน</option>
@@ -214,7 +214,7 @@
 
         <!-- ADMIN: Type username -->
         <div id="adminUserWrap" style="display:none;">
-          <label style="font-weight:800; font-size:14px; color:rgba(233,238,252,.8); margin-top:8px;">
+          <label style="font-weight:500; font-size:14px; color:rgba(233,238,252,.8); margin-top:8px;">
             ชื่อผู้ใช้งาน (ADMIN)
           </label>
           <input id="loginAdminUser" class="login-input"
@@ -222,16 +222,16 @@
                  placeholder="user admin"
                  autocomplete="off" />
           <div style="margin-top:6px; color:rgba(233,238,252,.65); font-size:13px;">
-            * 
+        <!-- COMMENT -->     
           </div>
         </div>
 
-        <label style="font-weight:800; font-size:14px; color:rgba(233,238,252,.8);">PIN (6 หลัก)</label>
+        <label style="font-weight:500; font-size:14px; color:rgba(233,238,252,.8);">PIN (6 หลัก)</label>
         <input id="loginPin" class="login-input"
                type="password" inputmode="numeric" maxlength="6"
                placeholder="เช่น 123456" />
 
-        <div id="loginErr" style="display:none; color:#ffd6d6; font-weight:900; background:rgba(255,59,59,.15); border:1px solid rgba(255,59,59,.25); padding:10px; border-radius:12px;">
+        <div id="loginErr" style="display:none; color:#ffd6d6; font-weight:500; background:rgba(255,59,59,.15); border:1px solid rgba(255,59,59,.25); padding:10px; border-radius:12px;">
           เข้าสู่ระบบไม่สำเร็จ
         </div>
 

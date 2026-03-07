@@ -463,3 +463,54 @@ body{
   box-shadow: 0 0 0 1px var(--accent-border), 0 0 26px 6px var(--accent-glow);
   opacity:.55;
 }
+
+/* ===== New Job Flash (5s) ===== */
+@keyframes cardFlashBlue {
+  0%   { box-shadow: 0 0 0 0 rgba(91,124,250,.00), 0 0 0 0 rgba(91,124,250,.00), 0 16px 34px rgba(0,0,0,.30); }
+  15%  { box-shadow: 0 0 0 2px rgba(91,124,250,.55), 0 0 22px 6px rgba(91,124,250,.28), 0 18px 42px rgba(0,0,0,.34); }
+  50%  { box-shadow: 0 0 0 1px rgba(91,124,250,.25), 0 0 10px 2px rgba(91,124,250,.12), 0 16px 34px rgba(0,0,0,.30); }
+  85%  { box-shadow: 0 0 0 2px rgba(91,124,250,.50), 0 0 22px 6px rgba(91,124,250,.26), 0 18px 42px rgba(0,0,0,.34); }
+  100% { box-shadow: 0 0 0 0 rgba(91,124,250,.00), 0 0 0 0 rgba(91,124,250,.00), 0 16px 34px rgba(0,0,0,.30); }
+}
+
+@keyframes cardFlashOrange {
+  0%   { box-shadow: 0 0 0 0 rgba(255,176,32,.00), 0 0 0 0 rgba(255,176,32,.00), 0 16px 34px rgba(0,0,0,.30); }
+  15%  { box-shadow: 0 0 0 2px rgba(255,176,32,.60), 0 0 22px 6px rgba(255,176,32,.30), 0 18px 42px rgba(0,0,0,.34); }
+  50%  { box-shadow: 0 0 0 1px rgba(255,176,32,.28), 0 0 10px 2px rgba(255,176,32,.14), 0 16px 34px rgba(0,0,0,.30); }
+  85%  { box-shadow: 0 0 0 2px rgba(255,176,32,.55), 0 0 22px 6px rgba(255,176,32,.28), 0 18px 42px rgba(0,0,0,.34); }
+  100% { box-shadow: 0 0 0 0 rgba(255,176,32,.00), 0 0 0 0 rgba(255,176,32,.00), 0 16px 34px rgba(0,0,0,.30); }
+}
+
+/* เพิ่มวงแสงด้านนอกให้ดูเป็น “ขอบ” มากขึ้น */
+.card.flash::after{
+  content:"";
+  position:absolute;
+  inset:-3px;
+  border-radius:18px;
+  pointer-events:none;
+  opacity:.0;
+}
+
+/* confined = ฟ้า */
+.card.confined.flash{
+  animation: cardFlashBlue 1.0s ease-in-out 0s 5;
+}
+.card.confined.flash::after{
+  box-shadow: 0 0 0 2px rgba(91,124,250,.40), 0 0 26px 8px rgba(91,124,250,.18);
+  opacity:.55;
+}
+
+/* height = เหลือง/ส้ม */
+.card.height.flash{
+  animation: cardFlashOrange 1.0s ease-in-out 0s 5;
+}
+.card.height.flash::after{
+  box-shadow: 0 0 0 2px rgba(255,176,32,.45), 0 0 26px 8px rgba(255,176,32,.20);
+  opacity:.55;
+}
+
+/* กันคนเวียนหัว ถ้าตั้ง reduce motion */
+@media (prefers-reduced-motion: reduce){
+  .card.flash{ animation: none !important; }
+  .card.flash::after{ display:none !important; }
+}
