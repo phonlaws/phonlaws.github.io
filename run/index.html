@@ -73,6 +73,7 @@
             <div class="program-box">
                 <p style="margin:5px 0; color:#374151;"><strong>🏃 โปรแกรม:</strong> <span id="modalProgram" style="color:var(--primary-color);"></span></p>
                 <p style="margin:5px 0; color:#6b7280; font-size:0.9em;"><strong>⏱️ เป้าหมาย:</strong> <span id="modalPace"></span></p>
+                <p style="margin:5px 0; color:#6b7280; font-size:0.9em;"><strong>💡 <strong>คำแนะนำ:</strong> <span id="modalDetail"></span>></p>
             </div>
             <div>
                 <div style="font-size:0.85em; color:#9ca3af; margin-bottom:5px;">ผลการซ้อม</div>
@@ -236,6 +237,7 @@
             document.getElementById('modalDate').innerText = `${plan.d} ${monthNames[plan.m-1]} ${plan.y}`;
             document.getElementById('modalProgram').innerText = plan.program;
             document.getElementById('modalPace').innerText = plan.pace;
+            document.getElementById('modalDetail').innerText = programData.detail || '-';
             
             // ใส่ข้อมูลเดิมลงไป
             noteInput.value = info.note || '';
