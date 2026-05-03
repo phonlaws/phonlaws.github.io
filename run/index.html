@@ -2,286 +2,274 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Running Plan (Cloud Sync)</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตารางซ้อมวิ่ง</title>
+    <!-- เรียกใช้ Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- เรียกใช้ Font Prompt -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* (ใช้ Style เดิมที่สวยแล้ว) */
-        :root { --bg-color:#f4f6f9; --card-bg:#ffffff; --text-main:#1f2937; --text-sub:#6b7280; --primary-color:#3b82f6; --success-color:#10b981; --success-bg:#ecfdf5; --fail-color:#ef4444; --fail-bg:#fef2f2; --note-text-color:#b45309; --note-bg:#fffbeb; }
-        body { font-family:'Prompt',sans-serif; background-color:var(--bg-color); color:var(--text-main); margin:0; padding:20px 15px; display:flex; flex-direction:column; align-items:center; -webkit-tap-highlight-color:transparent; }
-        .header-controls { display:grid; grid-template-columns:50px 1fr 50px; align-items:center; width:100%; max-width:800px; margin-bottom:20px; gap:10px; }
-        h1 { margin:0; font-size:1.4em; font-weight:600; color:#111827; text-align:center; }
-        .nav-btn { background:white; border:1px solid #e5e7eb; height:40px; width:40px; border-radius:12px; cursor:pointer; color:var(--text-sub); display:flex; justify-content:center; align-items:center; font-size:1.2em; box-shadow:0 1px 3px rgba(0,0,0,0.05); padding:0; }
-        .calendar-container { max-width:800px; width:100%; }
-        .days-header { display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:10px; text-align:center; font-weight:500; color:#9ca3af; font-size:0.9em; }
-        .calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:10px; }
-        .day-cell { background-color:#fff; border:1px solid #e5e7eb; border-radius:16px; min-height:100px; padding:12px; position:relative; cursor:pointer; display:flex; flex-direction:column; box-shadow:0 1px 2px rgba(0,0,0,0.02); }
-        .date-number { font-size:1.1em; font-weight:600; color:#9ca3af; margin-bottom:8px; display:flex; justify-content:space-between; }
-        .content-wrapper { display:flex; flex-direction:column; width:100%; }
-        .program-preview { font-size:0.95em; color:var(--text-main); font-weight:400; line-height:1.4; }
-        .note-display { margin-top:8px; background-color:var(--note-bg); color:var(--note-text-color); padding:6px 10px; border-radius:8px; font-size:0.65em; display:flex; align-items:flex-start; gap:6px; border:1px solid #fcd34d; }
-        .day-cell.empty-cell { background:transparent; border:none; box-shadow:none; cursor:default; }
-        .day-cell.current-day { border:2px solid var(--primary-color); background-color:#eff6ff; }
-        .day-cell.current-day .date-number { color:var(--primary-color); }
-        .day-cell.status-success { background-color:var(--success-bg); border-color:var(--success-color); border-left:4px solid var(--success-color); }
-        .day-cell.status-fail { background-color:var(--fail-bg); border-color:var(--fail-color); border-left:4px solid var(--fail-color); }
-        @media (max-width:600px) { .days-header{display:none;} .calendar-grid{grid-template-columns:1fr; gap:12px;} .day-cell.empty-cell{display:none;} .day-cell{flex-direction:row; align-items:flex-start; min-height:auto; padding:15px; gap:15px;} .date-number{flex-direction:column; align-items:center; margin-bottom:0; min-width:35px; font-size:1.4em; border-right:1px solid #f3f4f6; padding-right:15px; margin-right:5px; color:#d1d5db; height:100%;} }
-        /* Modal */
-        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); backdrop-filter:blur(4px); z-index:1000; justify-content:center; align-items:center; }
-        .modal-content { background:#fff; width:85%; max-width:380px; border-radius:24px; padding:25px; box-shadow:0 20px 50px rgba(0,0,0,0.2); display:flex; flex-direction:column; gap:15px; position:relative; }
-        .btn-close { position:absolute; top:15px; right:15px; background:#f3f4f6; border-radius:50%; width:30px; height:30px; border:none; color:#6b7280; font-size:1rem; cursor:pointer; }
-        .program-box { background:#f9fafb; padding:15px; border-radius:12px; border:1px solid #f3f4f6; }
-        textarea { width:100%; padding:12px; border:1px solid #e5e7eb; border-radius:12px; font-family:inherit; box-sizing:border-box; background:#fff; }
-        .btn-group { display:flex; gap:10px; margin-top:5px; }
-        button.action-btn { flex:1; padding:12px; border-radius:12px; border:none; font-weight:500; font-family:inherit; font-size:0.95em; cursor:pointer; }
-        .btn-success { background:#10b981; color:white; } .btn-fail { background:#ef4444; color:white; }
-        .btn-save { background:#1f2937; color:white; width:100%; padding:12px; border-radius:12px; border:none; font-family:inherit; cursor:pointer; }
-        .action-btn.dimmed { opacity:0.3; } .action-btn.active { transform:scale(1.02); ring:2px solid white; }
-        
-        /* Loading Overlay */
-        #loadingOverlay { display:flex; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:2000; justify-content:center; align-items:center; flex-direction:column; }
-        .spinner { border:4px solid #f3f3f3; border-top:4px solid #3498db; border-radius:50%; width:30px; height:30px; animation:spin 1s linear infinite; margin-bottom:10px; }
-        @keyframes spin { 0% { transform:rotate(0deg); } 100% { transform:rotate(360deg); } }
+        body { font-family: 'Prompt', sans-serif; background-color: #f3f4f6; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body>
+<body class="text-gray-800 antialiased min-h-screen pb-10">
 
-    <!-- Loading Screen -->
-    <div id="loadingOverlay">
-        <div class="spinner"></div>
-        <div style="color:#555;">กำลังโหลดข้อมูล...</div>
-    </div>
-
-    <div class="header-controls">
-        <button class="nav-btn" onclick="changeMonth(-1)">❮</button>
-        <h1 id="monthYearDisplay">March 2026</h1>
-        <button class="nav-btn" onclick="changeMonth(1)">❯</button>
-    </div>
-
-    <div class="calendar-container">
-        <div class="days-header"><div>อา</div><div>จ</div><div>อ</div><div>พ</div><div>พฤ</div><div>ศ</div><div>ส</div></div>
-        <div class="calendar-grid" id="calendarGrid"></div>
-    </div>
-
-    <!-- Modal -->
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal-content">
-            <button class="btn-close" onclick="closeModal()">✕</button>
-            <h2 id="modalDate" style="margin:0; font-size:1.3em; color:#111827;"></h2>
-            <div class="program-box">
-                <p style="margin:5px 0; color:#374151;"><strong>🏃 โปรแกรม:</strong> <span id="modalProgram" style="color:var(--primary-color);"></span></p>
-                <p style="margin:5px 0; color:#6b7280; font-size:0.9em;"><strong>⏱️ เป้าหมาย:</strong> <span id="modalPace"></span></p>
-                <p style="margin:5px 0; color:#6b7280; font-size:0.9em;"><strong>💡 <strong>คำแนะนำ:</strong> <span id="modalDetail"></span>></p>
-            </div>
-            <div>
-                <div style="font-size:0.85em; color:#9ca3af; margin-bottom:5px;">ผลการซ้อม</div>
-                <div class="btn-group">
-                    <button id="btnSuccess" class="action-btn btn-success" onclick="updateCloudData('success')">สำเร็จ</button>
-                    <button id="btnFail" class="action-btn btn-fail" onclick="updateCloudData('fail')">ไม่สำเร็จ</button>
-                </div>
-            </div>
-            <div>
-                <div style="font-size:0.85em; color:#9ca3af; margin-bottom:5px;">บันทึก (Note)</div>
-                <textarea id="noteInput" rows="2" placeholder="จดบันทึกที่นี่..."></textarea>
-                <button class="btn-save" onclick="saveNoteToCloud()">บันทึกข้อมูล</button>
-            </div>
+    <!-- Header -->
+    <div class="bg-white shadow-sm p-4 sticky top-0 z-10 flex justify-between items-center">
+        <h1 class="text-xl font-bold text-slate-800">🏃‍♂️ ตารางซ้อมวิ่ง</h1>
+        <div class="flex space-x-2 items-center">
+            <button onclick="changeMonth(-1)" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200">◀</button>
+            <span id="monthYearDisplay" class="font-medium min-w-[120px] text-center">พฤษภาคม 2026</span>
+            <button onclick="changeMonth(1)" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200">▶</button>
         </div>
     </div>
 
+    <!-- ส่วนแสดงสถานะกำลังโหลด -->
+    <div id="loading" class="text-center py-10">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-slate-800 mb-2"></div>
+        <p class="text-gray-500">กำลังโหลดข้อมูล...</p>
+    </div>
+
+    <!-- ปฏิทิน -->
+    <div class="max-w-4xl mx-auto mt-6 px-4 hidden" id="calendarContainer">
+        <!-- วันในสัปดาห์ -->
+        <div class="grid grid-cols-7 gap-2 text-center font-semibold text-gray-500 text-sm mb-2">
+            <div>อา.</div><div>จ.</div><div>อ.</div><div>พ.</div><div>พฤ.</div><div>ศ.</div><div>ส.</div>
+        </div>
+        <!-- ช่องวันที่ -->
+        <div id="calendarGrid" class="grid grid-cols-7 gap-2"></div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- Modal (หน้าต่าง Popup) -->
+    <!-- ========================================== -->
+    <div id="programModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl w-11/12 max-w-md p-6 relative transform scale-95 transition-transform duration-300 shadow-xl" id="modalContent">
+            
+            <!-- ปุ่มปิด -->
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                ✕
+            </button>
+
+            <!-- หัวข้อวันที่ -->
+            <h2 id="modalDateTitle" class="text-xl font-bold text-slate-800 mb-4 pr-8">5 พฤษภาคม 2026</h2>
+
+            <!-- กล่องข้อมูลโปรแกรม -->
+            <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl mb-5 space-y-3 text-sm text-slate-700">
+                <div class="flex items-start">
+                    <span class="mr-2">🏃</span>
+                    <div><strong>โปรแกรม:</strong> <span id="modalProgram">-</span></div>
+                </div>
+                <div class="flex items-start">
+                    <span class="mr-2">⏱️</span>
+                    <div><strong>เป้าหมาย:</strong> <span id="modalPace">-</span></div>
+                </div>
+                <div class="flex items-start text-blue-700 bg-blue-50 p-2 rounded-lg -mx-2 -mb-2 mt-1">
+                    <span class="mr-2">💡</span>
+                    <div><strong>คำแนะนำ:</strong> <span id="modalDetail">-</span></div>
+                </div>
+            </div>
+
+            <!-- ส่วนบันทึกผลการซ้อม -->
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-gray-700 mb-2">ผลการซ้อม</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="btnSuccess" onclick="setResult('success')" class="py-2.5 rounded-lg border-2 border-emerald-500 text-emerald-600 font-semibold bg-white transition-colors">
+                        สำเร็จ
+                    </button>
+                    <button id="btnFail" onclick="setResult('fail')" class="py-2.5 rounded-lg border-2 border-rose-500 text-rose-600 font-semibold bg-white transition-colors">
+                        ไม่สำเร็จ
+                    </button>
+                </div>
+            </div>
+
+            <!-- ส่วน Note -->
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-gray-700 mb-2">บันทึก (Note)</label>
+                <textarea id="modalUserNote" rows="3" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-800 focus:border-transparent resize-none" placeholder="จดบันทึกที่นี่..."></textarea>
+            </div>
+
+            <!-- ปุ่มบันทึก -->
+            <button onclick="saveData()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl py-3.5 transition-colors shadow-md">
+                บันทึกข้อมูล
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- Javascript -->
+    <!-- ========================================== -->
     <script>
-        // ==========================================
-        // ⚠️ ใส่ URL ที่ได้จาก Google Apps Script ตรงนี้ ⚠️
-        // ==========================================
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx_UY181cXuHLTx1L8UHvUMZARGWetQpeZJ7fDZzPxhdx5WfibelDav-W8TjMje-k45vA/exec'; 
-        // ==========================================
+        // 🔴🔴🔴 เอา URL ของ Web App มาวางที่นี่ 🔴🔴🔴
+        const SCRIPT_URL = 'YOUR_WEB_APP_URL_HERE'; 
 
-        // ประกาศตัวแปรว่างไว้ก่อน เดี๋ยวข้อมูลจะไหลเข้ามาจาก Google Sheet เอง
-        let allTrainingData = []; 
+        let programsData = [];
+        let currentDate = new Date(2026, 4, 1); // เริ่มต้นที่ พฤษภาคม 2026 (เดือน 4 ใน JS คือพฤษภาคม)
+        let selectedResult = '';
 
-        let currentDisplayDate = new Date(); 
         const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-        
-        // ตัวแปรเก็บข้อมูลจาก Cloud
-        let cloudData = {}; 
-        let selectedDataKey = null;
 
-        async function fetchCloudData() {
+        // เริ่มต้นโหลดข้อมูล
+        window.onload = () => {
+            fetchData();
+        };
+
+        // ดึงข้อมูลจาก Google Sheets
+        async function fetchData() {
+            if(SCRIPT_URL === 'YOUR_WEB_APP_URL_HERE') {
+                alert('โปรดใส่ URL ของ Apps Script ในโค้ดก่อนครับ');
+                document.getElementById('loading').style.display = 'none';
+                return;
+            }
+
             try {
-                document.getElementById('loadingOverlay').style.display = 'flex';
-                
-                const timestamp = new Date().getTime(); 
-                // เปลี่ยน action เป็น get_all เพื่อดึงทั้งคู่
-                const url = GOOGLE_SCRIPT_URL + '?action=get_all&t=' + timestamp;
-
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Network error');
-
+                const response = await fetch(SCRIPT_URL);
                 const result = await response.json();
                 
-                // รับค่าจาก Google Sheet มาใส่ตัวแปร
-                cloudData = result.logs || {};       // ประวัติการบันทึก
-                allTrainingData = result.programs || []; // ตารางซ้อม (จาก Sheet Program)
-                
-                console.log("Programs Loaded:", allTrainingData.length);
-
-                renderCalendar();
+                if (result.status === "success") {
+                    programsData = result.data;
+                    renderCalendar();
+                } else {
+                    showError();
+                }
             } catch (error) {
-                console.error('Error:', error);
-                alert('โหลดข้อมูลไม่สำเร็จ: ' + error.message);
-            } finally {
-                document.getElementById('loadingOverlay').style.display = 'none';
+                showError();
             }
         }
 
-        // --- Save Data to Cloud ---
-        async function saveDataToCloud(key, status, note) {
-            // Optimistic UI Update (อัปเดตหน้าจอทันทีไม่ต้องรอเซิร์ฟเวอร์)
-            if (!cloudData[key]) cloudData[key] = {};
-            cloudData[key].status = status;
-            cloudData[key].note = note;
-            
-            // อัปเดตหน้าจอทันที
-            updateButtonStyles(status);
+        function showError() {
+            document.getElementById('loading').innerHTML = '<p class="text-rose-500">มีบางอย่างขัดข้อง แต่คุณสามารถรีเฟรชเพื่อลองใหม่ได้ครับ</p>';
+        }
+
+        // เปลี่ยนเดือน
+        function changeMonth(step) {
+            currentDate.setMonth(currentDate.getMonth() + step);
             renderCalendar();
-            closeModal();
-
-            // ส่งข้อมูลไปเก็บเงียบๆ
-            try {
-                // ใช้ FormData หรือ URLSearchParams เพื่อป้องกันปัญหา CORS บางกรณี
-                const formData = new FormData();
-                formData.append('action', 'save');
-                formData.append('key', key);
-                formData.append('status', status);
-                formData.append('note', note);
-
-                await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    body: formData
-                });
-                console.log('Saved to cloud successfully');
-            } catch (error) {
-                console.error('Error saving data:', error);
-                alert('บันทึกไม่สำเร็จ โปรดลองใหม่');
-            }
         }
 
+        // สร้างปฏิทิน
         function renderCalendar() {
-            const year = currentDisplayDate.getFullYear();
-            const month = currentDisplayDate.getMonth();
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('calendarContainer').classList.remove('hidden');
+            
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
             document.getElementById('monthYearDisplay').innerText = `${monthNames[month]} ${year}`;
             
-            const firstDayIndex = new Date(year, month, 1).getDay();
+            const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
 
-            for (let i = 0; i < firstDayIndex; i++) {
-                let empty = document.createElement('div');
-                empty.className = 'day-cell empty-cell';
-                grid.appendChild(empty);
+            // ช่องว่างก่อนเริ่มเดือน
+            for (let i = 0; i < firstDay; i++) {
+                grid.innerHTML += `<div class="p-2"></div>`;
             }
 
-            for (let d = 1; d <= daysInMonth; d++) {
-                const cell = document.createElement('div');
-                cell.className = 'day-cell';
-                const plan = allTrainingData.find(item => item.d === d && item.m === (month + 1) && item.y === year);
-                const dataKey = `${year}-${month+1}-${d}`;
+            // วันในเดือน
+            for (let day = 1; day <= daysInMonth; day++) {
+                // หาว่าวันนี้มีโปรแกรมซ้อมหรือไม่
+                const programToday = programsData.find(p => p.y === year && p.m === (month + 1) && p.d === day);
                 
-                const dayInfo = cloudData[dataKey] || {}; // ดึงข้อมูลจาก Cloud ตัวแปร local
-                
-                let html = `<div class="date-number"><span>${d}</span></div>`;
-
-                if (plan) {
-                    html += `<div class="content-wrapper">`;
-                    html += `<div class="program-preview">${plan.program}</div>`;
-                    
-                    if (dayInfo.note && dayInfo.note.trim() !== "") {
-                        html += `<div class="note-display"><span class="note-icon">✎</span> ${dayInfo.note}</div>`;
-                    }
-                    html += `</div>`;
-
-                    if (dayInfo.status === 'success') cell.classList.add('status-success');
-                    if (dayInfo.status === 'fail') cell.classList.add('status-fail');
-                    cell.onclick = () => openModal(plan, dataKey, dayInfo);
+                let dayHTML = '';
+                if (programToday && programToday.program && programToday.program.trim() !== '') {
+                    // วันที่มีซ้อม (มีปุ่มให้กด)
+                    dayHTML = `
+                        <div onclick='openModal(${JSON.stringify(programToday)})' class="bg-white border border-gray-200 rounded-xl p-2 h-24 flex flex-col cursor-pointer hover:border-slate-800 hover:shadow-md transition-all">
+                            <span class="font-bold text-slate-800 mb-1">${day}</span>
+                            <div class="text-xs text-gray-600 leading-tight overflow-hidden text-ellipsis line-clamp-2">${programToday.program}</div>
+                            <div class="mt-auto flex justify-between items-center text-xs">
+                                ${programToday.program.includes('พัก') ? '🧘' : '🏃'}
+                            </div>
+                        </div>
+                    `;
                 } else {
-                     html += `<div class="content-wrapper"><div style="font-size:0.8em; color:#e5e7eb;">-</div></div>`;
-                     cell.onclick = () => openModal({ d: d, m: month+1, y: year, program: "วันพัก", pace: "-" }, dataKey, dayInfo);
+                    // วันที่ไม่มีซ้อม
+                    dayHTML = `
+                        <div class="bg-gray-50 border border-gray-100 rounded-xl p-2 h-24 flex flex-col text-gray-400">
+                            <span class="font-medium">${day}</span>
+                        </div>
+                    `;
                 }
-
-                const today = new Date();
-                if (d === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
-                    cell.classList.add('current-day');
-                }
-                cell.innerHTML = html;
-                grid.appendChild(cell);
+                grid.innerHTML += dayHTML;
             }
         }
 
-        function changeMonth(step) {
-            currentDisplayDate.setMonth(currentDisplayDate.getMonth() + step);
-            renderCalendar();
+        // เปิด Modal
+        function openModal(data) {
+            const modal = document.getElementById('programModal');
+            const modalContent = document.getElementById('modalContent');
+            
+            // ใส่ข้อมูลลงใน Modal
+            document.getElementById('modalDateTitle').innerText = `${data.d} ${monthNames[data.m - 1]} ${data.y}`;
+            document.getElementById('modalProgram').innerText = data.program || '-';
+            document.getElementById('modalPace').innerText = data.pace || '-';
+            document.getElementById('modalDetail').innerText = data.detail || '-'; // <--- แสดง Note จาก Sheet ตรงนี้
+            
+            // รีเซ็ตค่าการกดปุ่ม
+            setResult('');
+            document.getElementById('modalUserNote').value = '';
+
+            // แสดง Modal ด้วย Animation
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
         }
 
-        // Modal Logic
-        const modal = document.getElementById('modalOverlay');
-        const noteInput = document.getElementById('noteInput');
-        const btnSuccess = document.getElementById('btnSuccess');
-        const btnFail = document.getElementById('btnFail');
-        
-        let currentStatus = '';
-
-        function openModal(plan, key, info) {
-            selectedDataKey = key;
-            document.getElementById('modalDate').innerText = `${plan.d} ${monthNames[plan.m-1]} ${plan.y}`;
-            document.getElementById('modalProgram').innerText = plan.program;
-            document.getElementById('modalPace').innerText = plan.pace;
-            document.getElementById('modalDetail').innerText = programData.detail || '-';
-            
-            // ใส่ข้อมูลเดิมลงไป
-            noteInput.value = info.note || '';
-            currentStatus = info.status || '';
-            updateButtonStyles(currentStatus);
-            
-            modal.style.display = 'flex';
-        }
-
+        // ปิด Modal
         function closeModal() {
-            modal.style.display = 'none';
-            selectedDataKey = null;
+            const modal = document.getElementById('programModal');
+            const modalContent = document.getElementById('modalContent');
+            
+            modal.classList.add('opacity-0');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300); // รอจนกว่า animation จะจบ
         }
 
-        function updateCloudData(status) {
-            currentStatus = status;
-            updateButtonStyles(status);
-        }
+        // จัดการสถานะปุ่ม สำเร็จ / ไม่สำเร็จ
+        function setResult(status) {
+            selectedResult = status;
+            const btnSuccess = document.getElementById('btnSuccess');
+            const btnFail = document.getElementById('btnFail');
 
-        function saveNoteToCloud() {
-            if (!selectedDataKey) return;
-            const note = noteInput.value;
-            saveDataToCloud(selectedDataKey, currentStatus, note);
-        }
+            // รีเซ็ตสีปุ่มกลับเป็นค่าเริ่มต้น (ปุ่มขาว ขอบสี)
+            btnSuccess.className = "py-2.5 rounded-lg border-2 border-emerald-500 text-emerald-600 font-semibold bg-white transition-colors";
+            btnFail.className = "py-2.5 rounded-lg border-2 border-rose-500 text-rose-600 font-semibold bg-white transition-colors";
 
-        function updateButtonStyles(status) {
-            btnSuccess.classList.remove('active', 'dimmed');
-            btnFail.classList.remove('active', 'dimmed');
+            // ไฮไลท์ปุ่มที่ถูกเลือก (ถมสีทึบ)
             if (status === 'success') {
-                btnSuccess.classList.add('active');
-                btnFail.classList.add('dimmed');
+                btnSuccess.className = "py-2.5 rounded-lg border-2 border-emerald-500 text-white font-semibold bg-emerald-500 shadow-md transition-colors";
             } else if (status === 'fail') {
-                btnFail.classList.add('active');
-                btnSuccess.classList.add('dimmed');
+                btnFail.className = "py-2.5 rounded-lg border-2 border-rose-500 text-white font-semibold bg-rose-500 shadow-md transition-colors";
             }
         }
 
-        window.onclick = function(e) { if (e.target == modal) closeModal(); }
-
-        // เริ่มต้นโหลดข้อมูล
-        fetchCloudData();
-
+        // ฟังก์ชันเมื่อกดปุ่ม "บันทึกข้อมูล"
+        function saveData() {
+            if (!selectedResult) {
+                alert('โปรดเลือกผลการซ้อม (สำเร็จ / ไม่สำเร็จ)');
+                return;
+            }
+            
+            const note = document.getElementById('modalUserNote').value;
+            const dateText = document.getElementById('modalDateTitle').innerText;
+            
+            // ปิด Modal ก่อน
+            closeModal();
+            
+            // แสดงข้อความ (ในอนาคตคุณสามารถเขียนโค้ดส่งข้อมูลนี้กลับไปที่ Apps Script ได้)
+            alert('บันทึกข้อมูลเรียบร้อยแล้ว!\n\nวันที่: ' + dateText + '\nผล: ' + selectedResult + '\nบันทึก: ' + note);
+        }
     </script>
 </body>
-
 </html>
-
