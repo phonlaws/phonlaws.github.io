@@ -101,21 +101,22 @@
     <!-- Javascript -->
     <!-- ========================================== -->
     <script>
-        // 🔴🔴🔴 เอา URL ของ Web App มาวางที่นี่ 🔴🔴🔴
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwDHDqN8E7E6MttatBKawvUMDm1PfH1oQiS6P0_dKBbPY_YVCn-R2dp_QCD-uquma67Dg/exec'; 
+                // 🔴🔴🔴 เอา URL ของ Web App มาวางที่นี่ 🔴🔴🔴
+        const SCRIPT_URL = 'YOUR_WEB_APP_URL_HERE'; 
 
         let programsData = [];
-        let currentDate = new Date(2026, 4, 1); // เริ่มต้นที่ พฤษภาคม 2026 (เดือน 4 ใน JS คือพฤษภาคม)
+        let logsData = {}; // สำหรับเก็บประวัติการบันทึก
+        let currentDate = new Date(2026, 4, 1); 
         let selectedResult = '';
+        let currentProgram = null; // เก็บข้อมูลวันที่กำลังเปิดดู
 
         const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
 
-        // เริ่มต้นโหลดข้อมูล
         window.onload = () => {
             fetchData();
         };
 
-        // ดึงข้อมูลจาก Google Sheets
+        // 🟢 1. ดึงข้อมูลจาก Google Sheets (แก้ให้ตรงกับ Apps Script ของคุณ)
         async function fetchData() {
             if(SCRIPT_URL === 'YOUR_WEB_APP_URL_HERE') {
                 alert('โปรดใส่ URL ของ Apps Script ในโค้ดก่อนครับ');
@@ -124,11 +125,14 @@
             }
 
             try {
-                const response = await fetch(SCRIPT_URL);
+                // เพิ่ม ?action=get_all ส่งไปให้ Apps Script
+                const response = await fetch(SCRIPT_URL + '?action=get_all');
                 const result = await response.json();
                 
-                if (result.status === "success") {
-                    programsData = result.data;
+                // เช็คว่ามีข้อมูล programs ส่งกลับมาไหม
+                if (result.programs) {
+                    programsData = result.programs;
+                    logsData = result.logs; // เก็บข้อมูล Log ไว้เช็คสถานะสำเร็จ/ไม่สำเร็จ
                     renderCalendar();
                 } else {
                     showError();
@@ -140,15 +144,15 @@
 
         function showError() {
             document.getElementById('loading').innerHTML = '<p class="text-rose-500">มีบางอย่างขัดข้อง แต่คุณสามารถรีเฟรชเพื่อลองใหม่ได้ครับ</p>';
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('calendarContainer').classList.add('hidden');
         }
 
-        // เปลี่ยนเดือน
         function changeMonth(step) {
             currentDate.setMonth(currentDate.getMonth() + step);
             renderCalendar();
         }
 
-        // สร้างปฏิทิน
         function renderCalendar() {
             document.getElementById('loading').style.display = 'none';
             document.getElementById('calendarContainer').classList.remove('hidden');
@@ -164,30 +168,36 @@
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
 
-            // ช่องว่างก่อนเริ่มเดือน
             for (let i = 0; i < firstDay; i++) {
                 grid.innerHTML += `<div class="p-2"></div>`;
             }
 
-            // วันในเดือน
             for (let day = 1; day <= daysInMonth; day++) {
-                // หาว่าวันนี้มีโปรแกรมซ้อมหรือไม่
                 const programToday = programsData.find(p => p.y === year && p.m === (month + 1) && p.d === day);
+                const dateKey = `${year}-${month + 1}-${day}`; // สร้าง Key เพื่อเช็คประวัติใน Log
+                const logToday = logsData[dateKey]; // ตรวจสอบว่าวันนี้มีการบันทึกผลหรือยัง
                 
                 let dayHTML = '';
                 if (programToday && programToday.program && programToday.program.trim() !== '') {
-                    // วันที่มีซ้อม (มีปุ่มให้กด)
+                    
+                    // เช็คสัญลักษณ์ว่าบันทึกผลแล้วหรือยัง
+                    let statusIcon = '';
+                    if (logToday) {
+                        statusIcon = logToday.status === 'success' ? '✅' : '❌';
+                    } else {
+                        statusIcon = programToday.program.includes('พัก') ? '🧘' : '🏃';
+                    }
+
                     dayHTML = `
                         <div onclick='openModal(${JSON.stringify(programToday)})' class="bg-white border border-gray-200 rounded-xl p-2 h-24 flex flex-col cursor-pointer hover:border-slate-800 hover:shadow-md transition-all">
                             <span class="font-bold text-slate-800 mb-1">${day}</span>
                             <div class="text-xs text-gray-600 leading-tight overflow-hidden text-ellipsis line-clamp-2">${programToday.program}</div>
                             <div class="mt-auto flex justify-between items-center text-xs">
-                                ${programToday.program.includes('พัก') ? '🧘' : '🏃'}
+                                ${statusIcon}
                             </div>
                         </div>
                     `;
                 } else {
-                    // วันที่ไม่มีซ้อม
                     dayHTML = `
                         <div class="bg-gray-50 border border-gray-100 rounded-xl p-2 h-24 flex flex-col text-gray-400">
                             <span class="font-medium">${day}</span>
@@ -198,22 +208,28 @@
             }
         }
 
-        // เปิด Modal
         function openModal(data) {
+            currentProgram = data; // จำไว้ว่ากำลังเปิดของวันไหน
             const modal = document.getElementById('programModal');
             const modalContent = document.getElementById('modalContent');
             
-            // ใส่ข้อมูลลงใน Modal
             document.getElementById('modalDateTitle').innerText = `${data.d} ${monthNames[data.m - 1]} ${data.y}`;
             document.getElementById('modalProgram').innerText = data.program || '-';
             document.getElementById('modalPace').innerText = data.pace || '-';
-            document.getElementById('modalDetail').innerText = data.detail || '-'; // <--- แสดง Note จาก Sheet ตรงนี้
+            document.getElementById('modalDetail').innerText = data.detail || '-'; 
             
-            // รีเซ็ตค่าการกดปุ่ม
-            setResult('');
-            document.getElementById('modalUserNote').value = '';
+            // ตรวจสอบว่าเคยบันทึกไว้ไหม ถ้าเคยให้ดึงมาแสดง
+            const dateKey = `${data.y}-${data.m}-${data.d}`;
+            const existingLog = logsData[dateKey];
+            
+            if (existingLog) {
+                setResult(existingLog.status);
+                document.getElementById('modalUserNote').value = existingLog.note || '';
+            } else {
+                setResult('');
+                document.getElementById('modalUserNote').value = '';
+            }
 
-            // แสดง Modal ด้วย Animation
             modal.classList.remove('hidden');
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
@@ -222,7 +238,6 @@
             }, 10);
         }
 
-        // ปิด Modal
         function closeModal() {
             const modal = document.getElementById('programModal');
             const modalContent = document.getElementById('modalContent');
@@ -233,20 +248,17 @@
             
             setTimeout(() => {
                 modal.classList.add('hidden');
-            }, 300); // รอจนกว่า animation จะจบ
+            }, 300);
         }
 
-        // จัดการสถานะปุ่ม สำเร็จ / ไม่สำเร็จ
         function setResult(status) {
             selectedResult = status;
             const btnSuccess = document.getElementById('btnSuccess');
             const btnFail = document.getElementById('btnFail');
 
-            // รีเซ็ตสีปุ่มกลับเป็นค่าเริ่มต้น (ปุ่มขาว ขอบสี)
             btnSuccess.className = "py-2.5 rounded-lg border-2 border-emerald-500 text-emerald-600 font-semibold bg-white transition-colors";
             btnFail.className = "py-2.5 rounded-lg border-2 border-rose-500 text-rose-600 font-semibold bg-white transition-colors";
 
-            // ไฮไลท์ปุ่มที่ถูกเลือก (ถมสีทึบ)
             if (status === 'success') {
                 btnSuccess.className = "py-2.5 rounded-lg border-2 border-emerald-500 text-white font-semibold bg-emerald-500 shadow-md transition-colors";
             } else if (status === 'fail') {
@@ -254,21 +266,49 @@
             }
         }
 
-        // ฟังก์ชันเมื่อกดปุ่ม "บันทึกข้อมูล"
-        function saveData() {
+        // 🟢 2. ส่งข้อมูลกลับไปบันทึก (เชื่อมกับ action='save')
+        async function saveData() {
             if (!selectedResult) {
                 alert('โปรดเลือกผลการซ้อม (สำเร็จ / ไม่สำเร็จ)');
                 return;
             }
             
             const note = document.getElementById('modalUserNote').value;
-            const dateText = document.getElementById('modalDateTitle').innerText;
+            const key = `${currentProgram.y}-${currentProgram.m}-${currentProgram.d}`; // แปลงเป็น YYYY-M-D
             
-            // ปิด Modal ก่อน
+            // ปิด Modal และแสดงสถานะกำลังโหลด
             closeModal();
-            
-            // แสดงข้อความ (ในอนาคตคุณสามารถเขียนโค้ดส่งข้อมูลนี้กลับไปที่ Apps Script ได้)
-            alert('บันทึกข้อมูลเรียบร้อยแล้ว!\n\nวันที่: ' + dateText + '\nผล: ' + selectedResult + '\nบันทึก: ' + note);
+            document.getElementById('calendarContainer').classList.add('hidden');
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('loading').innerHTML = '<div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-slate-800 mb-2"></div><p class="text-gray-500">กำลังบันทึกข้อมูล...</p>';
+
+            try {
+                // สร้างชุดข้อมูลแบบ POST
+                const params = new URLSearchParams();
+                params.append('action', 'save');
+                params.append('key', key);
+                params.append('status', selectedResult);
+                params.append('note', note);
+
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: params
+                });
+                
+                const result = await response.json();
+                
+                if(result.result === 'success') {
+                    // ถ้าสำเร็จ ให้ดึงข้อมูลใหม่ทั้งหมดเพื่ออัปเดตหน้าจอ
+                    document.getElementById('loading').innerHTML = '<div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-slate-800 mb-2"></div><p class="text-gray-500">กำลังโหลดข้อมูล...</p>';
+                    fetchData();
+                } else {
+                    alert('บันทึกไม่สำเร็จ มีข้อผิดพลาดบางอย่าง');
+                    fetchData(); // โหลดหน้าใหม่
+                }
+            } catch (err) {
+                alert('การเชื่อมต่อมีปัญหา กรุณาลองใหม่อีกครั้ง');
+                fetchData(); // โหลดหน้าใหม่
+            }
         }
     </script>
 </body>
