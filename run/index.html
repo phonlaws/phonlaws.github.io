@@ -11,6 +11,20 @@
     <style>
         body { font-family: 'Prompt', sans-serif; background-color: #f3f4f6; }
         .hide-scroll::-webkit-scrollbar { display: none; }
+        
+        /* 🔴 เพิ่ม CSS แสงล้อมกรอบตรงนี้ 🔴 */
+        .glow-today {
+            border: 2px solid #60A5FA !important;
+            box-shadow: 0 0 12px rgba(96, 165, 250, 0.6) !important;
+        }
+        .glow-success {
+            border: 2px solid #34D399 !important;
+            box-shadow: 0 0 12px rgba(52, 211, 153, 0.6) !important;
+        }
+        .glow-fail {
+            border: 2px solid #FB7185 !important;
+            box-shadow: 0 0 12px rgba(251, 113, 133, 0.6) !important;
+        }
     </style>
 </head>
 <body class="text-gray-800 antialiased min-h-screen pb-10">
@@ -153,7 +167,7 @@
             renderCalendar();
         }
 
-                function renderCalendar() {
+            function renderCalendar() {
             document.getElementById('loading').style.display = 'none';
             document.getElementById('calendarContainer').classList.remove('hidden');
             
@@ -168,61 +182,49 @@
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
 
-            // สร้างช่องว่างก่อนเริ่มเดือน
             for (let i = 0; i < firstDay; i++) {
                 grid.innerHTML += `<div class="p-2"></div>`;
             }
 
-            // --- หาค่า "วันนี้" ของจริงเพื่อทำกรอบไฮไลท์ ---
             const realToday = new Date();
             const currentRealYear = realToday.getFullYear();
             const currentRealMonth = realToday.getMonth();
             const currentRealDay = realToday.getDate();
 
-            // วนลูปสร้างวันที่
             for (let day = 1; day <= daysInMonth; day++) {
                 const programToday = programsData.find(p => p.y === year && p.m === (month + 1) && p.d === day);
                 const dateKey = `${year}-${month + 1}-${day}`; 
                 const logToday = logsData[dateKey]; 
                 
-                // เช็คว่าช่องนี้คือ "วันนี้" หรือไม่
                 const isToday = (year === currentRealYear && month === currentRealMonth && day === currentRealDay);
                 
                 let dayHTML = '';
 
-                // กรณีมีโปรแกรมซ้อม
                 if (programToday && programToday.program && programToday.program.trim() !== '') {
                     
                     let statusIcon = programToday.program.includes('พัก') ? '🧘' : '🏃';
-                    
-                    // สไตล์พื้นฐาน (กรอบเทาปกติ)
                     let cardStyle = 'border border-gray-200 hover:border-slate-800 hover:shadow-md';
                     let dayNumberStyle = 'text-slate-800';
 
-                    // 1. ถ้ามีการบันทึกผลแล้ว (เปลี่ยนสีกรอบและแสงตามสถานะ สำเร็จ/ไม่สำเร็จ)
                     if (logToday) {
                         if (logToday.status === 'success') {
                             statusIcon = '✅';
-                            // สีเขียว
-                            cardStyle = 'border-2 border-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.5)]'; 
-                            dayNumberStyle = 'text-emerald-600';
+                            cardStyle = 'glow-success'; // เรียกใช้ CSS สีเขียว
+                            dayNumberStyle = 'text-emerald-600 font-bold';
                         } else if (logToday.status === 'fail') {
                             statusIcon = '❌';
-                            // สีแดง
-                            cardStyle = 'border-2 border-rose-400 shadow-[0_0_12px_rgba(251,113,133,0.5)]'; 
-                            dayNumberStyle = 'text-rose-600';
+                            cardStyle = 'glow-fail'; // เรียกใช้ CSS สีแดง
+                            dayNumberStyle = 'text-rose-600 font-bold';
                         }
                     } 
-                    // 2. ถ้ายังไม่บันทึกผล แต่เป็น "วันนี้" (แสงกรอบสีฟ้า)
                     else if (isToday) {
-                        // สีฟ้า
-                        cardStyle = 'border-2 border-blue-400 shadow-[0_0_12px_rgba(96,165,250,0.6)]';
-                        dayNumberStyle = 'text-blue-600';
+                        cardStyle = 'glow-today'; // เรียกใช้ CSS สีฟ้า
+                        dayNumberStyle = 'text-blue-600 font-bold';
                     }
 
                     dayHTML = `
                         <div onclick='openModal(${JSON.stringify(programToday)})' class="bg-white rounded-xl p-2 h-24 flex flex-col cursor-pointer transition-all ${cardStyle}">
-                            <span class="font-bold mb-1 ${dayNumberStyle}">${day}</span>
+                            <span class="mb-1 ${dayNumberStyle}">${day}</span>
                             <div class="text-xs text-gray-600 leading-tight overflow-hidden text-ellipsis line-clamp-2">${programToday.program}</div>
                             <div class="mt-auto flex justify-between items-center text-xs">
                                 ${statusIcon}
@@ -230,19 +232,17 @@
                         </div>
                     `;
                 } 
-                // กรณีไม่มีโปรแกรมซ้อม
                 else {
                     let emptyCardStyle = 'border border-gray-100 bg-gray-50 text-gray-400';
                     let emptyNumStyle = 'font-medium';
                     
-                    // ถึงแม้จะไม่มีโปรแกรมซ้อม แต่ถ้าเป็น "วันนี้" ก็จะขึ้นแสงกรอบสีฟ้าเบาๆ ให้รู้ว่าเป็นวันนี้
                     if (isToday) {
-                        emptyCardStyle = 'border-2 border-blue-300 bg-white shadow-[0_0_12px_rgba(96,165,250,0.4)] text-blue-500';
+                        emptyCardStyle = 'bg-white text-blue-500 glow-today';
                         emptyNumStyle = 'font-bold';
                     }
                     
                     dayHTML = `
-                        <div class="rounded-xl p-2 h-24 flex flex-col ${emptyCardStyle}">
+                        <div class="rounded-xl p-2 h-24 flex flex-col transition-all ${emptyCardStyle}">
                             <span class="${emptyNumStyle}">${day}</span>
                         </div>
                     `;
