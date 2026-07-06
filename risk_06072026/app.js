@@ -520,8 +520,24 @@ function bindForm(){
   const clearBtn = $("#clearForm");
   clearBtn?.addEventListener("click", () => {
     form.reset();
+
+    // ล้าง multi select มาตรการควบคุม
+    document.querySelectorAll(".ctrl-chip input").forEach(c => {
+      c.checked = false;
+    });
+
+    const controlInput = document.getElementById("control");
+    if(controlInput){
+      controlInput.value = "";
+    }
+
     setStartTimeDefault();
     $("#riskConfined") && ($("#riskConfined").checked = true);
+
+    if(typeof applyRiskTheme === "function"){
+      applyRiskTheme();
+    }
+
     showToast('ล้างข้อมูลแล้ว');
   });
 
@@ -562,7 +578,17 @@ function bindForm(){
       });
 
       $("#workPoint").value = '';
-      $("#control").value = '';
+
+      const controlInput = $("#control");
+      if(controlInput){
+        controlInput.value = '';
+      }
+
+      // ล้าง checkbox multi select หลังเปิดงานสำเร็จ
+      document.querySelectorAll(".ctrl-chip input").forEach(c => {
+        c.checked = false;
+      });
+
       $("#details").value = '';
 
     }catch(err){
@@ -627,6 +653,29 @@ function applyRiskTheme(){
   set(); // เรียกครั้งแรกตอนโหลดหน้า
 }
 
+
+// -------------------- Multi Select Control Measures --------------------
+function initControlMeasures(){
+  const input = document.getElementById("control");
+  const checks = document.querySelectorAll(".ctrl-chip input");
+
+  if(!input || !checks.length) return;
+
+  const update = () => {
+    const selected = [...checks]
+      .filter(c => c.checked)
+      .map(c => c.value);
+
+    input.value = selected.join(" / ");
+  };
+
+  checks.forEach(c => {
+    c.addEventListener("change", update);
+  });
+
+  update();
+}
+
 // -------------------- Boot --------------------
 async function boot(){
   setStartTimeDefault();
@@ -653,25 +702,3 @@ async function boot(){
 }
 
 boot();
-
-function initControlMeasures(){
-
-  const input = document.getElementById("controlMeasure");
-
-  const checks =
-    document.querySelectorAll(".ctrl-chip input");
-
-  const update = () => {
-
-    const selected =
-      [...checks]
-      .filter(c => c.checked)
-      .map(c => c.value);
-
-    input.value = selected.join(" / ");
-  };
-
-  checks.forEach(c =>
-    c.addEventListener("change", update)
-  );
-}

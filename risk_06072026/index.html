@@ -108,12 +108,9 @@
 
           <div class="field">
             <label>มาตรการควบคุม (ย่อ)</label>
+            <input id="control" type="text" placeholder="เช่น Permit / LOTO MCC Local Switch" />
 
-            <input id="controlMeasure"
-                  placeholder="เช่น Permit, LOTO MCC Local Switch">
-
-            <div class="control-options">
-
+            <div class="control-options" aria-label="รายการมาตรการควบคุมต้นแบบ">
               <label class="ctrl-chip">
                 <input type="checkbox" value="Permit">
                 <span>Permit</span>
@@ -128,7 +125,6 @@
                 <input type="checkbox" value="Lock Flap Damper">
                 <span>Lock Flap Damper</span>
               </label>
-
             </div>
           </div>
 
