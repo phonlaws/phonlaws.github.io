@@ -680,81 +680,39 @@ body{
 }
 
 
-/* ===== QR FORCE FIX: แสดง QR มุมขวาล่างหน้า Dashboard/Kiosk ===== */
-.qr-fab{
-  position: fixed !important;
-  right: 16px !important;
-  bottom: 16px !important;
-  left: auto !important;
-  top: auto !important;
-  z-index: 99999 !important;
-
-  display: grid !important;
-  justify-items: center !important;
-  gap: 8px !important;
-
-  width: 190px !important;
-  padding: 10px !important;
-
-  border-radius: 16px !important;
-  border: 1px solid rgba(255,255,255,.18) !important;
-  background: rgba(0,0,0,.38) !important;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 14px 34px rgba(0,0,0,.35) !important;
-
-  text-decoration: none !important;
-  color: var(--text) !important;
+/* ===== Control Measure Multi Select ===== */
+.control-options{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
 }
 
-.qr-fab img{
-  display: block !important;
-  width: 165px !important;
-  height: 165px !important;
-  max-width: 165px !important;
-  max-height: 165px !important;
-  object-fit: contain !important;
-
-  border-radius: 12px !important;
-  background: #fff !important;
-  padding: 8px !important;
+.ctrl-chip{
+  cursor:pointer;
 }
 
-.qr-fab .qr-label{
-  display: block !important;
-  font-size: 13px !important;
-  color: rgba(233,238,252,.88) !important;
-  font-weight: 500 !important;
-  text-align: center !important;
-  line-height: 1.2 !important;
-  white-space: nowrap !important;
+.ctrl-chip input{
+  display:none;
 }
 
-/* ซ่อน QR เฉพาะหน้า operator เท่านั้น */
-.mode-app .qr-fab{
-  display: none !important;
+.ctrl-chip span{
+  display:inline-flex;
+  align-items:center;
+  padding:8px 12px;
+  border-radius:999px;
+
+  border:1px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.05);
+
+  color:var(--muted);
+  font-size:14px;
+  font-weight:500;
+  transition:.15s;
 }
 
-/* ย้ำให้หน้า kiosk/dashboard แสดง QR เสมอ */
-.mode-kiosk .qr-fab{
-  display: grid !important;
-}
-
-@media (max-width: 520px){
-  .qr-fab{
-    width: 150px !important;
-    right: 10px !important;
-    bottom: 10px !important;
-    padding: 8px !important;
-  }
-
-  .qr-fab img{
-    width: 125px !important;
-    height: 125px !important;
-    max-width: 125px !important;
-    max-height: 125px !important;
-  }
-
-  .qr-fab .qr-label{
-    font-size: 12px !important;
-  }
+.ctrl-chip input:checked + span{
+  background:rgba(46,229,157,.18);
+  border-color:rgba(46,229,157,.55);
+  color:#e9eefc;
 }
