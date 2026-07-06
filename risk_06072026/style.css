@@ -37,7 +37,10 @@ body[data-risk="height"]{
 }
 
 *{ box-sizing:border-box; }
-html,body{ height:100%; }
+html,body{
+  height:100%;
+  background:#0b1220;
+}
 
 body{
   color-scheme: dark;
@@ -46,6 +49,7 @@ body{
   font-size: var(--base);
   font-weight: 500;
   color:var(--text);
+  background-color: var(--bg1);
   background:
     radial-gradient(1000px 600px at 18% 0%, #233a77 0%, var(--bg1) 60%),
     radial-gradient(900px 520px at 92% 20%, #2d145c 0%, var(--bg1) 55%);
@@ -715,4 +719,21 @@ body{
   background:rgba(46,229,157,.18);
   border-color:rgba(46,229,157,.55);
   color:#e9eefc;
+}
+
+/* ===== Mobile browser safe area background ===== */
+html{
+  background:#0b1220;
+}
+
+body{
+  min-height:100vh;
+  min-height:100dvh;
+  background-color:#0b1220;
+}
+
+@supports (padding: env(safe-area-inset-bottom)){
+  body{
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
