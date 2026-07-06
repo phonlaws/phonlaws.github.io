@@ -12,3 +12,5 @@
 เปิดเว็บ:
 - หน้าเปิดงาน:  http://localhost:8080/
 - หน้าเครื่องกลาง: http://localhost:8080/kiosk.html
+
+cloudflared tunnel --url http://localhost:8080

@@ -24,7 +24,7 @@ app = Flask(__name__, static_folder='.', static_url_path='')
 app.secret_key = os.environ.get("RW_SECRET_KEY", "CHANGE_THIS_TO_A_LONG_RANDOM_SECRET")
 
 # จำการล็อกอิน 8 ชั่วโมง ตามที่คุณต้องการ
-app.permanent_session_lifetime = timedelta(hours=8)
+app.permanent_session_lifetime = timedelta(hours=1)
 
 # cookie settings (ใช้ได้ทั้ง LAN/เครื่องกลาง)
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
