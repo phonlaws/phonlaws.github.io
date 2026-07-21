@@ -935,9 +935,7 @@ body{
   }
 }
 
-/* ===== Fix ช่องเวลาเริ่มงานล้นจอบนมือถือ/iPhone ===== */
-
-/* อนุญาตให้สมาชิกใน Grid ย่อได้ */
+/* ===== Final Fix: ช่องเวลาเริ่มงานบน iPhone/Safari ===== */
 .form,
 .grid,
 .field{
@@ -945,31 +943,90 @@ body{
   max-width:100%;
 }
 
-/* ป้องกันคอลัมน์ Grid ดันออกนอกหน้าจอ */
 .grid{
   grid-template-columns:minmax(0, 1.2fr) minmax(0, 1fr);
 }
 
-/* บังคับช่องเวลาให้อยู่ภายในกรอบ */
-.field input[type="time"]{
+.time-field{
+  min-width:0;
+  width:100%;
+  max-width:100%;
+  overflow:hidden;
+}
+
+.time-input-wrap{
+  position:relative;
   display:block;
   width:100%;
   min-width:0;
   max-width:100%;
-  inline-size:100%;
-  min-inline-size:0;
-  box-sizing:border-box;
   overflow:hidden;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;
+  background:rgba(0,0,0,.18);
 }
 
-/* จัดข้อความเวลาใน Safari/iPhone */
-.field input[type="time"]::-webkit-date-and-time-value{
-  min-width:0;
+.time-input-wrap:focus-within{
+  border-color:var(--accent-border);
+  box-shadow:0 0 0 3px var(--accent-ring);
+}
+
+/* มี specificity สูงกฎ .field input เดิม เพื่อควบคุม native time input */
+.field .time-input-wrap input[type="time"]{
+  display:block !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  inline-size:100% !important;
+  min-inline-size:0 !important;
+  max-inline-size:100% !important;
+  -webkit-min-logical-width:0 !important;
+  box-sizing:border-box !important;
+  margin:0 !important;
+  padding:12px !important;
+  border:0 !important;
+  border-radius:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+  background:transparent !important;
+  color:var(--text) !important;
+  font-family:inherit;
+  font-size:16px;
+  overflow:hidden !important;
+  -webkit-appearance:none;
+  appearance:none;
+}
+
+.field .time-input-wrap input[type="time"]:focus{
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+}
+
+.field .time-input-wrap input[type="time"]::-webkit-date-and-time-value{
+  display:block;
   width:100%;
+  min-width:0;
+  margin:0;
+  padding:0;
   text-align:center;
 }
 
-/* มือถือใช้คอลัมน์เดียวและยอมให้ช่องด้านในย่อ */
+.field .time-input-wrap input[type="time"]::-webkit-datetime-edit{
+  display:block;
+  width:100%;
+  min-width:0;
+  padding:0;
+  text-align:center;
+}
+
+.field .time-input-wrap input[type="time"]::-webkit-datetime-edit-fields-wrapper{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-width:0;
+}
+
 @media (max-width:920px){
   .grid{
     grid-template-columns:minmax(0, 1fr);
@@ -978,8 +1035,12 @@ body{
   .field,
   .field input,
   .field select,
-  .field textarea{
-    min-width:0;
-    max-width:100%;
+  .field textarea,
+  .time-field,
+  .time-input-wrap,
+  .time-input-wrap input[type="time"]{
+    width:100% !important;
+    min-width:0 !important;
+    max-width:100% !important;
   }
 }
