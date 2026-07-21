@@ -1,0 +1,14 @@
+[
+  {"user":"admin","pin_hash":"scrypt:32768:8:1$IVtyFlgx3ZN2R38p$a9c174c4d2f6f1b7952e512d7beba08c61fa55d87f31f7419eb5162d655b7223862773e0af4d073ee65d4d7fca2b9ca000e290b87d1c537a85a08d90343cdb05","role":"admin"},
+  {"user":"ผจก.โกญจนาท สังฆโสภน","pin_hash":"scrypt:32768:8:1$TWLqtOOZ1A7SRP3O$d876dc4dcc6ff14768fda4b38d5be2efa4fe48cddc0507f5a042891675b5bd185546bd7b17e6d9c3e838741060a7edc4103c95fb74a475781c1e90c936511679"},
+  {"user":"ผจก.ธาร เที่ยงเจริญ","pin_hash":"scrypt:32768:8:1$Y8QLeH8cZvDLyqPo$dd3444bc26c278ee154a66197eea04fed3d39eb51e3b3075e29e0ed0a5efa09ea99d3a6f92bdbc114752748978dd1f997595606368963f89480c2882a5389ed1"},
+  {"user":"ผชก.ทวี ทะปะละ","pin_hash":"scrypt:32768:8:1$yqdYjP6PbV8wgoZj$1164ffc704552817d431bb215744da739919ff63b3efc3f282b33d93fa4546af1b5ff15d3c0f150db3da048ee44d2e99fbb23e410974f352e8af9a53c4f6cc39"},
+  {"user":"นาย กฤษดา มโนดุล","pin_hash":"scrypt:32768:8:1$8SEvzohYvqxYFDue$8d57cd15ef3ba84526ef42c4fd1e14b3242dd07750eeced1f4935182d14d383fe3dc57ef6e040e07fdea2f86a16356de9bb629590d1cf459563e2d6a98c992e6"},
+  {"user":"นาย พลวัฒน์ สุขสำราญ","pin_hash":"scrypt:32768:8:1$wyGLXIzKy3sDh1Jf$161724c7be735b67b61ffe2fec76c10907d2374728968026d93351f7c01f4179bb8ac369f0aa8b0813916b8eabca3563fb824cc53de3a4caf917a9acb0398bcf"},
+  {"user":"นาย ธนกฤต ราชสีห์","pin_hash":"scrypt:32768:8:1$j7Ak3ehqy7DBFn4a$4ca6c71051f7e7b88592127fd7b34dfcc27f97db4afb6eb87edc0854a73529d3dac0b14b85bef29447676274607fc682162e5a1d24b1822fd5b63a9f185df285"},
+  {"user":"นาย ธีรวัฒน์ เพ็ญสวัสดิ์","pin_hash":"scrypt:32768:8:1$1fgZbikWmNczFOgk$cdd5a91ed2044b778644fea12c578301bb047558df2e914ed394f1ac0481ccb1e607431f7dd6fc25bd7decdb4e44b3a1cdd6aca9f896b69dd0f10d7041575613"},
+  {"user":"นาย มารุตร บุณเรือง","pin_hash":"scrypt:32768:8:1$YtfdsCi7ViG1u1xv$ef81d8b249a015207d2c332ebd951c579e3d4db4d6ae136f762225f8314fd1267329c5ea8f69c6ff3da7def6b0a6dddd507d89696475dd3c2b61ed321894eda2"},
+  {"user":"นาย กิตติศักดิ์ วงษ์จิ","pin_hash":"scrypt:32768:8:1$yMJm36BHONy1nojJ$b6b6ec587dc74e38fbac0b8cbfb158356c31686754800955ec643e24739207c13da87a2463bbeafb22033d644cf9898c8f20892921f0512bdbab71be19b6d05d"},
+  {"user":"นาย อนุกูล ทองหุ้ม","pin_hash":"scrypt:32768:8:1$yE9If9gXCSrFltHC$25e90c7c0f16e7f797fca5b47ebb7e42142693c0a29b639d797ba85928e02404a4296b30fe8852b858959251e06c70d3645e3217ba8650af6d37ef4b042c642c"},
+  {"user":"นาย วีรเดช ปทุมรัตน์","pin_hash":"scrypt:32768:8:1$O0gn9R82IKSnweaT$bb558640edd16161bd81044c73267b07988e3bb4b94775d32f5bfc063d5dd0dce71f1adf6fc36b2058fb7e785b83abd8b687fc243e0f87d970beffee3f9fe76f"}
+]
