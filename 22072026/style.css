@@ -844,3 +844,93 @@ body{
     justify-content:center;
   }
 }
+
+/* ===== Clear visual states for section and maintenance choices ===== */
+#loginSectionStep .segmented,
+#maintenanceLoginWrap .segmented{
+  gap:10px;
+  padding:6px;
+  background:rgba(0,0,0,.24);
+  border-color:rgba(255,255,255,.18);
+}
+
+#loginSectionStep .segmented label,
+#maintenanceLoginWrap .segmented label{
+  min-height:50px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid rgba(255,255,255,.20);
+  background:rgba(255,255,255,.055);
+  color:rgba(233,238,252,.82);
+  font-size:16px;
+  font-weight:600;
+  transition:background .16s ease, border-color .16s ease, color .16s ease, box-shadow .16s ease, transform .08s ease;
+}
+
+#loginSectionStep .segmented label:hover,
+#maintenanceLoginWrap .segmented label:hover{
+  background:rgba(255,255,255,.10);
+  border-color:rgba(255,255,255,.32);
+}
+
+#loginSectionStep .segmented label:active,
+#maintenanceLoginWrap .segmented label:active{
+  transform:translateY(1px);
+}
+
+/* ส่วนผลิต: สีน้ำเงิน */
+#sectionProduction:checked + label{
+  background:linear-gradient(135deg, rgba(91,124,250,.55), rgba(91,124,250,.28));
+  border-color:rgba(126,151,255,.95);
+  color:#fff;
+  box-shadow:0 0 0 3px rgba(91,124,250,.18), 0 8px 20px rgba(30,60,150,.24);
+}
+
+/* ส่วนซ่อมบำรุง: สีเขียวอมฟ้า */
+#sectionMaintenance:checked + label{
+  background:linear-gradient(135deg, rgba(46,229,157,.46), rgba(25,180,190,.24));
+  border-color:rgba(90,240,190,.90);
+  color:#fff;
+  box-shadow:0 0 0 3px rgba(46,229,157,.16), 0 8px 20px rgba(15,120,100,.22);
+}
+
+/* ME: สีน้ำเงิน */
+#maintenanceME:checked + label{
+  background:linear-gradient(135deg, rgba(91,124,250,.58), rgba(91,124,250,.28));
+  border-color:rgba(126,151,255,.95);
+  color:#fff;
+  box-shadow:0 0 0 3px rgba(91,124,250,.18), 0 8px 20px rgba(30,60,150,.24);
+}
+
+/* EE: สีเหลือง/ส้ม */
+#maintenanceEE:checked + label{
+  background:linear-gradient(135deg, rgba(255,176,32,.58), rgba(255,135,30,.28));
+  border-color:rgba(255,199,92,.95);
+  color:#fff;
+  box-shadow:0 0 0 3px rgba(255,176,32,.17), 0 8px 20px rgba(150,85,20,.22);
+}
+
+/* แสดงเครื่องหมายเลือกเพื่อให้เห็นสถานะชัดเจน */
+#sectionProduction:checked + label::before,
+#sectionMaintenance:checked + label::before,
+#maintenanceME:checked + label::before,
+#maintenanceEE:checked + label::before{
+  content:'✓';
+  margin-right:8px;
+  font-weight:800;
+}
+
+@media (max-width:520px){
+  #loginSectionStep .segmented,
+  #maintenanceLoginWrap .segmented{
+    gap:8px;
+  }
+
+  #loginSectionStep .segmented label,
+  #maintenanceLoginWrap .segmented label{
+    min-height:48px;
+    padding:10px 8px;
+    font-size:14px;
+  }
+}
