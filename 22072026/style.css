@@ -934,3 +934,52 @@ body{
     font-size:14px;
   }
 }
+
+/* ===== Fix ช่องเวลาเริ่มงานล้นจอบนมือถือ/iPhone ===== */
+
+/* อนุญาตให้สมาชิกใน Grid ย่อได้ */
+.form,
+.grid,
+.field{
+  min-width:0;
+  max-width:100%;
+}
+
+/* ป้องกันคอลัมน์ Grid ดันออกนอกหน้าจอ */
+.grid{
+  grid-template-columns:minmax(0, 1.2fr) minmax(0, 1fr);
+}
+
+/* บังคับช่องเวลาให้อยู่ภายในกรอบ */
+.field input[type="time"]{
+  display:block;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  inline-size:100%;
+  min-inline-size:0;
+  box-sizing:border-box;
+  overflow:hidden;
+}
+
+/* จัดข้อความเวลาใน Safari/iPhone */
+.field input[type="time"]::-webkit-date-and-time-value{
+  min-width:0;
+  width:100%;
+  text-align:center;
+}
+
+/* มือถือใช้คอลัมน์เดียวและยอมให้ช่องด้านในย่อ */
+@media (max-width:920px){
+  .grid{
+    grid-template-columns:minmax(0, 1fr);
+  }
+
+  .field,
+  .field input,
+  .field select,
+  .field textarea{
+    min-width:0;
+    max-width:100%;
+  }
+}
