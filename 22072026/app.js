@@ -24,6 +24,17 @@ const loginBtn = $("#loginBtn");
 const loginCancel = $("#loginCancel");
 const loginErr = $("#loginErr");
 const loginHint = $("#loginHint");
+const loginSectionStep = $("#loginSectionStep");
+const sectionProduction = $("#sectionProduction");
+const sectionMaintenance = $("#sectionMaintenance");
+const productionLoginWrap = $("#productionLoginWrap");
+const maintenanceLoginWrap = $("#maintenanceLoginWrap");
+const productionUserWrap = $("#productionUserWrap");
+const backToSectionFromProduction = $("#backToSectionFromProduction");
+const backToSectionFromMaintenance = $("#backToSectionFromMaintenance");
+const maintenanceME = $("#maintenanceME");
+const maintenanceEE = $("#maintenanceEE");
+const maintenanceLoginBtn = $("#maintenanceLoginBtn");
 
 // ✅ Segmented mode (User/Admin) ใช้ CSS เดียวกับงานเสี่ยง 100%
 const modeUser = $("#modeUser");   // radio
@@ -46,7 +57,8 @@ const FLASH_MS = 5000;
 
 // สถานะล็อกอิน
 let currentUser = null;
-let currentRole = "user"; // "user" | "admin"
+let currentRole = "user"; // "user" | "admin" | "maintenance"
+let currentSection = "production"; // "production" | "maintenance"
 
 // -------------------- Utils --------------------
 function thTime(iso){
@@ -106,39 +118,63 @@ function escapeHtml(str){
 
 // -------------------- Login helpers --------------------
 function setAdminMode(on){
-  // แสดง/ซ่อนช่องพิมพ์ admin
   if(adminUserWrap) adminUserWrap.style.display = on ? "block" : "none";
-
-  // เปิด/ปิด dropdown user
+  if(productionUserWrap) productionUserWrap.style.display = on ? "none" : "block";
   if(loginUser) loginUser.disabled = !!on;
 
-  // เคลียร์ช่องที่ไม่ใช้ + โฟกัส
   if(on){
     if(loginUser) loginUser.value = "";
-    if(loginAdminUser) loginAdminUser.value = "";   // ✅ บังคับให้ว่าง ต้องพิมพ์เอง
-    setTimeout(()=> loginAdminUser?.focus(), 50);
+    if(loginAdminUser) loginAdminUser.value = "";
+    setTimeout(() => loginAdminUser?.focus(), 50);
   }else{
     if(loginAdminUser) loginAdminUser.value = "";
-    setTimeout(()=> loginUser?.focus(), 50);
+    setTimeout(() => loginUser?.focus(), 50);
   }
 }
 
-function showLogin(msg){
-  if(isKiosk) return;
-  if(!loginModal) return;
+function showSectionChooser(){
+  if(loginSectionStep) loginSectionStep.style.display = "grid";
+  if(productionLoginWrap) productionLoginWrap.style.display = "none";
+  if(maintenanceLoginWrap) maintenanceLoginWrap.style.display = "none";
+  if(loginHint) loginHint.textContent = "กรุณาเลือกส่วนของผู้เปิดงาน";
 
+  if(sectionProduction) sectionProduction.checked = false;
+  if(sectionMaintenance) sectionMaintenance.checked = false;
+  if(maintenanceME) maintenanceME.checked = false;
+  if(maintenanceEE) maintenanceEE.checked = false;
   if(loginErr) loginErr.style.display = "none";
-  if(loginHint) loginHint.textContent = msg || "กรุณาเลือกชื่อผู้ใช้และกรอก PIN 6 หลัก";
+}
 
-  // ✅ reset โหมดกลับเป็น User ทุกครั้งที่เปิด modal (กันค้าง)
+function showProductionLogin(){
+  if(loginSectionStep) loginSectionStep.style.display = "none";
+  if(productionLoginWrap) productionLoginWrap.style.display = "grid";
+  if(maintenanceLoginWrap) maintenanceLoginWrap.style.display = "none";
+  if(loginHint) loginHint.textContent = "ส่วนผลิต: เลือกชื่อผู้ใช้งานและกรอก PIN 6 หลัก";
   if(modeUser) modeUser.checked = true;
   if(modeAdmin) modeAdmin.checked = false;
   setAdminMode(false);
+}
 
-  if(loginAdminUser) loginAdminUser.value = ""; // ✅ กันค่าค้าง
+function showMaintenanceLogin(){
+  if(loginSectionStep) loginSectionStep.style.display = "none";
+  if(productionLoginWrap) productionLoginWrap.style.display = "none";
+  if(maintenanceLoginWrap) maintenanceLoginWrap.style.display = "grid";
+  if(loginHint) loginHint.textContent = "ส่วนซ่อมบำรุง: เลือก ME หรือ EE โดยไม่ต้องใช้ PIN";
+  if(maintenanceME) maintenanceME.checked = false;
+  if(maintenanceEE) maintenanceEE.checked = false;
+}
 
+function showLogin(msg){
+  if(isKiosk || !loginModal) return;
+
+  if(loginErr) loginErr.style.display = "none";
+  if(loginPin) loginPin.value = "";
+  if(loginAdminUser) loginAdminUser.value = "";
+  if(loginUser) loginUser.value = "";
+
+  showSectionChooser();
+  if(msg && loginHint) loginHint.textContent = msg;
   loginModal.style.display = "block";
-  setTimeout(()=> loginPin?.focus(), 50);
 }
 
 function hideLogin(){
@@ -148,27 +184,30 @@ function hideLogin(){
   if(loginErr) loginErr.style.display = "none";
 }
 
-function setLoginState(user, role){
+function setLoginState(user, role, section){
   currentUser = user || null;
   currentRole = role || "user";
+  currentSection = section || "production";
 
   if(loginChip) loginChip.style.display = currentUser ? "inline-flex" : "none";
   if(loginName){
-    loginName.textContent = currentUser
-      ? (currentRole === "admin" ? `${currentUser} (Admin)` : currentUser)
-      : "";
+    if(!currentUser){
+      loginName.textContent = "";
+    }else if(currentRole === "admin"){
+      loginName.textContent = `${currentUser} (Admin)`;
+    }else if(currentSection === "maintenance"){
+      loginName.textContent = `${currentUser} (ซ่อมบำรุง)`;
+    }else{
+      loginName.textContent = currentUser;
+    }
   }
   if(logoutBtn) logoutBtn.style.display = currentUser ? "inline-flex" : "none";
 
-  // requester auto-fill เป็นผู้ล็อกอิน และล็อกไว้กันผิดคน
   const requester = $("#requester");
   if(requester && !isKiosk){
     if(currentUser){
-      requester.value = currentUser;
-
       const hasOpt = Array.from(requester.options || [])
-        .some(o => (o.value === currentUser) || (o.text === currentUser));
-
+        .some(o => o.value === currentUser || o.text === currentUser);
       if(!hasOpt){
         const opt = document.createElement("option");
         opt.value = currentUser;
@@ -207,9 +246,20 @@ async function apiLogin(user, pin){
   return data;
 }
 
+async function apiMaintenanceLogin(team){
+  const res = await fetch('/api/login-maintenance', {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json' },
+    body: JSON.stringify({ team })
+  });
+  const data = await res.json().catch(() => ({}));
+  if(!res.ok) throw new Error(data?.error || "maintenance login failed");
+  return data;
+}
+
 async function apiLogout(){
   await fetch('/api/logout', { method:'POST' }).catch(()=>{});
-  setLoginState(null, "user");
+  setLoginState(null, "user", "production");
   showToast("ออกจากระบบแล้ว");
   renderJobs(); // เผื่อ admin logout แล้วปุ่มปิดต้องหาย
 }
@@ -218,35 +268,39 @@ async function apiLogout(){
 function bindLoginUI(){
   if(!loginModal || isKiosk) return;
 
-  // init
-  setAdminMode(false);
+  showSectionChooser();
 
-  // เปลี่ยนโหมดตาม segmented (radio)
-  modeUser?.addEventListener("change", ()=> setAdminMode(false));
-  modeAdmin?.addEventListener("change", ()=> setAdminMode(true));
+  sectionProduction?.addEventListener("change", () => {
+    if(sectionProduction.checked) showProductionLogin();
+  });
 
-  loginBtn?.addEventListener("click", async ()=>{
+  sectionMaintenance?.addEventListener("change", () => {
+    if(sectionMaintenance.checked) showMaintenanceLogin();
+  });
+
+  backToSectionFromProduction?.addEventListener("click", showSectionChooser);
+  backToSectionFromMaintenance?.addEventListener("click", showSectionChooser);
+
+  modeUser?.addEventListener("change", () => setAdminMode(false));
+  modeAdmin?.addEventListener("change", () => setAdminMode(true));
+
+  loginBtn?.addEventListener("click", async () => {
     const adminMode = !!modeAdmin?.checked;
-
-    // ✅ user = dropdown, admin = input (admin บังคับ lower-case เพื่อ match users.json)
-    let u = adminMode
+    const u = adminMode
       ? (loginAdminUser?.value || "").trim().toLowerCase()
       : (loginUser?.value || "").trim();
-
     const p = (loginPin?.value || "").trim();
 
     if(loginErr) loginErr.style.display = "none";
-
     if(!u || !p){
       if(loginErr){
         loginErr.textContent = adminMode
           ? "กรุณาพิมพ์ชื่อ Admin และกรอก PIN"
-          : "กรุณาเลือกชื่อ และกรอก PIN";
+          : "กรุณาเลือกชื่อและกรอก PIN";
         loginErr.style.display = "block";
       }
       return;
     }
-
     if(!/^\d{6}$/.test(p)){
       if(loginErr){
         loginErr.textContent = "PIN ต้องเป็นตัวเลข 6 หลัก";
@@ -256,49 +310,63 @@ function bindLoginUI(){
     }
 
     try{
-      // login
       await apiLogin(u, p);
-
-      // ดึง role หลัง login (สำคัญสำหรับ admin)
-      const me = await apiMe().catch(()=> null);
-      setLoginState(me?.user || u, me?.role || "user");
-
+      const me = await apiMe().catch(() => null);
+      setLoginState(me?.user || u, me?.role || "user", me?.section || "production");
       hideLogin();
       showToast(`เข้าสู่ระบบแล้ว: ${me?.user || u}`);
-
-      // หลัง login ให้ render ใหม่ทันที
       renderJobs();
       renderSummary();
       renderKPIs();
-
     }catch(e){
-      const msg = String(e?.message || e);
       if(loginErr){
-        loginErr.textContent = msg.includes("pin") ? "PIN ไม่ถูกต้อง" : "ชื่อหรือ PIN ไม่ถูกต้อง";
+        loginErr.textContent = "ชื่อหรือ PIN ไม่ถูกต้อง";
         loginErr.style.display = "block";
       }
     }
   });
 
-  // ยกเลิกได้ -> โหมดดูอย่างเดียว
-  loginCancel?.addEventListener("click", ()=>{
+  maintenanceLoginBtn?.addEventListener("click", async () => {
+    const team = document.querySelector('input[name="maintenanceTeam"]:checked')?.value;
+    if(!team){
+      if(loginErr){
+        loginErr.textContent = "กรุณาเลือก ME หรือ EE";
+        loginErr.style.display = "block";
+      }
+      return;
+    }
+
+    try{
+      await apiMaintenanceLogin(team);
+      const me = await apiMe().catch(() => null);
+      setLoginState(me?.user || team, me?.role || "maintenance", me?.section || "maintenance");
+      hideLogin();
+      showToast(`เข้าสู่ระบบแล้ว: ${team}`);
+      renderJobs();
+      renderSummary();
+      renderKPIs();
+    }catch(e){
+      if(loginErr){
+        loginErr.textContent = "เข้าสู่ระบบส่วนซ่อมบำรุงไม่สำเร็จ";
+        loginErr.style.display = "block";
+      }
+    }
+  });
+
+  loginCancel?.addEventListener("click", () => {
     hideLogin();
     showToast("โหมดดูอย่างเดียว: หากต้องการเปิด/ปิดงาน กรุณาเข้าสู่ระบบ");
   });
 
-  // Enter เพื่อ login
-  loginPin?.addEventListener("keydown", (e)=>{
+  loginPin?.addEventListener("keydown", (e) => {
     if(e.key === "Enter"){
       e.preventDefault();
       loginBtn?.click();
     }
   });
 
-  logoutBtn?.addEventListener("click", ()=>{
-    apiLogout();
-  });
+  logoutBtn?.addEventListener("click", apiLogout);
 }
-
 function ensureLoggedInOrPrompt(){
   if(isKiosk) return true;
   if(currentUser) return true;
@@ -349,7 +417,13 @@ function renderJobs(){
     const owner = (job.openedBy || job.requester || "").trim();
 
     // ✅ admin ปิดได้ทุกงาน, user ปิดได้เฉพาะของตัวเอง
-    const canClose = (!isKiosk) && (currentUser && (isAdmin() || owner === currentUser));
+    const ownerSection = job.ownerSection || (["ME", "EE"].includes(owner) ? "maintenance" : "production");
+    const canClose = (!isKiosk) && !!currentUser && (
+      isAdmin() ||
+      (currentSection === "production" && ownerSection === "maintenance") ||
+      (currentSection === "production" && ownerSection === "production" && owner === currentUser) ||
+      (currentSection === "maintenance" && ownerSection === "maintenance" && owner === currentUser)
+    );
 
     const closeBtn = canClose
       ? `<button type="button" class="close" data-id="${job.id}">ปิดงาน</button>`
@@ -469,7 +543,7 @@ async function apiPost(url, payload){
   // 401 -> เด้ง login
   if(res.status === 401){
     if(!isKiosk){
-      setLoginState(null, "user");
+      setLoginState(null, "user", "production");
       showLogin("กรุณาเข้าสู่ระบบก่อนใช้งาน (PIN 6 หลัก) — กดยกเลิกเพื่อดูข้อมูลอย่างเดียวได้");
     }
     throw new Error('unauthorized');
@@ -693,7 +767,7 @@ async function boot(){
   // หน้า operator: เช็ค login แล้วเด้ง login ทันที (ยกเลิกได้)
   if(!isKiosk){
     const me = await apiMe().catch(()=> null);
-    setLoginState(me?.user || null, me?.role || "user");
+    setLoginState(me?.user || null, me?.role || "user", me?.section || "production");
 
     if(!me){
       showLogin("กรุณาเข้าสู่ระบบก่อนใช้งาน (PIN 6 หลัก) — กดยกเลิกเพื่อดูข้อมูลอย่างเดียวได้");

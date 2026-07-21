@@ -198,17 +198,32 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <!-- LOGIN MODAL -->
-  <div id="loginModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); backdrop-filter: blur(6px); z-index:9999;">
-    <div style="max-width:560px; margin:10vh auto; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); border-radius:18px; padding:18px; box-shadow:0 18px 44px rgba(0,0,0,.35); color:#e9eefc; font-family:Kanit,system-ui;">
-      <h2 style="margin:0 0 6px; font-weight:500;">เข้าสู่ระบบ</h2>
-      <p id="loginHint" style="margin:0 0 14px; color:rgba(233,238,252,.75);">
-        กรุณาเลือกชื่อผู้ใช้งานและกรอก PIN 6 หลัก
-      </p>
+  <div id="loginModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); backdrop-filter:blur(6px); z-index:9999; overflow:auto; padding:20px;">
+    <div class="login-dialog">
+      <h2>เข้าสู่ระบบ</h2>
+      <p id="loginHint">กรุณาเลือกส่วนของผู้เปิดงาน</p>
 
-      <div style="display:grid; gap:10px;">
+      <!-- ขั้นตอนที่ 1: เลือกส่วนงาน -->
+      <div id="loginSectionStep" class="login-step">
+        <label class="login-step-label">ผู้เปิดงานสังกัด</label>
+        <div class="segmented" role="group" aria-label="เลือกส่วนงาน">
+          <input type="radio" name="workSection" id="sectionProduction" value="production">
+          <label for="sectionProduction">ส่วนผลิต</label>
 
-        <!-- ✅ Slide/Segmented Mode (ใช้ CSS เดียวกับ segmented งานเสี่ยง 100%) -->
-        <label style="font-weight:500; font-size:14px; color:rgba(233,238,252,.8);">โหมดเข้าสู่ระบบ</label>
+          <input type="radio" name="workSection" id="sectionMaintenance" value="maintenance">
+          <label for="sectionMaintenance">ส่วนซ่อมบำรุง</label>
+        </div>
+        <div class="login-help">เลือกส่วนงานเพื่อไปยังขั้นตอนเข้าสู่ระบบ</div>
+      </div>
+
+      <!-- ส่วนผลิต: Login เดิมด้วย User/Admin + PIN -->
+      <div id="productionLoginWrap" class="login-step" style="display:none;">
+        <div class="login-step-head">
+          <strong>เข้าสู่ระบบส่วนผลิต</strong>
+          <button id="backToSectionFromProduction" class="login-back" type="button">← เปลี่ยนส่วนงาน</button>
+        </div>
+
+        <label class="login-step-label">โหมดเข้าสู่ระบบ</label>
         <div class="segmented" role="group" aria-label="โหมดเข้าสู่ระบบ">
           <input type="radio" name="loginMode" id="modeUser" value="user" checked>
           <label for="modeUser">User</label>
@@ -217,55 +232,70 @@
           <label for="modeAdmin">Admin</label>
         </div>
 
-        <!-- USER: Dropdown -->
-        <label style="font-weight:500; font-size:14px; color:rgba(233,238,252,.8);">ชื่อผู้ใช้งาน (User)</label>
-        <select id="loginUser" class="login-select">
-          <option value="">— เลือกชื่อ —</option>
-          <option>ผจก.โกญจนาท สังฆโสภน</option>
-          <option>ผจก.ธาร เที่ยงเจริญ</option>
-          <option>ผชก.ทวี ทะปะละ</option>
-          <option>นาย กฤษดา มโนดุล</option>
-          <option>นาย พลวัฒน์ สุขสำราญ</option>
-          <option>นาย ธนกฤต ราชสีห์</option>
-          <option>นาย ธีรวัฒน์ เพ็ญสวัสดิ์</option>
-          <option>นาย มารุตร บุณเรือง</option>
-          <option>นาย กิตติศักดิ์ วงษ์จิ</option>
-          <option>นาย อนุกูล ทองหุ้ม</option>
-          <option>นาย วีรเดช ปทุมรัตน์</option>
-        </select>
-
-        <!-- ADMIN: Type username -->
-        <div id="adminUserWrap" style="display:none;">
-          <label style="font-weight:500; font-size:14px; color:rgba(233,238,252,.8); margin-top:8px;">
-            ชื่อผู้ใช้งาน (ADMIN)
-          </label>
-          <input id="loginAdminUser" class="login-input"
-                 type="text"
-                 placeholder="user admin"
-                 autocomplete="off" />
-          <div style="margin-top:6px; color:rgba(233,238,252,.65); font-size:13px;">
-        <!-- COMMENT -->     
-          </div>
+        <div id="productionUserWrap">
+          <label class="login-step-label">ชื่อผู้ใช้งาน (User)</label>
+          <select id="loginUser" class="login-select">
+            <option value="">— เลือกชื่อ —</option>
+            <option>ผจก.โกญจนาท สังฆโสภน</option>
+            <option>ผจก.ธาร เที่ยงเจริญ</option>
+            <option>ผชก.ทวี ทะปะละ</option>
+            <option>นาย กฤษดา มโนดุล</option>
+            <option>นาย พลวัฒน์ สุขสำราญ</option>
+            <option>นาย ธนกฤต ราชสีห์</option>
+            <option>นาย ธีรวัฒน์ เพ็ญสวัสดิ์</option>
+            <option>นาย มารุตร บุณเรือง</option>
+            <option>นาย กิตติศักดิ์ วงษ์จิ</option>
+            <option>นาย อนุกูล ทองหุ้ม</option>
+            <option>นาย วีรเดช ปทุมรัตน์</option>
+          </select>
         </div>
 
-        <label style="font-weight:500; font-size:14px; color:rgba(233,238,252,.8);">PIN (6 หลัก)</label>
-        <input id="loginPin" class="login-input"
-               type="password" inputmode="numeric" maxlength="6"
+        <div id="adminUserWrap" style="display:none;">
+          <label class="login-step-label">ชื่อผู้ใช้งาน (Admin)</label>
+          <input id="loginAdminUser" class="login-input" type="text"
+                 placeholder="พิมพ์ชื่อ Admin" autocomplete="off" />
+        </div>
+
+        <label class="login-step-label">PIN (6 หลัก)</label>
+        <input id="loginPin" class="login-input" type="password"
+               inputmode="numeric" maxlength="6" autocomplete="one-time-code"
                placeholder="เช่น 123456" />
 
-        <div id="loginErr" style="display:none; color:#ffd6d6; font-weight:500; background:rgba(255,59,59,.15); border:1px solid rgba(255,59,59,.25); padding:10px; border-radius:12px;">
-          เข้าสู่ระบบไม่สำเร็จ
-        </div>
-
-        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:8px;">
+        <div class="login-actions">
           <button id="loginBtn" class="btn primary" type="button">เข้าใช้งาน</button>
-          <button id="loginCancel" class="btn ghost" type="button">ยกเลิก</button>
+        </div>
+      </div>
+
+      <!-- ส่วนซ่อมบำรุง: เลือก ME หรือ EE โดยไม่ใช้ PIN -->
+      <div id="maintenanceLoginWrap" class="login-step" style="display:none;">
+        <div class="login-step-head">
+          <strong>เข้าสู่ระบบส่วนซ่อมบำรุง</strong>
+          <button id="backToSectionFromMaintenance" class="login-back" type="button">← เปลี่ยนส่วนงาน</button>
         </div>
 
+        <label class="login-step-label">เลือกหน่วยงานซ่อมบำรุง</label>
+        <div class="segmented" role="group" aria-label="เลือก ME หรือ EE">
+          <input type="radio" name="maintenanceTeam" id="maintenanceME" value="ME">
+          <label for="maintenanceME">ME</label>
+
+          <input type="radio" name="maintenanceTeam" id="maintenanceEE" value="EE">
+          <label for="maintenanceEE">EE</label>
+        </div>
+
+        <div class="login-help">ส่วนซ่อมบำรุงเข้าใช้งานได้โดยไม่ต้องกรอก PIN</div>
+
+        <div class="login-actions">
+          <button id="maintenanceLoginBtn" class="btn primary" type="button">เข้าใช้งาน</button>
+        </div>
+      </div>
+
+      <div id="loginErr" class="login-error" style="display:none;">เข้าสู่ระบบไม่สำเร็จ</div>
+
+      <div class="login-footer">
+        <button id="loginCancel" class="btn ghost" type="button">ยกเลิกและดูอย่างเดียว</button>
       </div>
     </div>
   </div>
-
   <script src="app.js"></script>
 </body>
 </html>

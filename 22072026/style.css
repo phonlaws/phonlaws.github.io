@@ -737,3 +737,110 @@ body{
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
+
+/* ===== Login Section Selection: Production / Maintenance ===== */
+.login-dialog{
+  width:min(560px, 100%);
+  margin:8vh auto;
+  padding:18px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:18px;
+  background:rgba(18,22,30,.96);
+  box-shadow:0 18px 44px rgba(0,0,0,.40);
+  color:var(--text);
+  font-family:"Kanit", system-ui, sans-serif;
+}
+
+.login-dialog h2{
+  margin:0 0 6px;
+  font-weight:600;
+}
+
+.login-dialog #loginHint{
+  margin:0 0 14px;
+  color:rgba(233,238,252,.75);
+}
+
+.login-step{
+  display:grid;
+  gap:10px;
+}
+
+.login-step-label{
+  display:block;
+  margin-top:4px;
+  color:rgba(233,238,252,.80);
+  font-size:14px;
+  font-weight:500;
+}
+
+.login-step-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:2px;
+}
+
+.login-back{
+  border:0;
+  background:transparent;
+  color:var(--muted);
+  font-family:inherit;
+  font-size:13px;
+  cursor:pointer;
+}
+
+.login-back:hover{
+  color:var(--text);
+}
+
+.login-help{
+  color:rgba(233,238,252,.62);
+  font-size:13px;
+}
+
+.login-actions,
+.login-footer{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:8px;
+}
+
+.login-footer{
+  padding-top:10px;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+
+.login-error{
+  margin-top:10px;
+  padding:10px;
+  border:1px solid rgba(255,59,59,.25);
+  border-radius:12px;
+  background:rgba(255,59,59,.15);
+  color:#ffd6d6;
+  font-weight:500;
+}
+
+@media (max-width:520px){
+  #loginModal{
+    padding:10px !important;
+  }
+
+  .login-dialog{
+    margin:3vh auto;
+    padding:16px;
+  }
+
+  .login-step-head{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .login-actions .btn,
+  .login-footer .btn{
+    width:100%;
+    justify-content:center;
+  }
+}

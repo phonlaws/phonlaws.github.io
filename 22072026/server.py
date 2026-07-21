@@ -142,14 +142,44 @@ def api_login():
     if not check_password_hash(row.get("pin_hash", ""), pin):
         return jsonify({"ok": False, "error": "invalid login"}), 401
 
+    session.clear()
     session["user"] = user
-    session.permanent = True  # ใช้ lifetime 8 ชั่วโมง
-    return jsonify({"ok": True, "user": user})
+    session["section"] = "production"
+    session["role"] = "admin" if row.get("role") == "admin" else "user"
+    session.permanent = True
+    return jsonify({
+        "ok": True,
+        "user": user,
+        "role": session["role"],
+        "section": "production"
+    })
+
+
+@app.post('/api/login-maintenance')
+def api_login_maintenance():
+    payload = request.get_json(force=True, silent=True) or {}
+    team = (payload.get("team") or "").strip().upper()
+
+    if team not in ("ME", "EE"):
+        return jsonify({"ok": False, "error": "invalid maintenance team"}), 400
+
+    session.clear()
+    session["user"] = team
+    session["section"] = "maintenance"
+    session["role"] = "maintenance"
+    session.permanent = True
+
+    return jsonify({
+        "ok": True,
+        "user": team,
+        "role": "maintenance",
+        "section": "maintenance"
+    })
 
 
 @app.post('/api/logout')
 def api_logout():
-    session.pop("user", None)
+    session.clear()
     return jsonify({"ok": True})
 
 
@@ -157,10 +187,20 @@ def api_logout():
 def api_me():
     if not is_logged_in():
         return jsonify({"ok": False}), 401
-    user = session.get("user")
-    role = "admin" if is_admin_user(user) else "user"
-    return jsonify({"ok": True, "user": user, "role": role})
 
+    user = session.get("user")
+    section = session.get("section", "production")
+    role = session.get("role")
+
+    if not role:
+        role = "admin" if is_admin_user(user) else "user"
+
+    return jsonify({
+        "ok": True,
+        "user": user,
+        "role": role,
+        "section": section
+    })
 
 # ----------------------------
 # Core APIs
@@ -246,7 +286,8 @@ def api_open():
             if j.get('department') == department and normalize_point(j.get('point')) == pnorm and j.get('riskType') == risk_type:
                 return jsonify({"error": "duplicate: เปิดได้ 1 งานต่อประเภท ในหน่วยงาน + จุดงานเดียวกัน"}), 409
 
-        opened_by = session.get("user")  # คนที่ล็อกอิน (ผู้เปิดจริง)
+        opened_by = session.get("user")
+        owner_section = session.get("section", "production")
 
         job_id = payload.get('id') or f"{int(datetime.now().timestamp()*1000)}"
         job = {
@@ -259,6 +300,7 @@ def api_open():
             "requester": opened_by,
             # ✅ เจ้าของงานตัวจริง
             "openedBy": opened_by,
+            "ownerSection": owner_section,
             "details": details,
             "startedAtISO": started_at
         }
@@ -290,10 +332,32 @@ def api_close():
             return jsonify({"error": "not found"}), 404
 
         owner = (job.get("openedBy") or job.get("requester") or "").strip()
+        owner_section = job.get("ownerSection")
+        if owner_section not in ("production", "maintenance"):
+            owner_section = "maintenance" if owner in ("ME", "EE") else "production"
 
-        # ✅ admin override
-        if (owner != current_user) and (not is_admin_user(current_user)):
-            return jsonify({"error": f"forbidden: งานนี้เปิดโดย '{owner}' เท่านั้น (หรือ admin)"}), 403
+        current_section = session.get("section", "production")
+        current_role = session.get("role")
+        if not current_role:
+            current_role = "admin" if is_admin_user(current_user) else "user"
+
+        can_close = False
+
+        # Admin ปิดได้ทุกงาน
+        if current_role == "admin":
+            can_close = True
+        # ส่วนผลิตทุกคนปิดงานของ ME/EE ได้ทั้งหมด
+        elif current_section == "production" and owner_section == "maintenance":
+            can_close = True
+        # ส่วนผลิตปิดงานส่วนผลิตได้เฉพาะงานของตนเอง
+        elif current_section == "production" and owner_section == "production":
+            can_close = current_user == owner
+        # ME/EE ปิดได้เฉพาะงานของทีมตนเอง
+        elif current_section == "maintenance" and owner_section == "maintenance":
+            can_close = current_user == owner
+
+        if not can_close:
+            return jsonify({"error": "forbidden: ไม่มีสิทธิ์ปิดงานนี้"}), 403
 
         # ปิดงาน (ลบออกจากรายการ)
         state['jobs'] = [j for j in state['jobs'] if str(j.get('id')) != str(job_id)]
