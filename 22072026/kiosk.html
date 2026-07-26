@@ -8,11 +8,22 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    (function(){
+      try{
+        var saved = localStorage.getItem("kioskTheme");
+        var theme = saved === "light" ? "light" : "dark";
+        document.documentElement.dataset.kioskTheme = theme;
+      }catch(e){
+        document.documentElement.dataset.kioskTheme = "dark";
+      }
+    })();
+  </script>
   <title>งานเสี่ยง • จอเครื่องกลาง</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=5" />
 </head>
 <body class="mode-kiosk">
   <div class="bg" aria-hidden="true"></div>
@@ -39,6 +50,12 @@
         <span class="stat-label">อัปเดตล่าสุด</span>
         <span class="stat-value small" id="lastUpdated">—</span>
       </div>
+
+      <button id="kioskThemeToggle" class="kiosk-theme-toggle" type="button"
+              aria-label="เปลี่ยนเป็นโหมดสว่าง" aria-pressed="false">
+        <span class="theme-icon" aria-hidden="true">☀</span>
+        <span class="theme-text">โหมดสว่าง</span>
+      </button>
     </div>
   </header>
 
@@ -54,6 +71,6 @@
     </section>
   </main>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

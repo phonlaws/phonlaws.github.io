@@ -1044,3 +1044,205 @@ body{
     max-width:100% !important;
   }
 }
+
+/* ===== Kiosk Theme Toggle and Light Theme ===== */
+.kiosk-theme-toggle{
+  min-width:150px;
+  min-height:52px;
+  padding:10px 14px;
+  border:1px solid var(--stroke);
+  border-radius:16px;
+  background:rgba(255,255,255,.07);
+  color:var(--text);
+  box-shadow:0 10px 25px rgba(0,0,0,.18);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  font-family:"Kanit", system-ui, sans-serif;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:transform .12s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+.kiosk-theme-toggle:hover{
+  border-color:rgba(255,255,255,.28);
+  background:rgba(255,255,255,.12);
+}
+
+.kiosk-theme-toggle:active{
+  transform:translateY(1px);
+}
+
+.kiosk-theme-toggle:focus-visible{
+  outline:3px solid rgba(91,124,250,.34);
+  outline-offset:2px;
+}
+
+.kiosk-theme-toggle .theme-icon{
+  width:24px;
+  height:24px;
+  display:grid;
+  place-items:center;
+  font-size:19px;
+  line-height:1;
+}
+
+/* กำหนดตัวแปรโหมดสว่างเฉพาะหน้า kiosk */
+html[data-kiosk-theme="light"]{
+  color-scheme:light;
+  background:#eef3f8;
+}
+
+html[data-kiosk-theme="light"] body.mode-kiosk{
+  --bg1:#eef3f8;
+  --panel:rgba(255,255,255,.94);
+  --panel2:rgba(247,250,253,.98);
+  --stroke:rgba(28,42,64,.15);
+  --text:#172033;
+  --muted:#5f6f85;
+  --shadow:0 14px 34px rgba(31,49,73,.14);
+
+  color-scheme:light;
+  color:var(--text);
+  background-color:#eef3f8;
+  background:
+    radial-gradient(1000px 600px at 18% 0%, rgba(121,157,222,.28) 0%, transparent 62%),
+    radial-gradient(900px 520px at 92% 20%, rgba(173,139,218,.20) 0%, transparent 57%),
+    #eef3f8;
+}
+
+html[data-kiosk-theme="light"] body.mode-kiosk .bg{
+  opacity:.72;
+  background:
+    radial-gradient(520px 300px at 18% 30%, rgba(91,124,250,.12), transparent 60%),
+    radial-gradient(680px 380px at 80% 65%, rgba(255,176,32,.09), transparent 60%),
+    radial-gradient(680px 420px at 55% 110%, rgba(46,185,140,.09), transparent 55%);
+}
+
+html[data-kiosk-theme="light"] body.mode-kiosk .topbar{
+  border-bottom-color:rgba(28,42,64,.14);
+  background:linear-gradient(180deg, rgba(245,249,253,.97), rgba(238,243,248,.90));
+  box-shadow:0 8px 26px rgba(31,49,73,.10);
+}
+
+html[data-kiosk-theme="light"] body.mode-kiosk .logo{
+  color:#fff;
+  box-shadow:0 10px 24px rgba(49,92,164,.20);
+}
+
+html[data-kiosk-theme="light"] body.mode-kiosk .stat{
+  background:rgba(255,255,255,.92);
+  border-color:rgba(28,42,64,.15);
+  box-shadow:0 8px 22px rgba(31,49,73,.10);
+}
+
+html[data-kiosk-theme="light"] body.mode-kiosk .stat.danger{
+  border-color:rgba(220,38,38,.36);
+  background:rgba(255,247,247,.95);
+}
+
+html[data-kiosk-theme="light"] body.mode-kiosk .panel{
+  border-color:rgba(28,42,64,.14);
+  background:linear-gradient(180deg, rgba(255,255,255,.96), rgba(246,249,252,.96));
+  box-shadow:0 14px 34px rgba(31,49,73,.13);
+}
+
+html[data-kiosk-theme="light"] body.mode-kiosk .panel-head{
+  border-bottom-color:rgba(28,42,64,.12);
+}
+
+html[data-kiosk-theme="light"] body.mode-kiosk .card{
+  border-color:rgba(28,42,64,.18);
+  background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(241,246,251,.98));
+  box-shadow:0 14px 28px rgba(31,49,73,.13);
+  backdrop-filter:none;
+}
+
+html[data-kiosk-theme="light"] body.mode-kiosk .card:hover{
+  border-color:rgba(28,42,64,.28);
+  box-shadow:0 18px 34px rgba(31,49,73,.17);
+}
+
+html[data-kiosk-theme="light"] body.mode-kiosk .card.overdue{
+  border-color:rgba(220,38,38,.56);
+  background:linear-gradient(180deg, rgba(255,236,236,.98), rgba(255,248,248,.98));
+}
+
+html[data-kiosk-theme="light"] body.mode-kiosk .badge{
+  border-color:rgba(28,42,64,.16);
+  background:rgba(31,49,73,.06);
+  color:#526178;
+}
+
+html[data-kiosk-theme="light"] body.mode-kiosk .badge.dept{
+  border-color:rgba(28,42,64,.18);
+  background:rgba(31,49,73,.075);
+}
+
+html[data-kiosk-theme="light"] body.mode-kiosk .badge.overdue{
+  border-color:rgba(220,38,38,.35);
+  background:rgba(220,38,38,.10);
+  color:#991b1b;
+}
+
+html[data-kiosk-theme="light"] body.mode-kiosk .meta{
+  color:#526178;
+}
+
+html[data-kiosk-theme="light"] body.mode-kiosk .meta b,
+html[data-kiosk-theme="light"] body.mode-kiosk .kv b,
+html[data-kiosk-theme="light"] body.mode-kiosk .badge.dept b{
+  color:#172033 !important;
+}
+
+html[data-kiosk-theme="light"] body.mode-kiosk .kv{
+  border-top-color:rgba(28,42,64,.15);
+  color:#3f4f66;
+}
+
+html[data-kiosk-theme="light"] body.mode-kiosk .empty{
+  color:#607087;
+}
+
+html[data-kiosk-theme="light"] body.mode-kiosk .kiosk-theme-toggle{
+  border-color:rgba(28,42,64,.18);
+  background:rgba(255,255,255,.94);
+  color:#172033;
+  box-shadow:0 8px 22px rgba(31,49,73,.11);
+}
+
+html[data-kiosk-theme="light"] body.mode-kiosk .kiosk-theme-toggle:hover{
+  border-color:rgba(49,92,164,.42);
+  background:#fff;
+}
+
+/* QR ยังคงพื้นขาวเพื่อให้สแกนง่าย แต่ปรับกรอบให้เข้าธีม */
+html[data-kiosk-theme="light"] body.mode-kiosk .qr-fab{
+  border-color:rgba(28,42,64,.18);
+  background:rgba(255,255,255,.94);
+  color:#172033;
+  box-shadow:0 14px 30px rgba(31,49,73,.16);
+}
+
+html[data-kiosk-theme="light"] body.mode-kiosk .qr-fab .qr-label{
+  color:#42536b;
+}
+
+@media (max-width:520px){
+  .mode-kiosk .kiosk-theme-toggle{
+    min-width:128px;
+    min-height:48px;
+    padding:8px 10px;
+    border-radius:14px;
+    font-size:12px;
+  }
+
+  .mode-kiosk .kiosk-theme-toggle .theme-icon{
+    width:20px;
+    height:20px;
+    font-size:17px;
+  }
+}

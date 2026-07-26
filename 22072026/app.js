@@ -15,6 +15,7 @@ const lastUpdated = $("#lastUpdated");
 
 const overdueMinutesInput = $("#overdueMinutes");
 const toast = $("#toast");
+const kioskThemeToggle = $("#kioskThemeToggle");
 
 // ---------- Login UI elements (มีเฉพาะหน้า index.html) ----------
 const loginModal = $("#loginModal");
@@ -750,8 +751,66 @@ function initControlMeasures(){
   update();
 }
 
+
+// -------------------- Kiosk Dark / Light Theme --------------------
+function setKioskTheme(theme, save = true){
+  if(!isKiosk) return;
+
+  const nextTheme = theme === "light" ? "light" : "dark";
+  document.documentElement.dataset.kioskTheme = nextTheme;
+  document.body.dataset.kioskTheme = nextTheme;
+  document.body.classList.toggle("theme-light", nextTheme === "light");
+
+  const isLight = nextTheme === "light";
+  if(kioskThemeToggle){
+    kioskThemeToggle.setAttribute("aria-pressed", String(isLight));
+    kioskThemeToggle.setAttribute(
+      "aria-label",
+      isLight ? "เปลี่ยนเป็นโหมดมืด" : "เปลี่ยนเป็นโหมดสว่าง"
+    );
+
+    const icon = kioskThemeToggle.querySelector(".theme-icon");
+    const text = kioskThemeToggle.querySelector(".theme-text");
+    if(icon) icon.textContent = isLight ? "☾" : "☀";
+    if(text) text.textContent = isLight ? "โหมดมืด" : "โหมดสว่าง";
+  }
+
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if(metaTheme){
+    metaTheme.setAttribute("content", isLight ? "#eef3f8" : "#0b1220");
+  }
+
+  if(save){
+    try{
+      localStorage.setItem("kioskTheme", nextTheme);
+    }catch(e){
+      // Browser ที่ปิด localStorage ยังเปลี่ยนธีมได้ในรอบปัจจุบัน
+    }
+  }
+}
+
+function initKioskTheme(){
+  if(!isKiosk) return;
+
+  let savedTheme = document.documentElement.dataset.kioskTheme || "dark";
+  try{
+    const stored = localStorage.getItem("kioskTheme");
+    if(stored === "light" || stored === "dark") savedTheme = stored;
+  }catch(e){
+    // ใช้ค่า dark เริ่มต้น
+  }
+
+  setKioskTheme(savedTheme, false);
+
+  kioskThemeToggle?.addEventListener("click", () => {
+    const current = document.documentElement.dataset.kioskTheme || "dark";
+    setKioskTheme(current === "light" ? "dark" : "light");
+  });
+}
+
 // -------------------- Boot --------------------
 async function boot(){
+  initKioskTheme();
   setStartTimeDefault();
   applyRiskTheme();
   bindForm();
