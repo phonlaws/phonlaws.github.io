@@ -1,0 +1,9 @@
+Risk Work Watchdog
+
+1. Place watchdog.py and run_watchdog.bat in the same folder as server.py.
+2. Set these environment variables:
+   RW_TELEGRAM_BOT_TOKEN
+   RW_TELEGRAM_CHAT_ID
+   RW_PUBLIC_HEALTH_URL
+3. Close CMD and open a new CMD after setx.
+4. Double-click run_watchdog.bat.
